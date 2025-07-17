@@ -3,6 +3,9 @@ import apiFishSpot from "../api/apiFishSpot"
 import { MapPin, Calendar, User, FileText, Clock, Navigation, Fish, Share2, Heart, Flag } from "lucide-react"
 import type { Spot } from "../modelo/Spot"
 import "./detalleSpot.css"
+import "./lista-especies.css"
+import type { EspecieConNombreComun } from "../modelo/EspecieConNombreComun"
+import ListaEspecies from "./ListaEspecies"
 
 interface PropiedadesDetalleSpot {
   idSpot?: string
@@ -14,11 +17,33 @@ const [spot, establecerSpot] = useState<Spot | null>(null)
 const [cargando, establecerCargando] = useState(true)
 const [error, establecerError] = useState<string | null>(null)
 
+const [especies, setEspecies] = useState<EspecieConNombreComun[]>([])
+const [cargandoEspecies, setCargandoEspecies] = useState(true)
+
   useEffect(() => {
-    if ( idSpot) {
+    if (idSpot) {
       obtenerSpot(idSpot)
+      obtenerEspecies(idSpot)
     }
-  }, [idSpot, ])
+  }, [idSpot])
+
+  const obtenerEspecies = async (id: string) => {
+    try {
+      setCargandoEspecies(true)
+      const respuesta = await apiFishSpot.get(`/spot/${id}/especies`)
+      const especiesFormateadas: EspecieConNombreComun[] = respuesta.data.map((e: any, i: number) => ({
+        id: i.toString(),
+        nombreCientifico: e.nombre_cientifico,
+        descripcion: e.descripcion,
+        nombresComunes: e.nombre_comun ?? [],
+      }))
+      setEspecies(especiesFormateadas)
+    } catch (err) {
+      console.error("Error al obtener especies:", err)
+    } finally {
+      setCargandoEspecies(false)
+    }
+  }
 
   const obtenerSpot = async (id: string) => {
   try {
@@ -190,6 +215,19 @@ const [error, establecerError] = useState<string | null>(null)
             </div>
             <div className="contenido-tarjeta">
               <p className="descripcion-texto">{spot.descripcion || "Sin descripción disponible"}</p>
+            </div>
+          </div>
+
+          {/* Especies observadas */}
+          <div className="tarjeta">
+            <div className="encabezado-tarjeta">
+              <h2 className="titulo-seccion">
+                <Fish className="icono" />
+                Especies observadas
+              </h2>
+            </div>
+            <div className="contenido-tarjeta">
+              <ListaEspecies especies={especies} cargando={cargandoEspecies} />
             </div>
           </div>
 
