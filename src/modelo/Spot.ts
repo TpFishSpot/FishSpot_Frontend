@@ -11,4 +11,5 @@ export interface Spot {
   fechaActualizacion: string
   idUsuario: string
   idUsuarioActualizo: string
-}
+  imagenPortada?: string
+} 
