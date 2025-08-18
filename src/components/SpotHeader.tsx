@@ -1,5 +1,4 @@
-import React from "react"
-import { Fish, MapPin, ArrowLeft, Heart, Share2 } from "lucide-react"
+import { Fish, MapPin, Heart, Share2 } from "lucide-react"
 import type { Spot } from "../modelo/Spot"
 import { obtenerCoordenadas, obtenerUrlImagen, obtenerColorEstado } from "../utils/spotUtils"
 
