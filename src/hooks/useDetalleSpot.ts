@@ -2,14 +2,17 @@ import { useEffect, useState } from "react"
 import { useParams } from "react-router"
 import type { Spot } from "../modelo/Spot"
 import type { EspecieConNombreComun } from "../modelo/EspecieConNombreComun"
+import type { TipoPesca } from "../modelo/TipoPesca"
 import apiFishSpot from "../api/apiFishSpot"
 
 export function useDetalleSpot() {
   const { id: idSpot } = useParams<{ id: string }>()
   const [spot, setSpot] = useState<Spot | null>(null)
   const [especies, setEspecies] = useState<EspecieConNombreComun[]>([])
+  const [tiposPesca, setTiposPesca] = useState<TipoPesca[]>([])
   const [cargando, setCargando] = useState(true)
   const [cargandoEspecies, setCargandoEspecies] = useState(true)
+  const [cargandoTiposPesca, setCargandoTiposPesca] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -40,7 +43,7 @@ export function useDetalleSpot() {
             descripcion: e.descripcion,
             nombre_comun: e.nombre_comun || [],
             imagen: e.imagen,
-          }))
+          })),
         )
       } catch (err) {
         console.error("Error fetching especies:", err)
@@ -50,9 +53,31 @@ export function useDetalleSpot() {
       }
     }
 
+    const fetchTiposPesca = async () => {
+      try {
+        setCargandoTiposPesca(true)
+        const res = await apiFishSpot.get(`/spot/${idSpot}/tipoPesca`)
+        setTiposPesca(res.data.map((item: any) => item.tipoPesca))
+      } catch (err) {
+        console.error("Error fetching tipos de pesca:", err)
+        setTiposPesca([])
+      } finally {
+        setCargandoTiposPesca(false)
+      }
+    }
+
     fetchSpot()
     fetchEspecies()
+    fetchTiposPesca()
   }, [idSpot])
 
-  return { spot, especies, cargando, cargandoEspecies, error }
+  return {
+    spot,
+    especies,
+    tiposPesca,
+    cargando,
+    cargandoEspecies,
+    cargandoTiposPesca,
+    error,
+  }
 }

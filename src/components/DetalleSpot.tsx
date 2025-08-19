@@ -6,7 +6,7 @@ import { useDetalleSpot } from "../hooks/useDetalleSpot"
 import { obtenerCoordenadas } from "../utils/spotUtils"
 
 export default function DetalleSpot() {
-  const { spot, especies, cargando, cargandoEspecies, error } = useDetalleSpot()
+  const { spot, especies, tiposPesca, cargando, cargandoEspecies, cargandoTiposPesca, error } = useDetalleSpot()
   const [esFavorito, setEsFavorito] = useState(false)
   const [reseña, setReseña] = useState("")
   const [calificacion, setCalificacion] = useState(0)
@@ -61,6 +61,30 @@ export default function DetalleSpot() {
               Especies Registradas
             </h2>
             <ListaEspecies especies={especies} cargando={cargandoEspecies} />
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <span className="text-purple-600">🎣</span>
+              Tipos de Pesca
+            </h2>
+            {cargandoTiposPesca ? (
+              <p className="text-gray-500">Cargando tipos de pesca...</p>
+            ) : tiposPesca.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {tiposPesca.map((tipoPesca) => (
+                  <div
+                    key={tipoPesca.id}
+                    className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-lg p-4 hover:shadow-md transition-all duration-200"
+                  >
+                    <h3 className="font-bold text-purple-900 text-lg mb-2">{tipoPesca.nombre}</h3>
+                    <p className="text-purple-700 text-sm leading-relaxed">{tipoPesca.descripcion}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 italic">No hay tipos de pesca registrados para este spot.</p>
+            )}
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
