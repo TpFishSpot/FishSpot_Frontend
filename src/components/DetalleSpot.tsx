@@ -6,7 +6,7 @@ import { useDetalleSpot } from "../hooks/useDetalleSpot"
 import { obtenerCoordenadas } from "../utils/spotUtils"
 
 export default function DetalleSpot() {
-  const { spot, especies, cargando, cargandoEspecies, error } = useDetalleSpot()
+  const { spot, especies, tiposPesca, cargando, cargandoEspecies, cargandoTiposPesca, error } = useDetalleSpot()
   const [esFavorito, setEsFavorito] = useState(false)
   const [reseña, setReseña] = useState("")
   const [calificacion, setCalificacion] = useState(0)
@@ -36,7 +36,7 @@ export default function DetalleSpot() {
   const coordenadas = obtenerCoordenadas(spot)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50">
+    <div className="min-h-screen bg-background text-foreground">
       <SpotHeader
         spot={spot}
         esFavorito={esFavorito}
@@ -47,30 +47,56 @@ export default function DetalleSpot() {
 
       <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="text-blue-600">📍</span>
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-2xl font-bold text-card-foreground mb-4 flex items-center gap-2">
+              <span className="text-primary">📍</span>
               Descripción
             </h2>
-            <p className="text-gray-700 leading-relaxed text-lg">{spot.descripcion}</p>
+            <p className="text-foreground leading-relaxed text-lg">{spot.descripcion}</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <span className="text-green-600">🐟</span>
+       
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
+              <span className="text-accent">🐟</span>
               Especies Registradas
             </h2>
             <ListaEspecies especies={especies} cargando={cargandoEspecies} />
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <span className="text-yellow-600">⭐</span>
+      
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
+              <span className="text-secondary">🎣</span>
+              Tipos de Pesca
+            </h2>
+            {cargandoTiposPesca ? (
+              <p className="text-muted-foreground">Cargando tipos de pesca...</p>
+            ) : tiposPesca.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {tiposPesca.map((tipoPesca) => (
+                  <div
+                    key={tipoPesca.id}
+                    className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-all duration-200"
+                  >
+                    <h3 className="font-bold text-card-foreground text-lg mb-2">{tipoPesca.nombre}</h3>
+                    <p className="text-foreground text-sm leading-relaxed">{tipoPesca.descripcion}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground italic">No hay tipos de pesca registrados para este spot.</p>
+            )}
+          </div>
+
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
+              <span className="text-yellow-500">⭐</span>
               Escribir Reseña
             </h2>
             <form onSubmit={manejarEnviarReseña} className="space-y-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Calificación</label>
+                <label className="block text-sm font-semibold text-foreground mb-3">Calificación</label>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((estrella) => (
                     <button
@@ -80,7 +106,7 @@ export default function DetalleSpot() {
                       className={`text-3xl transition-all duration-200 hover:scale-110 ${
                         estrella <= calificacion
                           ? "text-yellow-400 drop-shadow-sm"
-                          : "text-gray-300 hover:text-yellow-200"
+                          : "text-muted-foreground hover:text-yellow-200"
                       }`}
                     >
                       ★
@@ -88,7 +114,7 @@ export default function DetalleSpot() {
                   ))}
                 </div>
                 {calificacion > 0 && (
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className="text-sm text-muted-foreground mt-2">
                     {calificacion === 1 && "Muy malo"}
                     {calificacion === 2 && "Malo"}
                     {calificacion === 3 && "Regular"}
@@ -99,12 +125,12 @@ export default function DetalleSpot() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Tu experiencia</label>
+                <label className="block text-sm font-semibold text-foreground mb-3">Tu experiencia</label>
                 <textarea
                   value={reseña}
                   onChange={(e) => setReseña(e.target.value)}
                   placeholder="Comparte tu experiencia en este spot de pesca..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200"
+                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all duration-200 bg-card text-card-foreground"
                   rows={4}
                 />
               </div>
@@ -112,7 +138,7 @@ export default function DetalleSpot() {
               <button
                 type="submit"
                 disabled={!calificacion || !reseña.trim()}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] disabled:hover:scale-100"
+                className="w-full bg-primary text-primary-foreground font-semibold py-3 px-6 rounded-lg hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] disabled:hover:scale-100"
               >
                 Enviar Reseña
               </button>
@@ -121,9 +147,9 @@ export default function DetalleSpot() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="text-emerald-600">🎯</span>
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h3 className="text-xl font-bold text-card-foreground mb-4 flex items-center gap-2">
+              <span className="text-emerald-500">🎯</span>
               Estado del Spot
             </h3>
             <div
@@ -149,12 +175,12 @@ export default function DetalleSpot() {
           </div>
 
           {coordenadas && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-blue-600">🗺️</span>
+            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+              <h3 className="text-xl font-bold text-card-foreground mb-4 flex items-center gap-2">
+                <span className="text-primary">🗺️</span>
                 Coordenadas
               </h3>
-              <div className="space-y-2 text-sm text-gray-600">
+              <div className="space-y-2 text-sm text-foreground">
                 <div className="flex justify-between">
                   <span className="font-medium">Latitud:</span>
                   <span className="font-mono">{coordenadas.latitud.toFixed(6)}</span>
