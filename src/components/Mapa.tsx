@@ -1,38 +1,31 @@
-import { MapContainer, TileLayer } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import type { LatLngExpression } from 'leaflet'
-import { useNavigate } from 'react-router-dom'
+import { MapContainer, TileLayer } from "react-leaflet";
+import { SpotMarker } from "./SpotMarker";
+import { UseMapaLogic } from "../hooks/useMapa";
+import { useSpots } from "../hooks/useSpots";
+import type { LatLngExpression } from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 export const Mapa = () => {
-  const position: LatLngExpression = [-35.7627, -58.4915]
-  const navigate = useNavigate();
+  const initialPosition: LatLngExpression = [-35.7627, -58.4915];
+  const { spots, cargando } = useSpots();
 
-  const verSpotSecreto = () => {
-    navigate('/ver/:SpotSecreto');
-  }
-
-  // const crearSpot = () => {
-  //   navigate('/nuevo');       // falta completar, TODO
-  // }
+  if (cargando) return <div>Cargando spots...</div>;
 
   return (
-    <>
-      <button onClick={verSpotSecreto}>
-        ver SpotSecreto
-      </button>
+    <div className="h-screen w-screen">
+      <MapContainer center={initialPosition} zoom={14} className="h-screen w-screen z-0">
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        />
 
-      {/* <button onClick={crearSpot}>
-        crear Spot              // TODO
-      </button> */}
+        {/* 📌 Toda la lógica metida dentro del contexto */}
+        <UseMapaLogic />
 
-      <MapContainer
-        center={position}
-        zoom={14.5}
-        style={{ height: '99vh', width: '100%' }}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        {spots.map((spot) => (
+          <SpotMarker key={spot.id} spot={spot} />
+        ))}
       </MapContainer>
-    </>
-    
-  )
-}
+    </div>
+  );
+};
