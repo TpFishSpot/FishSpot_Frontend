@@ -1,7 +1,5 @@
-import type { Key } from "react"
-
 export interface EspecieConNombreComun {
-  id: Key | null | undefined
+  id: string
   nombre_cientifico: string
   descripcion: string
   nombre_comun: string[]
