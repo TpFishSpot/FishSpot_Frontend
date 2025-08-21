@@ -109,12 +109,19 @@ export default function DetalleEspecie() {
               Tipos de pesca recomendados
             </h2>
             {tiposPesca?.length ? (
-              <ul className="list-disc pl-5 text-gray-700">
-                {tiposPesca.map((tipoPesca, i) => <li key={i}>{tipoPesca}</li>)}
-              </ul>
-            ) : (
-              <p className="text-gray-500 italic">No especificados</p>
-            )}
+  <ul className="list-disc pl-5 text-gray-700">
+    {tiposPesca.map(({ id, nombre, descripcion }) => (
+      <li key={id}>
+        <span className="font-semibold">{nombre}</span>
+        {descripcion && (
+          <p className="text-gray-600 text-sm ml-4">{descripcion}</p>
+        )}
+      </li>
+    ))}
+  </ul>
+) : (
+  <p className="text-gray-500 italic">No especificados</p>
+)}
           </div>
         </div>
 
