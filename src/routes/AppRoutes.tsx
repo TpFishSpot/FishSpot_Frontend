@@ -5,6 +5,7 @@ import DetalleSpot from "../components/DetalleSpot";
 import { CrearSpot } from "../components/CrearSpot";
 import { Mapa } from "../components/Mapa";
 import DetalleEspecie from "../components/DetalleEspecie"
+import Login from "../components/Login";
 
 export const AppRoutes: React.FC = () => (
   <BrowserRouter>
@@ -13,6 +14,7 @@ export const AppRoutes: React.FC = () => (
       <Route path="/ver/:id" element={<DetalleSpot />} />
       <Route path="/crear-spot" element={<CrearSpot />} />
       <Route path="/especie/:id" element={<DetalleEspecie/>} />
+      <Route path="/login" element={<Login/>} />
     </Routes>
   </BrowserRouter>
 );
