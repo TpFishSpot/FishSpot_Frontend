@@ -4,6 +4,7 @@ export interface NombreEspecie {
 }
 
 export interface Especie {
+  id: string;
   idEspecie: string;
   nombreCientifico: string;
   descripcion: string;

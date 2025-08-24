@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import apiFishSpot from "../api/apiFishSpot";
+import type { EspecieConNombreComun } from "../modelo/EspecieConNombreComun";
+import type { Carnada } from "../modelo/Carnada";
+import type { TipoPesca } from "../modelo/TipoPesca";
 
 export function useCrearSpot() {
   const location = useLocation();
   const state = location.state as { lat: number; lng: number } | null;
   const navigate = useNavigate();
-
 
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -16,16 +18,50 @@ export function useCrearSpot() {
   const [isLoading, setIsLoading] = useState(false);
 
 
+  const [especies, setEspecies] = useState<EspecieConNombreComun[]>([]);
+  const [todasEspecies, setTodasEspecies] = useState<EspecieConNombreComun[]>([]);
+  const [carnadas, setCarnadas] = useState<Carnada[]>([]);
+  const [tiposPesca, setTiposPesca] = useState<TipoPesca[]>([]);
+
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains("dark"));
 
+  
+  useEffect(() => {
+    const fetchEspecies = async () => {
+      try {
+        const res = await apiFishSpot.get<EspecieConNombreComun[]>("/especie");
+        setTodasEspecies(res.data);
+      } catch (err) {
+        console.error("Error cargando especies", err);
+      }
+    };
+    fetchEspecies();
+  }, []);
 
-  useState(() => {
+  const addEspecie = (esp: EspecieConNombreComun): void => {
+    if (!especies.find(e => e.id === esp.id)) {
+      setEspecies([...especies, esp]);
+    }
+  };
+
+  const removeEspecie = (id: string) => {
+    setEspecies(especies.filter(e => e.id !== id));
+  };
+
+  const handleCarnadaChange = (nuevasCarnadas: Carnada[]) => {
+    setCarnadas(nuevasCarnadas);
+  };
+
+  const handleTipoPescaChange = (nuevosTipos: TipoPesca[]) => {
+    setTiposPesca(nuevosTipos);
+  };
+
+  useEffect(() => {
     const root = document.documentElement;
     const observer = new MutationObserver(() => setIsDark(root.classList.contains("dark")));
     observer.observe(root, { attributes: true, attributeFilter: ["class"] });
     return () => observer.disconnect();
-  });
-
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -39,7 +75,6 @@ export function useCrearSpot() {
     setImagen(null);
     setImagePreview(null);
   };
-
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -71,6 +106,21 @@ export function useCrearSpot() {
     formData.append("idUsuarioActualizo", "usuario1");
     if (imagen) formData.append("imagen", imagen);
 
+   
+    if (especies.length > 0) {
+      formData.append("especies", JSON.stringify(especies.map(e => e.id)));
+    }
+    if (carnadas.length > 0) {
+      const carnadaData = carnadas.map(c => ({
+        idEspecie: especies[0]?.id || "",
+        idCarnada: c.idCarnada
+      }));
+      formData.append("carnadas", JSON.stringify(carnadaData));
+    }
+    if (tiposPesca.length > 0) {
+      formData.append("tiposPesca", JSON.stringify(tiposPesca.map(t => t.id)));
+    }
+
     try {
       await apiFishSpot.post("/spot", formData, { headers: { "Content-Type": "multipart/form-data" } });
       navigate("/", { state: { message: "¡Spot creado exitosamente!" } });
@@ -97,6 +147,15 @@ export function useCrearSpot() {
     isDark,
     lat: state?.lat,
     lng: state?.lng,
-    navigate
+    navigate,
+    especies,
+    setEspecies,
+    todasEspecies,
+    addEspecie,
+    removeEspecie,
+    carnadas,
+    setCarnadas: handleCarnadaChange,
+    tiposPesca,
+    setTiposPesca: handleTipoPescaChange,
   };
 }

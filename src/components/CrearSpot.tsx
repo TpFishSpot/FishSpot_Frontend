@@ -1,12 +1,19 @@
 import { ArrowLeft, Upload, MapPin, Loader2, Camera } from "lucide-react";
 import { useCrearSpot } from "../hooks/useCrearSpot";
+import ListaEspeciesSeleccion from "./ListaEspeciesSeleccion";
+import SeleccionCarnadaTipoPesca from "./SeleccionCarnadaTipoPesca";
 
 export function CrearSpot() {
   const {
-    nombre, setNombre, descripcion, setDescripcion,
+    nombre, setNombre,
+    descripcion, setDescripcion,
     imagePreview, handleImageChange, clearImage,
     errors, isLoading, handleSubmit,
-    lat, lng, navigate
+    lat, lng, navigate,
+    especies, addEspecie, removeEspecie,
+    todasEspecies,
+    carnadas, setCarnadas,
+    tiposPesca, setTiposPesca
   } = useCrearSpot();
 
   return (
@@ -40,6 +47,7 @@ export function CrearSpot() {
         )}
 
         <form onSubmit={handleSubmit} className="bg-card rounded-xl shadow-lg p-6 space-y-6">
+        
           <div className="space-y-2">
             <label htmlFor="nombre" className="block text-sm font-semibold text-card-foreground">Nombre del Spot *</label>
             <input
@@ -66,6 +74,28 @@ export function CrearSpot() {
             {errors.descripcion && <p className="text-destructive text-sm">{errors.descripcion}</p>}
           </div>
 
+          
+         <div className="space-y-2">
+        <label className="block text-sm font-semibold text-card-foreground">Especies capturadas *</label>
+        <ListaEspeciesSeleccion
+        todasEspecies={todasEspecies}
+        especiesSeleccionadas={especies}
+        addEspecie={addEspecie}
+        removeEspecie={removeEspecie}
+        />
+      </div>
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-card-foreground">Carnadas y técnicas de pesca</label>
+        <SeleccionCarnadaTipoPesca
+          especiesSeleccionadas={especies}
+          carnadasSeleccionadas={carnadas}
+          tiposPescaSeleccionados={tiposPesca}
+          onCarnadaChange={setCarnadas}
+          onTipoPescaChange={setTiposPesca}
+        />
+      </div>
+
+          
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-card-foreground">Imagen del Spot</label>
             <div className="space-y-4">
