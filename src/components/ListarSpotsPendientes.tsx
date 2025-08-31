@@ -1,50 +1,105 @@
 import React, { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import type { Spot } from "../modelo/Spot"
-import { baseApi } from "../api/apiFishSpot"
+import apiFishSpot from "../api/apiFishSpot"
+import { useAuth } from "../contexts/AuthContext"
+import { useUserRoles } from "../hooks/useUserRoles"
+import NavigationBar from "./NavigationBar"
 
 export const ListaPendientes: React.FC = () => {
   const [spots, setSpots] = useState<Spot[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+  const { user } = useAuth();
+  const { isModerator, loading: rolesLoading } = useUserRoles();
+  const navigate = useNavigate();
 
   const cargarPendientes = async () => {
-    try {
-      setLoading(true)
-      const res = await fetch(`${baseApi}/spot/esperando`)
-      const data = await res.json()
-      setSpots(data)
-    } catch (error) {
-      console.error("Error al cargar spots pendientes:", error)
-    } finally {
-      setLoading(false)
+    if (!user) {
+      setError("Debes iniciar sesión para ver los spots pendientes");
+      return;
     }
-  }
+
+    try {
+      setLoading(true);
+      setError("");
+      const res = await apiFishSpot.get("/spot/esperando");
+      setSpots(res.data);
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        setError("No tienes permisos para ver los spots pendientes");
+      } else {
+        setError("Error al cargar los spots pendientes");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    cargarPendientes()
-  }, [])
+    cargarPendientes();
+  }, [user]);
 
   const aprobar = async (id: string) => {
-    await fetch(`${baseApi}/spot/${id}/aprobar`, { method: "PATCH" })
-    setSpots(spots.filter((s) => s.id !== id))
-  }
+    try {
+      await apiFishSpot.patch(`/spot/${id}/aprobar`);
+      setSpots(spots.filter((s) => s.id !== id));
+    } catch (error) {
+      alert("Error al aprobar el spot");
+    }
+  };
 
   const rechazar = async (id: string) => {
-    await fetch(`${baseApi}/spot/${id}/rechazar`, { method: "PATCH" })
-    setSpots(spots.filter((s) => s.id !== id))
-  }
+    try {
+      await apiFishSpot.patch(`/spot/${id}/rechazar`);
+      setSpots(spots.filter((s) => s.id !== id));
+    } catch (error) {
+      alert("Error al rechazar el spot");
+    }
+  };
 
   const verEnMapa = (spot: Spot) => {
-  const [lng, lat] = spot.ubicacion.coordinates
+    const [lng, lat] = spot.ubicacion.coordinates;
     window.open(
       `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`,
       "_blank"
-    )
+    );
+  };
+
+  if (!user || rolesLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (loading) return <p>Cargando spots pendientes...</p>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+        <NavigationBar />
+        <div className="container mx-auto p-6">
+          <div className="bg-red-50 border border-red-200 text-red-600 px-6 py-4 rounded-lg">
+            <h2 className="text-lg font-semibold mb-2">Error</h2>
+            <p>{error}</p>
+            <button
+              onClick={() => navigate('/')}
+              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition"
+            >
+              Volver al mapa
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <NavigationBar />
 
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">

@@ -1,41 +1,57 @@
-import { useState, useEffect } from "react";
-import { Fish, FishOff } from "lucide-react";
-import type { EspecieConNombreComun } from "../modelo/EspecieConNombreComun";
-import type { Carnada } from "../modelo/Carnada";
-import type { TipoPesca } from "../modelo/TipoPesca";
-import apiFishSpot from "../api/apiFishSpot";
+import React, { useState, useEffect } from 'react';
+import { FishOff, Fish } from 'lucide-react';
+import apiFishSpot from '../api/apiFishSpot';
 
-interface Props {
-  especiesSeleccionadas: EspecieConNombreComun[];
+interface Especie {
+  id: string;
+  nombre_cientifico: string;
+  nombre_comun: string[];
+  descripcion?: string;
+  imagen?: string;
+}
+
+interface Carnada {
+  idCarnada: string;
+  nombre: string;
+  tipo: string;
+  descripcion?: string;
+}
+
+interface TipoPesca {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+}
+
+interface SeleccionCarnadaTipoPescaProps {
+  especiesSeleccionadas: Especie[];
   carnadasSeleccionadas: Carnada[];
   tiposPescaSeleccionados: TipoPesca[];
   onCarnadaChange: (carnadas: Carnada[]) => void;
   onTipoPescaChange: (tipos: TipoPesca[]) => void;
 }
 
-export default function SeleccionCarnadaTipoPesca({
+export function SeleccionCarnadaTipoPesca({
   especiesSeleccionadas,
   carnadasSeleccionadas,
   tiposPescaSeleccionados,
   onCarnadaChange,
-  onTipoPescaChange
-}: Props) {
+  onTipoPescaChange,
+}: SeleccionCarnadaTipoPescaProps) {
   const [carnadasDisponibles, setCarnadasDisponibles] = useState<Carnada[]>([]);
   const [tiposPescaDisponibles, setTiposPescaDisponibles] = useState<TipoPesca[]>([]);
   const [cargandoCarnadas, setCargandoCarnadas] = useState(false);
   const [cargandoTipos, setCargandoTipos] = useState(false);
 
   useEffect(() => {
-    const cargarDatos = async () => {
-      if (especiesSeleccionadas.length === 0) {
-        setCarnadasDisponibles([]);
-        setTiposPescaDisponibles([]);
-        onCarnadaChange([]);
-        onTipoPescaChange([]);
-        return;
-      }
+    if (especiesSeleccionadas.length === 0) {
+      setCarnadasDisponibles([]);
+      setTiposPescaDisponibles([]);
+      return;
+    }
 
- 
+    const cargarDatos = async () => {
+      // Cargar carnadas
       setCargandoCarnadas(true);
       try {
         const carnadasPromesas = especiesSeleccionadas.map(esp =>
@@ -43,7 +59,6 @@ export default function SeleccionCarnadaTipoPesca({
         );
         const respuestasCarnadas = await Promise.all(carnadasPromesas);
         
-      
         const todasCarnadas = respuestasCarnadas.flatMap(resp => resp.data);
         const carnadasUnicas = Array.from(
           new Map(todasCarnadas.map(c => [c.idCarnada, c])).values()
@@ -51,11 +66,13 @@ export default function SeleccionCarnadaTipoPesca({
         
         setCarnadasDisponibles(carnadasUnicas);
       } catch (error) {
+        console.error("Error cargando carnadas:", error);
+        setCarnadasDisponibles([]);
       } finally {
         setCargandoCarnadas(false);
       }
 
-
+      // Cargar tipos de pesca
       setCargandoTipos(true);
       try {
         const tiposPromesas = especiesSeleccionadas.map(esp =>
@@ -70,6 +87,8 @@ export default function SeleccionCarnadaTipoPesca({
         
         setTiposPescaDisponibles(tiposUnicos);
       } catch (error) {
+        console.error("Error cargando tipos de pesca:", error);
+        setTiposPescaDisponibles([]);
       } finally {
         setCargandoTipos(false);
       }
@@ -108,7 +127,7 @@ export default function SeleccionCarnadaTipoPesca({
 
   return (
     <div className="space-y-6">
-  
+      {/* Carnadas */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <FishOff className="w-5 h-5 text-primary" />
@@ -183,6 +202,7 @@ export default function SeleccionCarnadaTipoPesca({
           )}
         </div>
         
+        {/* Botón adicional para agregar carnada incluso si ya hay carnadas */}
         {carnadasDisponibles.length > 0 && !cargandoCarnadas && (
           <div className="text-center mt-2">
             <button
@@ -198,6 +218,7 @@ export default function SeleccionCarnadaTipoPesca({
         )}
       </div>
 
+      {/* Tipos de Pesca */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Fish className="w-5 h-5 text-primary" />
@@ -274,6 +295,7 @@ export default function SeleccionCarnadaTipoPesca({
           )}
         </div>
         
+        {/* Botón adicional para agregar tipo de pesca incluso si ya hay tipos */}
         {tiposPescaDisponibles.length > 0 && !cargandoTipos && (
           <div className="text-center mt-2">
             <button

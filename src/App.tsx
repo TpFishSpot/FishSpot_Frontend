@@ -7,8 +7,10 @@ import { ThemeToggle } from "./components/theme-toggle"
 function App() {
   return (
     <ThemeProvider>
-      <AppRoutes />
-      <ThemeToggle />
+      <div className="min-h-screen">
+        <AppRoutes />
+        <ThemeToggle />
+      </div>
     </ThemeProvider>
   )
 }

@@ -25,7 +25,6 @@ export function useDetalleSpot() {
         const res = await apiFishSpot.get(`/spot/${idSpot}`)
         setSpot(res.data)
       } catch (err) {
-        console.error("Error fetching spot:", err)
         setError("No se pudo cargar el spot")
       } finally {
         setCargando(false)
@@ -46,7 +45,6 @@ export function useDetalleSpot() {
           })),
         )
       } catch (err) {
-        console.error("Error fetching especies:", err)
         setEspecies([])
       } finally {
         setCargandoEspecies(false)
@@ -59,7 +57,6 @@ export function useDetalleSpot() {
         const res = await apiFishSpot.get(`/spot/${idSpot}/tipoPesca`)
         setTiposPesca(res.data.map((item: any) => item.tipoPesca))
       } catch (err) {
-        console.error("Error fetching tipos de pesca:", err)
         setTiposPesca([])
       } finally {
         setCargandoTiposPesca(false)
