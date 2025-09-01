@@ -37,5 +37,7 @@ export const AppRoutes: React.FC = () => (
     />
       <Route path="/login" element={<Login/>} />
       <Route path="/registro" element={<Register/>}/>
+      <Route path="/especies-guide" element={<GuiaEspecies/>} />
+      <Route path="/mis-capturas" element={<MisCapturas/>} />
     </Routes>
 );

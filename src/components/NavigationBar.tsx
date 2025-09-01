@@ -176,7 +176,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
 
                     <button
                       onClick={() => {
-                        navigate("/my-catches")
+                        navigate("/mis-capturas")
                         toggleMenu()
                       }}
                       className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
@@ -189,7 +189,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
 
                 <button
                   onClick={() => {
-                    navigate("/species-guide")
+                    navigate("/especies-guide")
                     toggleMenu()
                   }}
                   className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
