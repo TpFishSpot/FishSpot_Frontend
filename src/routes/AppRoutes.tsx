@@ -9,12 +9,16 @@ import { ListaPendientes } from "../components/ListarSpotsPendientes";
 import Login from "../components/Login";
 import Register from "../components/Register";
 import ProtectedRoute from "../components/ProtectedRoute";
+import GuiaEspecies from "../components/GuiaEspecies";
+import MisCapturas from "../components/MisCapturas";
 
 export const AppRoutes: React.FC = () => (
-    <Routes>
-      <Route path="/" element={<Mapa />} /> 
-      <Route path="/ver/:id" element={<DetalleSpot />} />
-      <Route 
+  <Routes>
+    <Route path="/login" element={<Login />} />
+    <Route path="/" element={<Mapa />} /> 
+    <Route path="/ver/:id" element={<DetalleSpot />} />
+    <Route path="/especie/:id" element={<DetalleEspecie />} />
+    <Route 
       path="/crear-spot" 
       element={
         <ProtectedRoute>

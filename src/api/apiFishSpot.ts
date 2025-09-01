@@ -5,7 +5,7 @@ export const baseApi = import.meta.env.VITE_API_BASE_URL || 'http://localhost:30
 
 const apiFishSpot = axios.create({
   baseURL: baseApi,
-  timeout: 30000, // Aumentado a 30 segundos temporalmente
+  timeout: 30000, 
 });
 
 apiFishSpot.interceptors.request.use(
