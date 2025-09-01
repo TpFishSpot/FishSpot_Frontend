@@ -4,11 +4,14 @@ import apiFishSpot from "../api/apiFishSpot";
 import type { EspecieConNombreComun } from "../modelo/EspecieConNombreComun";
 import type { Carnada } from "../modelo/Carnada";
 import type { TipoPesca } from "../modelo/TipoPesca";
+import { useAuth } from "../contexts/AuthContext";
+import { auth } from "../auth/AuthFirebase";
 
 export function useCrearSpot() {
   const location = useLocation();
   const state = location.state as { lat: number; lng: number } | null;
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -32,7 +35,6 @@ export function useCrearSpot() {
         const res = await apiFishSpot.get<EspecieConNombreComun[]>("/especie");
         setTodasEspecies(res.data);
       } catch (err) {
-        console.error("Error cargando especies", err);
       }
     };
     fetchEspecies();
@@ -97,13 +99,19 @@ export function useCrearSpot() {
     }
 
     setIsLoading(true);
+    if (!user) {
+      alert("Debes iniciar sesión para crear un spot");
+      navigate("/login");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("nombre", nombre.trim());
     formData.append("descripcion", descripcion.trim());
     formData.append("ubicacion", JSON.stringify({ type: "Point", coordinates: [state.lng, state.lat] }));
     formData.append("estado", "Esperando");
-    formData.append("idUsuario", "usuario1");
-    formData.append("idUsuarioActualizo", "usuario1");
+    formData.append("idUsuario", user.uid);
+    formData.append("idUsuarioActualizo", user.uid);
     if (imagen) formData.append("imagen", imagen);
 
    
@@ -122,11 +130,21 @@ export function useCrearSpot() {
     }
 
     try {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Debes estar logueado para crear un spot");
+        navigate("/login");
+        return;
+      }
+      
       await apiFishSpot.post("/spot", formData, { headers: { "Content-Type": "multipart/form-data" } });
       navigate("/", { state: { message: "¡Spot creado exitosamente!" } });
     } catch (err) {
-      console.error(err);
-      alert("Error al crear el spot");
+      if (err instanceof Error) {
+        alert(`Error al crear el spot: ${err.message}`);
+      } else {
+        alert("Error al crear el spot");
+      }
     } finally {
       setIsLoading(false);
     }

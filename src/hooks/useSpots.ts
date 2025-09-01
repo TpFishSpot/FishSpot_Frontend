@@ -15,7 +15,6 @@ export function useSpots() {
         const res = await apiFishSpot.get("/spot")
         setSpots(res.data)
       } catch (err) {
-        console.error("Error fetching spots:", err)
         setError("No se pudieron cargar los spots")
       } finally {
         setCargando(false)

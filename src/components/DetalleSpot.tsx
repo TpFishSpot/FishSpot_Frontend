@@ -26,7 +26,6 @@ export default function DetalleSpot() {
   const manejarVolver = () => window.history.back()
   const manejarEnviarReseña = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log({ calificacion, reseña })
     alert("Funcionalidad de reseñas próximamente disponible")
   }
 

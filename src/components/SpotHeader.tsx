@@ -1,6 +1,7 @@
-import { Fish, MapPin, Heart, Share2 } from "lucide-react"
+import { Fish, MapPin, Heart, Share2, ArrowLeft } from "lucide-react"
 import type { Spot } from "../modelo/Spot"
 import { obtenerCoordenadas, obtenerUrlImagen, obtenerColorEstado } from "../utils/spotUtils"
+import UserMenu from "./usuario/UserMenu"
 
 interface Props {
   spot: Spot
@@ -15,6 +16,20 @@ export default function SpotHeader({ spot, esFavorito, manejarFavorito, manejarC
 
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-2xl mb-8 group">
+      {/* Navigation bar */}
+      <div className="absolute top-0 left-0 right-0 z-20 p-4">
+        <div className="flex justify-between items-center">
+          <button
+            onClick={manejarVolver}
+            className="flex items-center gap-2 px-4 py-2 bg-black/30 text-white rounded-xl font-medium hover:bg-black/50 transition-all duration-300 backdrop-blur-sm"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver
+          </button>
+          <UserMenu />
+        </div>
+      </div>
+
       <div className="relative h-96 md:h-[500px]">
         <img
           src={obtenerUrlImagen(spot.imagenPortada)}
