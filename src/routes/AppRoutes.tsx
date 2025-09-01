@@ -6,11 +6,12 @@ import { CrearSpot } from "../components/CrearSpot";
 import { Mapa } from "../components/Mapa";
 import DetalleEspecie from "../components/DetalleEspecie"
 import { ListaPendientes } from "../components/ListarSpotsPendientes";
-import Login from "../components/Login";
-import Register from "../components/Register";
+import Login from "../components/usuario/Login";
+import Register from "../components/usuario/Register";
 import ProtectedRoute from "../components/ProtectedRoute";
 import GuiaEspecies from "../components/GuiaEspecies";
 import MisCapturas from "../components/MisCapturas";
+import { ListaUsuarios } from "../components/usuario/ListarUsuarios";
 
 export const AppRoutes: React.FC = () => (
   <Routes>
@@ -39,5 +40,11 @@ export const AppRoutes: React.FC = () => (
       <Route path="/registro" element={<Register/>}/>
       <Route path="/especies-guide" element={<GuiaEspecies/>} />
       <Route path="/mis-capturas" element={<MisCapturas/>} />
+      <Route path="/usuarios" element={
+        <ProtectedRoute>
+          <ListaUsuarios/>
+        </ProtectedRoute>
+        } 
+      />
     </Routes>
 );

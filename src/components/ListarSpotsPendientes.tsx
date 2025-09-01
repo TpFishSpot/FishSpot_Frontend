@@ -11,7 +11,7 @@ export const ListaPendientes: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const { user } = useAuth();
-  const { isModerator, loading: rolesLoading } = useUserRoles();
+  const { loading: rolesLoading } = useUserRoles();
   const navigate = useNavigate();
 
   const cargarPendientes = async () => {

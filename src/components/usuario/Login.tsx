@@ -3,9 +3,9 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { useState, useEffect } from "react";
-import { auth, googleProvider } from "../auth/AuthFirebase";
+import { auth, googleProvider } from "../../auth/AuthFirebase";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function Login() {
   const [error, setError] = useState("");

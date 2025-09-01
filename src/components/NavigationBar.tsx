@@ -2,9 +2,10 @@ import type React from "react"
 import { useState } from "react"
 import { MapPin, Plus, Menu, X, Search, User, Settings, HelpCircle, Fish, Sun, Moon, Monitor, Camera } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import UserMenu from "./UserMenu"
+import UserMenu from "./usuario/UserMenu"
 import { useAuth } from "../contexts/AuthContext"
 import { useTheme } from "../contexts/ThemeContext"
+import { useUserRoles } from "../hooks/useUserRoles"
 
 interface NavigationBarProps {
   onCreateSpotClick?: () => void
@@ -18,6 +19,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
   const { theme, setTheme } = useTheme()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const { isModerator } = useUserRoles();
 
   const handleCreateSpot = () => {
     if (!user) {
@@ -98,7 +100,16 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
                 <span className="hidden sm:inline">Crear Spot</span>
               </button>
 
-              {user && (
+              {user && isModerator && (
+                <button
+                  onClick={() => navigate("/usuarios")}
+                  className="flex items-center space-x-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-2 rounded-lg transition font-medium"
+                >
+                  <span className="hidden sm:inline">Usuarios</span>
+                  <span className="sm:hidden">P</span>
+                </button>
+              )}
+              {user && isModerator && (
                 <button
                   onClick={() => navigate("/spots/pendientes")}
                   className="flex items-center space-x-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-2 rounded-lg transition font-medium"

@@ -1,7 +1,7 @@
 import { Fish, MapPin, Heart, Share2, ArrowLeft } from "lucide-react"
 import type { Spot } from "../modelo/Spot"
 import { obtenerCoordenadas, obtenerUrlImagen, obtenerColorEstado } from "../utils/spotUtils"
-import UserMenu from "./UserMenu"
+import UserMenu from "./usuario/UserMenu"
 
 interface Props {
   spot: Spot

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import apiFishSpot from '../api/apiFishSpot';
 
 export interface UserRoles {
   isModerator: boolean;
@@ -10,20 +11,24 @@ export interface UserRoles {
 export const useUserRoles = (): UserRoles & { loading: boolean } => {
   const { user } = useAuth();
   const [roles, setRoles] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserRoles = async () => {
       if (!user) {
         setRoles([]);
+        setLoading(false);
         return;
       }
 
-      setLoading(true);
       try {
-        await user.getIdToken();
-        setRoles(['usuario']);
+        const token = await user.getIdToken();
+        const res = await apiFishSpot.get(`/usuario/${user.uid}/roles`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setRoles(res.data || []);
       } catch (error) {
+        console.error('Error obteniendo roles:', error);
         setRoles([]);
       } finally {
         setLoading(false);

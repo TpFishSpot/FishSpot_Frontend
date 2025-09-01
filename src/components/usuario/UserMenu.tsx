@@ -1,7 +1,7 @@
 import React from 'react';
 import { signOut } from 'firebase/auth';
-import { auth } from '../auth/AuthFirebase';
-import { useAuth } from '../contexts/AuthContext';
+import { auth } from '../../auth/AuthFirebase';
+import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 interface UserMenuProps {
