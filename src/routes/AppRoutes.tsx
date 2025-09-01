@@ -7,15 +7,14 @@ import { Mapa } from "../components/Mapa";
 import DetalleEspecie from "../components/DetalleEspecie"
 import { ListaPendientes } from "../components/ListarSpotsPendientes";
 import Login from "../components/Login";
+import Register from "../components/Register";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 export const AppRoutes: React.FC = () => (
-  <Routes>
-    <Route path="/login" element={<Login />} />
-    <Route path="/" element={<Mapa />} /> 
-    <Route path="/ver/:id" element={<DetalleSpot />} />
-    <Route path="/especie/:id" element={<DetalleEspecie />} />
-    <Route 
+    <Routes>
+      <Route path="/" element={<Mapa />} /> 
+      <Route path="/ver/:id" element={<DetalleSpot />} />
+      <Route 
       path="/crear-spot" 
       element={
         <ProtectedRoute>
@@ -23,7 +22,8 @@ export const AppRoutes: React.FC = () => (
         </ProtectedRoute>
       } 
     />
-    <Route 
+      <Route path="/especie/:id" element={<DetalleEspecie/>} />
+      <Route 
       path="/spots/pendientes" 
       element={
         <ProtectedRoute>
@@ -31,5 +31,7 @@ export const AppRoutes: React.FC = () => (
         </ProtectedRoute>
       } 
     />
-  </Routes>
+      <Route path="/login" element={<Login/>} />
+      <Route path="/registro" element={<Register/>}/>
+    </Routes>
 );
