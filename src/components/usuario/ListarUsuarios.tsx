@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { useUserRoles } from "../../hooks/useUserRoles";
+import { useUserRoles } from "../../hooks/auth/useUserRoles";
 import { useNavigate } from "react-router-dom";
 import type { Usuario } from "../../modelo/Usuario";
 import apiFishSpot from "../../api/apiFishSpot";
-import NavigationBar from "../NavigationBar";
-import UsuarioCard from "./usuarioCard";
+import NavigationBar from "../common/NavigationBar";
+import UsuarioCard from "./UsuarioCard";
 
 export const ListaUsuarios: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -35,7 +35,6 @@ export const ListaUsuarios: React.FC = () => {
       setUsuarios(res.data);
     } catch (err: any) {
       setError("Error al cargar los usuarios");
-      console.log(err);
     } finally {
       setLoading(false);
     }

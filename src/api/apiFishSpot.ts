@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { getAuthToken } from '../auth/authService';
 
-export const baseApi = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+export const baseApi = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const apiFishSpot = axios.create({
   baseURL: baseApi,
-  timeout: 30000, 
+  timeout: 30000,
 });
 
 apiFishSpot.interceptors.request.use(

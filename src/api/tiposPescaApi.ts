@@ -19,7 +19,6 @@ export const obtenerTiposPesca = async (): Promise<TipoPesca[]> => {
       ambiente: tipo.ambiente
     }))
   } catch (error) {
-    console.error('Error obteniendo tipos de pesca:', error)
     throw error
   }
 }
@@ -35,7 +34,6 @@ export const obtenerTipoPescaPorId = async (id: string): Promise<TipoPesca> => {
       ambiente: response.data.ambiente
     }
   } catch (error) {
-    console.error('Error obteniendo tipo de pesca:', error)
     throw error
   }
 }

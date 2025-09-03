@@ -35,9 +35,9 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
     <div className={`relative group ${className}`}>
       <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-muted transition-colors">
         {user.photoURL ? (
-          <img 
-            src={user.photoURL} 
-            alt="Avatar" 
+          <img
+            src={user.photoURL}
+            alt="Avatar"
             className="w-8 h-8 rounded-full"
           />
         ) : (
@@ -52,7 +52,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
           <p className="text-xs text-muted-foreground">{user.email}</p>
         </div>
       </div>
-      
+
       <div className="absolute right-0 top-full mt-1 w-48 bg-background rounded-lg shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[1000]">
         <div className="p-3 border-b border-border">
           <p className="text-sm font-medium text-foreground">

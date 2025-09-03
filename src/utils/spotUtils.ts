@@ -9,7 +9,7 @@ export const obtenerCoordenadas = (spot: Spot) => {
 export const obtenerUrlImagen = (imagenPortada?: string) => {
   if (!imagenPortada) return "/fishing-spot-lake.png"
   if (imagenPortada.startsWith("http")) return imagenPortada
-  return `http://localhost:3000/${imagenPortada.startsWith("/") ? imagenPortada.slice(1) : imagenPortada}`
+  return `apiFishSpot/${imagenPortada.startsWith("/") ? imagenPortada.slice(1) : imagenPortada}`
 }
 
 export const obtenerColorEstado = (estado: string) => {
