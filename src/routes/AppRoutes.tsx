@@ -5,7 +5,7 @@ import DetalleSpot from "../components/spots/DetalleSpot";
 import { CrearSpot } from "../components/spots/CrearSpot";
 import { Mapa } from "../components/mapa/Mapa";
 import DetalleEspecie from "../components/especies/DetalleEspecie"
-import { ListaPendientes } from "../components/spots/ListarSpotsPendientes";
+import { ListaSpots } from "../components/ListarSpots";
 import Login from "../components/usuario/Login";
 import Register from "../components/usuario/Register";
 import ProtectedRoute from "../components/common/ProtectedRoute";
@@ -33,7 +33,7 @@ export const AppRoutes: React.FC = () => (
       path="/spots/pendientes"
       element={
         <ProtectedRoute>
-          <ListaPendientes />
+          <ListaSpots />
         </ProtectedRoute>
       }
     />

@@ -93,7 +93,7 @@ export default defineConfig(({ mode }) => ({
         related_applications: []
       },
       devOptions: {
-        enabled: true
+        enabled: false
       }
     })
   ],
