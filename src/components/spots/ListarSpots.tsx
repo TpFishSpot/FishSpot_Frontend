@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import NavigationBar from "./common/NavigationBar"
-import type { Spot } from "../modelo/Spot"
-import { useAuth } from "../contexts/AuthContext"
-import { useUserRoles } from "../hooks/auth/useUserRoles"
-import apiFishSpot from "../api/apiFishSpot"
+import NavigationBar from "../common/NavigationBar"
+import type { Spot } from "../../modelo/Spot"
+import { useAuth } from "../../contexts/AuthContext"
+import { useUserRoles } from "../../hooks/auth/useUserRoles"
+import apiFishSpot from "../../api/apiFishSpot"
+import { SpotsFilter } from "./SpotsFilter"
+import { SpotCard } from "./Spotcard"
 
 const filtros = [
   { id: "all", name: "Todos" },
@@ -23,10 +25,7 @@ export const ListaSpots: React.FC = () => {
   const navigate = useNavigate()
 
   const cargarSpots = async () => {
-    if (!user) {
-      setError("Debes iniciar sesión para ver los spots")
-      return
-    }
+    if (!user) return setError("Debes iniciar sesión para ver los spots")
 
     try {
       setLoading(true)
@@ -34,11 +33,7 @@ export const ListaSpots: React.FC = () => {
       const res = await apiFishSpot.get("/spot")
       setSpots(res.data)
     } catch (error: any) {
-      if (error.response?.status === 403) {
-        setError("No tienes permisos para ver los spots")
-      } else {
-        setError("Error al cargar los spots")
-      }
+      setError(error.response?.status === 403 ? "No tienes permisos para ver los spots" : "Error al cargar los spots")
     } finally {
       setLoading(false)
     }
@@ -110,9 +105,7 @@ export const ListaSpots: React.FC = () => {
 
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold italic">
-            Spots
-          </h1>
+          <h1 className="text-3xl font-bold italic">Spots</h1>
           <button
             onClick={cargarSpots}
             className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold text-gray-700 dark:text-gray-200"
@@ -123,63 +116,16 @@ export const ListaSpots: React.FC = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-        <div className="flex flex-wrap justify-center gap-2">
-          {filtros.map(f => (
-            <button
-              key={f.id}
-              onClick={() => setSelectedFilter(f.id)}
-              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                selectedFilter === f.id
-                  ? "bg-blue-500 dark:bg-blue-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
-              }`}
-            >
-              {f.name}
-            </button>
-          ))}
-        </div>
-
+        <SpotsFilter filtros={filtros} selectedFilter={selectedFilter} onSelect={setSelectedFilter} />
         {filteredSpots.map(spot => (
-          <div
+          <SpotCard
             key={spot.id}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 cursor-pointer hover:shadow-md transition"
+            spot={spot}
+            onApprove={aprobar}
+            onReject={rechazar}
+            onViewMap={verEnMapa}
             onClick={() => navigate(`/ver/${spot.id}`)}
-          >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold">{spot.nombre}</h2>
-                <p className="text-gray-600 dark:text-gray-300 mt-1">{spot.descripcion}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  Publicado: {spot.fechaPublicacion}
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                {spot.estado === "Esperando" && (
-                  <>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); aprobar(spot.id) }}
-                      className="px-4 py-2 rounded-lg font-semibold bg-green-500 hover:bg-green-600 text-white transition"
-                    >
-                      ✅ Aprobar
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); rechazar(spot.id) }}
-                      className="px-4 py-2 rounded-lg font-semibold bg-red-500 hover:bg-red-600 text-white transition"
-                    >
-                      ❌ Rechazar
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={(e) => { e.stopPropagation(); verEnMapa(spot) }}
-                  className="px-4 py-2 rounded-lg font-semibold bg-blue-500 hover:bg-blue-600 text-white transition"
-                >
-                  🗺️ Ver en mapa
-                </button>
-              </div>
-            </div>
-          </div>
+          />
         ))}
       </div>
     </div>

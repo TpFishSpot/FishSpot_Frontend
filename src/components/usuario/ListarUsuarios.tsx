@@ -42,7 +42,7 @@ export const ListaUsuarios: React.FC = () => {
 
   const hacerModerador = async (id: string) => {
     try {
-      await apiFishSpot.patch(`/usuario/${id}/roles/moderador`);
+      await apiFishSpot.patch(`/usuario/${id}/rol/moderador`);
       await cargarUsuarios();
     } catch (err) {
       alert("Error al asignar rol de moderador");
@@ -55,10 +55,10 @@ export const ListaUsuarios: React.FC = () => {
 
   if (!user || loading || rolesLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando...</p>
+          <p className="text-gray-600 dark:text-gray-300">Cargando...</p>
         </div>
       </div>
     );
@@ -66,10 +66,10 @@ export const ListaUsuarios: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
         <NavigationBar />
         <div className="container mx-auto p-6">
-          <div className="bg-red-50 border border-red-200 text-red-600 px-6 py-4 rounded-lg">
+          <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-300 px-6 py-4 rounded-lg">
             <h2 className="text-lg font-semibold mb-2">Error</h2>
             <p>{error}</p>
             <button
@@ -85,14 +85,16 @@ export const ListaUsuarios: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       <NavigationBar />
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold italic text-gray-900">Lista de Usuarios</h1>
+          <h1 className="text-3xl font-bold italic text-gray-900 dark:text-white">
+            Lista de Usuarios
+          </h1>
           <button
             onClick={cargarUsuarios}
-            className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-semibold text-gray-700"
+            className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold text-gray-700 dark:text-gray-200"
           >
             🔄 Actualizar
           </button>
@@ -101,7 +103,7 @@ export const ListaUsuarios: React.FC = () => {
 
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         {usuarios.length === 0 ? (
-          <p className="text-center text-gray-600 text-lg">
+          <p className="text-center text-gray-600 dark:text-gray-300 text-lg">
             🎉 No hay usuarios registrados
           </p>
         ) : (
