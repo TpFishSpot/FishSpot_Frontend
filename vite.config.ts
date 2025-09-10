@@ -2,13 +2,16 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: mode === 'development' 
+          ? ['**/*.{js,css,html}'] 
+          : ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        skipWaiting: false,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.ngrok-free\.app\/api\/.*/i,
@@ -90,7 +93,7 @@ export default defineConfig({
         related_applications: []
       },
       devOptions: {
-        enabled: true
+        enabled: false
       }
     })
   ],
@@ -102,4 +105,4 @@ export default defineConfig({
       credentials: true
     }
   }
-})
+}))

@@ -31,7 +31,6 @@ export const obtenerEspecies = async (): Promise<Especie[]> => {
       nombresComunes: especie.nombresComunes || []
     }))
   } catch (error) {
-    console.error('Error obteniendo especies:', error)
     throw error
   }
 }
@@ -50,7 +49,6 @@ export const obtenerEspeciePorId = async (id: string): Promise<EspecieDetallada>
       spots: response.data.spots || []
     }
   } catch (error) {
-    console.error('Error obteniendo especie por ID:', error)
     throw error
   }
 }

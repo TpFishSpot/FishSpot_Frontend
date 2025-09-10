@@ -5,11 +5,11 @@ export interface Spot {
   descripcion: string
   ubicacion: {
     type: "Point"
-    coordinates: [number, number] 
+    coordinates: [number, number]
   }
   fechaPublicacion: string
   fechaActualizacion: string
   idUsuario: string
   idUsuarioActualizo: string
   imagenPortada?: string
-} 
+}

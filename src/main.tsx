@@ -6,10 +6,8 @@ import { AuthProvider } from './contexts/AuthContext.tsx'
 import './global.css'
 import { registerSW } from 'virtual:pwa-register'
 
-// Registro mejorado del Service Worker
 registerSW({
   onNeedRefresh() {
-    // Crear notificación personalizada para actualizaciones
     const updateNotification = document.createElement('div')
     updateNotification.innerHTML = `
       <div style="position: fixed; top: 16px; right: 16px; z-index: 9999; background: white; border: 1px solid #0d9488; border-radius: 8px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 320px;">
@@ -33,7 +31,6 @@ registerSW({
     document.body.appendChild(updateNotification)
   },
   onOfflineReady() {
-    // Mostrar notificación de que la app funciona offline
     const offlineNotification = document.createElement('div')
     offlineNotification.innerHTML = `
       <div style="position: fixed; bottom: 16px; left: 16px; right: 16px; z-index: 9999; background: #059669; color: white; border-radius: 8px; padding: 12px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
@@ -44,13 +41,10 @@ registerSW({
       </div>
     `
     document.body.appendChild(offlineNotification)
-    
-    // Remover la notificación después de 3 segundos
+
     setTimeout(() => {
       offlineNotification.remove()
     }, 3000)
-    
-    console.log("La app ya funciona offline 🚀")
   }
 })
 

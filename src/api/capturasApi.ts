@@ -54,7 +54,6 @@ export const obtenerCapturas = async (usuarioId?: string): Promise<Captura[]> =>
     const response = await apiFishSpot.get(url)
     return response.data
   } catch (error) {
-    console.error('Error obteniendo capturas:', error)
     throw error
   }
 }
@@ -84,10 +83,9 @@ export const crearCaptura = async (captura: NuevaCapturaData): Promise<Captura> 
         'Content-Type': 'multipart/form-data',
       },
     })
-    
+
     return response.data
   } catch (error) {
-    console.error('Error creando captura:', error)
     throw error
   }
 }
@@ -113,10 +111,9 @@ export const actualizarCaptura = async (id: string, captura: Partial<NuevaCaptur
         'Content-Type': 'multipart/form-data',
       },
     })
-    
+
     return response.data
   } catch (error) {
-    console.error('Error actualizando captura:', error)
     throw error
   }
 }
@@ -125,7 +122,6 @@ export const eliminarCaptura = async (id: string): Promise<void> => {
   try {
     await apiFishSpot.delete(`/capturas/${id}`)
   } catch (error) {
-    console.error('Error eliminando captura:', error)
     throw error
   }
 }
@@ -136,7 +132,6 @@ export const obtenerEstadisticas = async (usuarioId?: string): Promise<Estadisti
     const response = await apiFishSpot.get(url)
     return response.data
   } catch (error) {
-    console.error('Error obteniendo estadísticas:', error)
     throw error
   }
 }
@@ -151,10 +146,9 @@ export const subirFotoCaptura = async (foto: File): Promise<{ url: string }> => 
         'Content-Type': 'multipart/form-data',
       },
     })
-    
+
     return response.data
   } catch (error) {
-    console.error('Error subiendo foto:', error)
     throw error
   }
 }
