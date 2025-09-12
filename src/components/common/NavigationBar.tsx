@@ -90,7 +90,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
               </form>
             </div>
 
-            {}
             <div className="flex items-center space-x-3">
               <button
                 onClick={handleCreateSpot}
@@ -220,7 +219,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
                   <span className="text-foreground">Configuración</span>
                 </button>
 
-                {}
                 <div className="border-t border-border my-2 pt-2">
                   <div className="px-3 py-2 text-xs font-semibold text-foreground uppercase tracking-wider">
                     Tema

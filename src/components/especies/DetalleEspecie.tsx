@@ -1,13 +1,22 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { useDetalleEspecie } from "../../hooks/especies/useDetalleEspecie"
 import { baseApi } from "../../api/apiFishSpot"
+import { obtenerNombreMostrar } from "../../utils/especiesUtils"
 
 export default function DetalleEspecie() {
   const { especie, carnadas, tiposPesca, cargando, error } = useDetalleEspecie()
   const [esFavorito, setEsFavorito] = useState(false)
+  const navigate = useNavigate()
 
   const manejarFavorito = () => setEsFavorito(!esFavorito)
   const manejarVolver = () => window.history.back()
+  
+  const irAlMapaConFiltro = () => {
+    if (!especie) return
+    const nombreFiltro = obtenerNombreMostrar(especie)
+    navigate(`/mapa?especie=${encodeURIComponent(nombreFiltro)}`)
+  }
 
   if (cargando) return <p>Cargando...</p>
   if (error || !especie) return <p>{error || "Especie no encontrada"}</p>
@@ -21,6 +30,12 @@ export default function DetalleEspecie() {
             {especie.nombre_cientifico}
           </h1>
           <div className="flex gap-3">
+            <button
+              onClick={irAlMapaConFiltro}
+              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors flex items-center gap-2"
+            >
+              📍 Dónde pescar
+            </button>
             <button
               onClick={manejarFavorito}
               className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
