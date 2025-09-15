@@ -3,6 +3,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../../auth/AuthFirebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useUsuario } from '../../hooks/usuario/useUsuario';
 
 interface UserMenuProps {
   className?: string;
@@ -10,17 +11,18 @@ interface UserMenuProps {
 
 const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   const { user } = useAuth();
+  const { usuario, loading } = useUsuario();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       navigate('/login');
-    } catch (error) {
+    } catch (error) { 
     }
   };
 
-  if (!user) {
+  if (!user || loading) {
     return (
       <button
         onClick={() => navigate('/login')}
@@ -30,36 +32,41 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
       </button>
     );
   }
+  const nombre = usuario?.nombre || user.displayName || 'Usuario';
+  const email = usuario?.email || user.email || '';
+  const foto = usuario?.foto || user.photoURL || '';
 
   return (
     <div className={`relative group ${className}`}>
       <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-muted transition-colors">
-        {user.photoURL ? (
+        {foto ? (
           <img
-            src={user.photoURL}
+            src={foto}
             alt="Avatar"
             className="w-8 h-8 rounded-full"
           />
         ) : (
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-semibold">
-            {user.email?.[0]?.toUpperCase()}
+            {email?.[0]?.toUpperCase()}
           </div>
         )}
         <div className="hidden md:block">
-          <p className="text-sm font-medium text-foreground">
-            {user.displayName || user.email?.split('@')[0]}
-          </p>
-          <p className="text-xs text-muted-foreground">{user.email}</p>
+          <p className="text-sm font-medium text-foreground">{nombre}</p>
+          <p className="text-xs text-muted-foreground">{email}</p>
         </div>
       </div>
 
       <div className="absolute right-0 top-full mt-1 w-48 bg-background rounded-lg shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[1000]">
         <div className="p-3 border-b border-border">
-          <p className="text-sm font-medium text-foreground">
-            {user.displayName || 'Usuario'}
-          </p>
-          <p className="text-xs text-muted-foreground">{user.email}</p>
+          <p className="text-sm font-medium text-foreground">{nombre}</p>
+          <p className="text-xs text-muted-foreground">{email}</p>
         </div>
+        <button
+          onClick={() => navigate('/profile')}
+          className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition"
+        >
+          Editar perfil
+        </button>
         <button
           onClick={handleLogout}
           className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition"
