@@ -3,6 +3,7 @@ import { X, Camera, Upload, Calendar, MapPin, Ruler, Weight, Fish, Target } from
 import { useEspecies } from '../../hooks/especies/useEspecies';
 import { useCarnadas } from '../../hooks/carnadas/useCarnadas';
 import { useTiposPesca } from '../../hooks/carnadas/useTiposPesca';
+import { obtenerNombreMostrar } from '../../utils/especiesUtils';
 
 interface NuevaCapturaData {
   especieId: string
@@ -73,7 +74,7 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
       if (especie) {
         setFormData(prev => ({
           ...prev,
-          especieNombre: especie.nombresComunes?.[0]?.nombre || especie.nombreCientifico
+          especieNombre: obtenerNombreMostrar(especie)
         }))
       }
     }
@@ -203,9 +204,7 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
             )}
           </div>
 
-          {}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center space-x-2">
                 <Fish className="w-4 h-4" />
@@ -223,13 +222,12 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
                 </option>
                 {especies.map(especie => (
                   <option key={especie.id} value={especie.id}>
-                    {especie.nombresComunes?.[0]?.nombre || especie.nombreCientifico}
+                    {obtenerNombreMostrar(especie)}
                   </option>
                 ))}
               </select>
             </div>
 
-            {}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center space-x-2">
                 <Target className="w-4 h-4" />
@@ -253,7 +251,6 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
               </select>
             </div>
 
-            {}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center space-x-2">
                 <Calendar className="w-4 h-4" />
@@ -267,7 +264,6 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
               />
             </div>
 
-            {}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Hora de captura
@@ -280,7 +276,6 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
               />
             </div>
 
-            {}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center space-x-2">
                 <Weight className="w-4 h-4" />
@@ -296,7 +291,6 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
               />
             </div>
 
-            {}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center space-x-2">
                 <Ruler className="w-4 h-4" />
@@ -312,7 +306,6 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
             </div>
           </div>
 
-          {}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground flex items-center space-x-2">
               <MapPin className="w-4 h-4" />
@@ -328,7 +321,6 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
             />
           </div>
 
-          {}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground flex items-center space-x-2">
               <Fish className="w-4 h-4" />
@@ -356,7 +348,6 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
             </select>
           </div>
 
-          {}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               Clima
@@ -375,7 +366,6 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
             </select>
           </div>
 
-          {}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
               Notas adicionales
@@ -389,7 +379,6 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
             />
           </div>
 
-          {}
           <div className="flex justify-end space-x-3 pt-4 border-t border-border">
             <button
               type="button"

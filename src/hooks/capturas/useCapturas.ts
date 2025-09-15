@@ -9,9 +9,7 @@ export const useCapturas = () => {
   const [estadisticas, setEstadisticas] = useState<EstadisticasCapturas>({
     totalCapturas: 0,
     especiesCapturadas: 0,
-    pesoTotal: 0,
-    capturasPorMes: 0,
-    especieFavorita: ''
+    capturasPorMes: {}
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>('')
@@ -22,12 +20,20 @@ export const useCapturas = () => {
     try {
       setLoading(true)
       setError('')
-      const [capturasData, estadisticasData] = await Promise.all([
-        obtenerCapturas(),
-        obtenerEstadisticas()
-      ])
+      
+      const capturasData = await obtenerCapturas()
       setCapturas(capturasData)
-      setEstadisticas(estadisticasData)
+      
+      try {
+        const estadisticasData = await obtenerEstadisticas()
+        setEstadisticas(estadisticasData)
+      } catch (statsError) {
+        setEstadisticas({
+          totalCapturas: capturasData.length,
+          especiesCapturadas: new Set(capturasData.map(c => c.especieId)).size,
+          capturasPorMes: {}
+        })
+      }
     } catch (err) {
       setError('Error cargando capturas')
     } finally {
