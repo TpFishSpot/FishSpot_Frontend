@@ -1,15 +1,28 @@
 import React from "react"
 import type { Spot } from "../../modelo/Spot"
+import { BotonBorrar } from "../botones/Botones"
 
 interface Props {
   spot: Spot
+  idUsuarioActivo: string
   onApprove: (id: string) => void
   onReject: (id: string) => void
+  onDelete: (id: string) => void
   onViewMap: (spot: Spot) => void
   onClick: () => void
 }
 
-export const SpotCard: React.FC<Props> = ({ spot, onApprove, onReject, onViewMap, onClick }) => {
+export const SpotCard: React.FC<Props> = ({
+  spot,
+  idUsuarioActivo,
+  onApprove,
+  onReject,
+  onDelete,
+  onViewMap,
+  onClick
+}) => {
+  const puedeBorrar = spot.estado === "Esperando" && spot.idUsuario === idUsuarioActivo;
+  
   return (
     <div
       className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 cursor-pointer hover:shadow-md transition"
@@ -40,6 +53,9 @@ export const SpotCard: React.FC<Props> = ({ spot, onApprove, onReject, onViewMap
                 ❌ Rechazar
               </button>
             </>
+          )}
+          {puedeBorrar && (
+            <BotonBorrar id={spot.id} onDelete={onDelete}/>
           )}
           <button
             onClick={(e) => { e.stopPropagation(); onViewMap(spot) }}

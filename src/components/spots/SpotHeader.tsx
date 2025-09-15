@@ -2,6 +2,9 @@ import { Fish, MapPin, Heart, Share2, ArrowLeft } from "lucide-react"
 import type { Spot } from "../../modelo/Spot"
 import { obtenerCoordenadas, obtenerUrlImagen, obtenerColorEstado } from "../../utils/spotUtils"
 import UserMenu from "../usuario/UserMenu"
+import { BotonBorrar } from "../botones/Botones"
+import apiFishSpot from "../../api/apiFishSpot"
+import { useAuth } from "../../contexts/AuthContext"
 
 const formatNumber = (num: number | undefined | null, decimals = 1): string => {
   return (num || 0).toFixed(decimals);
@@ -17,7 +20,9 @@ interface Props {
 
 export default function SpotHeader({ spot, esFavorito, manejarFavorito, manejarCompartir, manejarVolver }: Props) {
   const coordenadas = obtenerCoordenadas(spot)
-
+  const { user } = useAuth()
+  const puedeBorrar = spot.estado === "Esperando" && spot.idUsuario === user?.uid;
+  
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-2xl mb-8 group">
       {}
@@ -85,7 +90,19 @@ export default function SpotHeader({ spot, esFavorito, manejarFavorito, manejarC
               <Heart className={`w-4 h-4 ${esFavorito ? "fill-current" : ""}`} />
               {esFavorito ? "Favorito" : "Agregar"}
             </button>
-
+            {puedeBorrar && (
+              <BotonBorrar id={spot.id} onDelete={async () => {
+                  try {
+                    await apiFishSpot.delete(`/spot/${spot.id}`);
+                    alert('Spot eliminado');
+                    manejarVolver();
+                  } catch (error) {
+                    console.error(error);
+                    alert('Error al eliminar el spot');
+                  }
+                }}
+              />
+            )}
             <button
               onClick={manejarCompartir}
               className="flex items-center gap-2 px-4 py-2 bg-white/20 text-white rounded-xl font-medium hover:bg-white/30 transition-all duration-300 backdrop-blur-sm"

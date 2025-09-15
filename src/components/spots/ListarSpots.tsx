@@ -15,7 +15,11 @@ const filtros = [
   { id: "Rechazado", name: "Rechazados" },
 ]
 
-export const ListaSpots: React.FC = () => {
+type ListaSpotsProps = {
+  idUsuario?: string
+}
+
+export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
   const [spots, setSpots] = useState<Spot[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>("")
@@ -30,10 +34,16 @@ export const ListaSpots: React.FC = () => {
     try {
       setLoading(true)
       setError("")
-      const res = await apiFishSpot.get("/spot")
+      const url = idUsuario ? `/spot?idUsuario=${idUsuario}` : '/spot'
+      console.log(url);
+      const res = await apiFishSpot.get(url)
       setSpots(res.data)
     } catch (error: any) {
-      setError(error.response?.status === 403 ? "No tienes permisos para ver los spots" : "Error al cargar los spots")
+      setError(
+        error.response?.status === 403
+          ? "No tienes permisos para ver los spots"
+          : "Error al cargar los spots"
+      )
     } finally {
       setLoading(false)
     }
@@ -41,7 +51,7 @@ export const ListaSpots: React.FC = () => {
 
   useEffect(() => {
     cargarSpots()
-  }, [user])
+  }, [user, idUsuario])
 
   const aprobar = async (id: string) => {
     try {
@@ -61,12 +71,23 @@ export const ListaSpots: React.FC = () => {
     }
   }
 
+  const borrar = async (id: string) => {
+    try {
+      await apiFishSpot.delete(`/spot/${id}`)
+      setSpots(spots.filter(s => s.id !== id))
+    } catch {
+      alert("Error al borrar el spot")
+    }
+  }
+
   const verEnMapa = (spot: Spot) => {
     const [lng, lat] = spot.ubicacion.coordinates
     window.open(`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`, "_blank")
   }
 
-  const filteredSpots = spots.filter(s => selectedFilter === "all" || s.estado === selectedFilter)
+  const filteredSpots = spots.filter(
+    s => selectedFilter === "all" || s.estado === selectedFilter
+  )
 
   if (!user || rolesLoading || loading) {
     return (
@@ -121,8 +142,10 @@ export const ListaSpots: React.FC = () => {
           <SpotCard
             key={spot.id}
             spot={spot}
+            idUsuarioActivo={user.uid}
             onApprove={aprobar}
             onReject={rechazar}
+            onDelete={borrar}
             onViewMap={verEnMapa}
             onClick={() => navigate(`/ver/${spot.id}`)}
           />

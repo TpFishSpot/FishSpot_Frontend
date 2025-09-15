@@ -13,8 +13,13 @@ import GuiaEspecies from "../components/especies/GuiaEspecies";
 import MisCapturas from "../components/capturas/MisCapturas";
 import { ListaUsuarios } from "../components/usuario/ListarUsuarios";
 import ListaCarnadas from "../components/carnadas/ListaCarnadas";
+import { useAuth } from "../contexts/AuthContext";
+import { EditarUsuario } from "../components/usuario/EditarUsuario";
 
-export const AppRoutes: React.FC = () => (
+export const AppRoutes: React.FC = () => {
+  const { user } = useAuth();
+
+  return (
   <Routes>
     <Route path="/" element={<Mapa />} />
     <Route path="/mapa" element={<Mapa />} />
@@ -48,7 +53,13 @@ export const AppRoutes: React.FC = () => (
         <ProtectedRoute>
           <ListaUsuarios />
         </ProtectedRoute>
-      }
-    />
-  </Routes>
-);
+        }
+      />
+      <Route path="/my-spots" element={
+        <ProtectedRoute>
+          <ListaSpots idUsuario={user?.uid}/>
+        </ProtectedRoute>
+      } /> 
+      <Route path="/profile" element={<EditarUsuario/>} />
+    </Routes>
+)};

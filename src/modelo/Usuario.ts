@@ -3,4 +3,5 @@ export interface Usuario {
   nombre: string;
   email: string;
   roles: { id: string; nombre: string }[];
+  foto: string;
 }
