@@ -16,10 +16,16 @@ import ListaCarnadas from "../components/carnadas/ListaCarnadas";
 
 export const AppRoutes: React.FC = () => (
   <Routes>
-    <Route path="/login" element={<Login />} />
     <Route path="/" element={<Mapa />} />
+    <Route path="/mapa" element={<Mapa />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/registro" element={<Register />} />
     <Route path="/ver/:id" element={<DetalleSpot />} />
+    <Route path="/spots/:id" element={<DetalleSpot />} />
     <Route path="/especie/:id" element={<DetalleEspecie />} />
+    <Route path="/especies-guide" element={<GuiaEspecies />} />
+    <Route path="/mis-capturas" element={<MisCapturas />} />
+    <Route path="/carnada" element={<ListaCarnadas />} />
     <Route
       path="/crear-spot"
       element={
@@ -28,8 +34,7 @@ export const AppRoutes: React.FC = () => (
         </ProtectedRoute>
       }
     />
-      <Route path="/especie/:id" element={<DetalleEspecie/>} />
-      <Route
+    <Route
       path="/spots/pendientes"
       element={
         <ProtectedRoute>
@@ -37,16 +42,13 @@ export const AppRoutes: React.FC = () => (
         </ProtectedRoute>
       }
     />
-      <Route path="/login" element={<Login/>} />
-      <Route path="/registro" element={<Register/>}/>
-      <Route path="/especies-guide" element={<GuiaEspecies/>} />
-      <Route path="/mis-capturas" element={<MisCapturas/>} />
-      <Route path="/carnada" element={<ListaCarnadas/>} />
-      <Route path="/usuarios" element={
+    <Route
+      path="/usuarios"
+      element={
         <ProtectedRoute>
-          <ListaUsuarios/>
+          <ListaUsuarios />
         </ProtectedRoute>
-        }
-      />
-    </Routes>
+      }
+    />
+  </Routes>
 );

@@ -42,10 +42,7 @@ export interface NuevaCapturaData {
 export interface EstadisticasCapturas {
   totalCapturas: number
   especiesCapturadas: number
-  pesoTotal: number
-  mayorCaptura?: Captura
-  capturasPorMes: number
-  especieFavorita: string
+  capturasPorMes: Record<string, number>
 }
 
 export const obtenerCapturas = async (usuarioId?: string): Promise<Captura[]> => {

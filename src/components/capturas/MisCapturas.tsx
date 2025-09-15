@@ -8,17 +8,22 @@ import type { NuevaCapturaData, Captura } from '../../api/capturasApi'
 import { buildImageUrl } from '../../utils/imageUtils'
 
 const formatNumber = (num: number | undefined | null, decimals = 1): string => {
-  return (num || 0).toFixed(decimals);
+  if (num === undefined || num === null) return '0';
+  const safeNum = parseFloat(String(num));
+  if (isNaN(safeNum) || !isFinite(safeNum)) return '0';
+  return safeNum.toFixed(decimals);
 }
 
 const safeNumber = (value: any): number => {
-  const num = parseFloat(value);
-  return isNaN(num) ? 0 : num;
+  if (value === undefined || value === null || value === '') return 0;
+  const num = parseFloat(String(value));
+  return isNaN(num) || !isFinite(num) ? 0 : num;
 }
 
 const isValidNumber = (value: any): boolean => {
-  const num = parseFloat(value);
-  return !isNaN(num) && num > 0;
+  if (value === undefined || value === null || value === '') return false;
+  const num = parseFloat(String(value));
+  return !isNaN(num) && isFinite(num) && num > 0;
 }
 
 const MisCapturas: React.FC = () => {
@@ -27,6 +32,16 @@ const MisCapturas: React.FC = () => {
   const { capturas, loading, error, loadCapturas, agregarCaptura, borrarCaptura } = useCapturas()
   const [showAddModal, setShowAddModal] = useState(false)
   const [filtroEspecie, setFiltroEspecie] = useState<string>('all')
+
+  const normalizeCapturaData = (captura: Captura): Captura => {
+    return {
+      ...captura,
+      peso: captura.peso ? parseFloat(String(captura.peso)) : undefined,
+      longitud: captura.longitud ? parseFloat(String(captura.longitud)) : undefined
+    }
+  }
+
+  const capturasNormalizadas = (capturas || []).map(normalizeCapturaData)
 
   useEffect(() => {
     if (!user) {
@@ -47,41 +62,43 @@ const MisCapturas: React.FC = () => {
     }
   }
 
-  const especies = ['Dorado', 'Tararira', 'Surubí', 'Pacú', 'Boga', 'Bagre', 'Pejerrey', 'Trucha']
-
   const obtenerNombreEspecie = (captura: Captura) =>
     captura.especie?.nombresComunes?.[0]?.nombre ||
     captura.especie?.nombresComunes?.[0] ||
     captura.especieId ||
     'Desconocida'
 
-  const filteredCapturas = capturas.filter(
+  const filteredCapturas = capturasNormalizadas.filter(
     (c) => filtroEspecie === 'all' || obtenerNombreEspecie(c) === filtroEspecie
   )
 
-  const totalCapturas = capturas.length
-  const especiesCapturadas = new Set(capturas.map((c) => obtenerNombreEspecie(c))).size
-  const pesoTotal = capturas.reduce((sum, c) => sum + safeNumber(c.peso), 0)
-  const mayorCaptura = capturas
+  const totalCapturas = capturasNormalizadas.length
+  const especiesCapturadas = new Set(capturasNormalizadas.map((c) => obtenerNombreEspecie(c))).size
+  const pesoTotal = capturasNormalizadas.reduce((sum, c) => sum + safeNumber(c.peso), 0)
+  const mayorCaptura = capturasNormalizadas
     .filter((c) => isValidNumber(c.peso))
-    .reduce((max, c) => (safeNumber(c.peso) > safeNumber(max?.peso) ? c : max), capturas.find((c) => isValidNumber(c.peso)))
+    .reduce((max, c) => (safeNumber(c.peso) > safeNumber(max?.peso) ? c : max), capturasNormalizadas.find((c) => isValidNumber(c.peso)))
 
-  const capturasPorMes = capturas.filter((c) => {
+  const capturasPorMes = capturasNormalizadas.filter((c) => {
     const fecha = new Date(c.fecha)
     const hoy = new Date()
     return fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear()
   }).length
 
-  const especieFavorita = capturas.reduce((acc, c) => {
+  const especieFavorita = capturasNormalizadas.reduce((acc, c) => {
     const nombre = obtenerNombreEspecie(c)
     acc[nombre] = (acc[nombre] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  const especieMasCapturada = Object.keys(especieFavorita).reduce(
-    (a, b) => (especieFavorita[a] > especieFavorita[b] ? a : b),
-    Object.keys(especieFavorita)[0] || 'N/A'
-  )
+  const especieMasCapturada = Object.keys(especieFavorita).length > 0 
+    ? Object.keys(especieFavorita).reduce(
+        (a, b) => (especieFavorita[a] > especieFavorita[b] ? a : b),
+        Object.keys(especieFavorita)[0]
+      )
+    : 'N/A'
+
+  const especies = [...new Set(capturasNormalizadas.map(c => obtenerNombreEspecie(c)))].sort()
 
   if (loading) {
     return (
@@ -133,7 +150,7 @@ const MisCapturas: React.FC = () => {
             <h3 className="text-2xl font-bold text-foreground">{formatNumber(pesoTotal, 1)} kg</h3>
             <p className="text-muted-foreground">Peso Total</p>
             <div className="mt-2 text-xs text-muted-foreground">
-              Promedio: {totalCapturas > 0 ? formatNumber(pesoTotal / totalCapturas, 1) : 0} kg
+              Promedio: {totalCapturas > 0 && pesoTotal > 0 ? formatNumber(pesoTotal / totalCapturas, 1) : '0'} kg
             </div>
           </div>
           <div className="bg-card border border-border rounded-lg p-6 text-center">
