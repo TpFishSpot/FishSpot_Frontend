@@ -1,11 +1,14 @@
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin, Plus, Menu, X, Search, User, Settings, HelpCircle, Fish, Sun, Moon, Monitor, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserMenu from "../usuario/UserMenu";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useUserRoles } from "../../hooks/auth/useUserRoles";
+import { useDebounce } from "../../hooks/usePerformance";
+import { DEBOUNCE_DELAYS } from "../../constants/cache";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface NavigationBarProps {
   onCreateSpotClick?: () => void
@@ -19,7 +22,9 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
   const { theme, setTheme } = useTheme()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_DELAYS.SEARCH)
   const { isModerator } = useUserRoles();
+  const isMobile = useIsMobile();
 
   const handleCreateSpot = () => {
     if (!user) {
@@ -28,6 +33,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
     }
     if (onCreateSpotClick) {
       onCreateSpotClick()
+    } else {
+      navigate("/crear-spot")
     }
   }
 
@@ -40,11 +47,13 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
-
-    if (onSearch) {
-      onSearch(e.target.value)
-    }
   }
+
+  useEffect(() => {
+    if (onSearch && debouncedSearchQuery.trim()) {
+      onSearch(debouncedSearchQuery.trim())
+    }
+  }, [debouncedSearchQuery, onSearch])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -52,18 +61,20 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
 
   return (
     <>
-      <div className={`bg-background/95 backdrop-blur-sm shadow-lg border-b border-border relative z-50 ${className}`}>
+      <div className={`bg-background/95 backdrop-blur-sm shadow-lg border-b border-border relative z-50 safe-area-inset-top ${className}`}>
         <div className="w-full px-2 sm:px-3">
           <div className="flex items-center justify-between h-16">
             {}
             <div className="flex items-center space-x-2">
-              <button
-                onClick={toggleMenu}
-                className="p-2 rounded-lg hover:bg-muted transition-colors"
-                aria-label="Toggle menu"
-              >
-                {isMenuOpen ? <X className="w-6 h-6 text-foreground" /> : <Menu className="w-6 h-6 text-foreground" />}
-              </button>
+              {!isMobile && (
+                <button
+                  onClick={toggleMenu}
+                  className="p-2 rounded-lg hover:bg-muted transition-colors"
+                  aria-label="Toggle menu"
+                >
+                  {isMenuOpen ? <X className="w-6 h-6 text-foreground" /> : <Menu className="w-6 h-6 text-foreground" />}
+                </button>
+              )}
 
               {}
               <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
@@ -124,7 +135,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
         </div>
       </div>
 
-      {isMenuOpen && (
+      {isMenuOpen && !isMobile && (
         <div className="fixed inset-0 z-[100]">
           {}
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={toggleMenu} />

@@ -1,47 +1,58 @@
 import { memo } from 'react';
+import { SpotCardSkeleton } from './ui/SpotCardSkeleton';
+import { Skeleton } from './ui/Skeleton';
 
 interface LoadingSkeletonProps {
   className?: string;
-  variant?: 'card' | 'text' | 'image' | 'button';
+  variant?: 'card' | 'text' | 'image' | 'button' | 'spots';
   lines?: number;
+  count?: number;
 }
 
 export const LoadingSkeleton = memo(({ 
   className = '', 
   variant = 'card', 
-  lines = 3 
+  lines = 3,
+  count = 1
 }: LoadingSkeletonProps) => {
-  const baseClasses = 'animate-pulse bg-gray-200 rounded';
 
   switch (variant) {
+    case 'spots':
+      return (
+        <div className={`space-y-6 ${className}`}>
+          {Array.from({ length: count }).map((_, i) => (
+            <SpotCardSkeleton key={i} />
+          ))}
+        </div>
+      );
+
     case 'text':
       return (
         <div className={className}>
           {Array.from({ length: lines }).map((_, i) => (
-            <div
+            <Skeleton
               key={i}
-              className={`${baseClasses} h-4 mb-2 ${
-                i === lines - 1 ? 'w-3/4' : 'w-full'
-              }`}
+              variant="text"
+              className={`mb-2 ${i === lines - 1 ? 'w-3/4' : 'w-full'}`}
             />
           ))}
         </div>
       );
 
     case 'image':
-      return <div className={`${baseClasses} ${className}`} />;
+      return <Skeleton variant="rectangular" className={className} />;
 
     case 'button':
-      return <div className={`${baseClasses} h-10 w-24 ${className}`} />;
+      return <Skeleton variant="rectangular" height={40} width={96} className={className} />;
 
     case 'card':
     default:
       return (
         <div className={`p-4 ${className}`}>
-          <div className={`${baseClasses} h-48 mb-4`} />
-          <div className={`${baseClasses} h-6 mb-2`} />
-          <div className={`${baseClasses} h-4 w-3/4 mb-2`} />
-          <div className={`${baseClasses} h-4 w-1/2`} />
+          <Skeleton variant="rectangular" height={192} className="mb-4" />
+          <Skeleton variant="text" height={24} className="mb-2" />
+          <Skeleton variant="text" className="w-3/4 mb-2" />
+          <Skeleton variant="text" className="w-1/2" />
         </div>
       );
   }

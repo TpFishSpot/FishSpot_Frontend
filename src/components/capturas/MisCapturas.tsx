@@ -6,6 +6,7 @@ import { useCapturas } from '../../hooks/capturas/useCapturas'
 import FormularioCaptura from './FormularioCaptura'
 import type { NuevaCapturaData, Captura } from '../../api/capturasApi'
 import { buildImageUrl } from '../../utils/imageUtils'
+import { PullToRefresh } from '../ui/PullToRefresh'
 
 const formatNumber = (num: number | undefined | null, decimals = 1): string => {
   if (num === undefined || num === null) return '0';
@@ -126,11 +127,12 @@ const MisCapturas: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">🎣 Mi Estanque</h1>
-          <p className="text-muted-foreground text-lg">Tu diario personal de pesca</p>
-        </div>
+      <PullToRefresh onRefresh={loadCapturas}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-foreground mb-2">🎣 Mi Estanque</h1>
+            <p className="text-muted-foreground text-lg">Tu diario personal de pesca</p>
+          </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-card border border-border rounded-lg p-6 text-center">
@@ -288,7 +290,8 @@ const MisCapturas: React.FC = () => {
         )}
 
         <FormularioCaptura isOpen={showAddModal} onClose={() => setShowAddModal(false)} onSave={handleSaveCaptura} />
-      </div>
+        </div>
+      </PullToRefresh>
     </div>
   )
 }

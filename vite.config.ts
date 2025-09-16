@@ -14,13 +14,46 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: false,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.ngrok-free\.app\/api\/.*/i,
+            urlPattern: /^https:\/\/.*\.ngrok-free\.app\/api\/(especie|carnada|tipopesca)/i,
+            handler: 'CacheFirst', 
+            options: {
+              cacheName: 'static-api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 8
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.ngrok-free\.app\/api\/spot/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'api-cache',
+              cacheName: 'spots-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                maxAgeSeconds: 60 * 15
+              }
+            }
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 30
+              }
+            }
+          },
+          {
+            urlPattern: /\.(?:woff|woff2|ttf|eot)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'fonts-cache',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 * 365
               }
             }
           }
@@ -75,6 +108,13 @@ export default defineConfig(({ mode }) => ({
         prefer_related_applications: false,
         shortcuts: [
           {
+            name: 'Explorar Spots',
+            short_name: 'Spots',
+            description: 'Buscar spots de pesca',
+            url: '/spots',
+            icons: [{ src: 'icons/fishing-spot-icon.png', sizes: '192x192' }]
+          },
+          {
             name: 'Mis Capturas',
             short_name: 'Capturas',
             description: 'Ver mis capturas',
@@ -86,6 +126,13 @@ export default defineConfig(({ mode }) => ({
             short_name: 'Capturar',
             description: 'Registrar nueva captura',
             url: '/nueva-captura',
+            icons: [{ src: 'icons/fishing-spot-icon.png', sizes: '192x192' }]
+          },
+          {
+            name: 'Guía de Especies',
+            short_name: 'Especies',
+            description: 'Consultar especies de peces',
+            url: '/especies',
             icons: [{ src: 'icons/fishing-spot-icon.png', sizes: '192x192' }]
           }
         ],

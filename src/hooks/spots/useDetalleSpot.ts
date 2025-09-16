@@ -1,80 +1,90 @@
-import { useEffect, useState } from "react"
-import { useParams } from "react-router"
-import type { Spot } from "../../modelo/Spot"
-import type { EspecieConNombreComun } from "../../modelo/EspecieConNombreComun"
-import type { TipoPesca } from "../../modelo/TipoPesca"
-import apiFishSpot from "../../api/apiFishSpot"
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
+import type { Spot } from '../../modelo/Spot';
+import type { EspecieConNombreComun } from '../../modelo/EspecieConNombreComun';
+import type { TipoPesca } from '../../modelo/TipoPesca';
+import { CACHE_TIMES } from '../../constants/cache';
 
-export function useDetalleSpot() {
-  const { id: idSpot } = useParams<{ id: string }>()
-  const [spot, setSpot] = useState<Spot | null>(null)
-  const [especies, setEspecies] = useState<EspecieConNombreComun[]>([])
-  const [tiposPesca, setTiposPesca] = useState<TipoPesca[]>([])
-  const [cargando, setCargando] = useState(true)
-  const [cargandoEspecies, setCargandoEspecies] = useState(true)
-  const [cargandoTiposPesca, setCargandoTiposPesca] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-  useEffect(() => {
-    if (!idSpot) return
+interface SpotCompleteData {
+  spot: Spot;
+  especies: EspecieConNombreComun[];
+  tiposPesca: TipoPesca[];
+}
 
-    const fetchSpot = async () => {
-      try {
-        setCargando(true)
-        setError(null)
-        const res = await apiFishSpot.get(`/spot/${idSpot}`)
-        setSpot(res.data)
-      } catch (err) {
-        setError("No se pudo cargar el spot")
-      } finally {
-        setCargando(false)
-      }
+
+const fetchSpotComplete = async (spotId: string): Promise<SpotCompleteData> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/spot/${spotId}/complete`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      throw new Error(`Spot con ID ${spotId} no encontrado`);
     }
+    throw new Error(`Error cargando spot: ${error.response?.data?.message || error.message}`);
+  }
+};
 
-    const fetchEspecies = async () => {
-      try {
-        setCargandoEspecies(true)
-        const res = await apiFishSpot.get(`/spot/${idSpot}/especies`)
-        setEspecies(
-          res.data.map((e: any, index: number) => ({
-            id: e.id || index.toString(),
-            nombre_cientifico: e.nombre_cientifico,
-            descripcion: e.descripcion,
-            nombre_comun: e.nombre_comun || [],
-            imagen: e.imagen,
-          })),
-        )
-      } catch (err) {
-        setEspecies([])
-      } finally {
-        setCargandoEspecies(false)
-      }
-    }
+export const useDetalleSpot = (spotId: string) => {
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    isRefetching
+  } = useQuery({
+    queryKey: ['spot-complete', spotId],
+    queryFn: () => fetchSpotComplete(spotId),
+    enabled: !!spotId,
+    ...CACHE_TIMES.SEMI_STATIC_DATA,
+    retry: 2,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
 
-    const fetchTiposPesca = async () => {
-      try {
-        setCargandoTiposPesca(true)
-        const res = await apiFishSpot.get(`/spot/${idSpot}/tipoPesca`)
-        setTiposPesca(res.data.map((item: any) => item.tipoPesca))
-      } catch (err) {
-        setTiposPesca([])
-      } finally {
-        setCargandoTiposPesca(false)
-      }
-    }
-
-    fetchSpot()
-    fetchEspecies()
-    fetchTiposPesca()
-  }, [idSpot])
+  const spot = data?.spot;
+  const especies = data?.especies || [];
+  const tiposPesca = data?.tiposPesca || [];
+  const loading = isLoading || isRefetching;
 
   return {
     spot,
     especies,
     tiposPesca,
-    cargando,
-    cargandoEspecies,
-    cargandoTiposPesca,
+    loading,
+    error: error?.message || null,
+    refetch,
+  };
+};
+export const useSpotBasico = (spotId: string) => {
+  const { spot, loading, error } = useDetalleSpot(spotId);
+  
+  return {
+    spot,
+    loading,
     error,
-  }
-}
+  };
+};
+
+export const useInvalidateSpot = () => {
+  const queryClient = useQueryClient();
+  
+  const invalidateSpot = (spotId: string) => {
+    queryClient.invalidateQueries({
+      queryKey: ['spot-complete', spotId]
+    });
+  };
+  
+  const invalidateAllSpots = () => {
+    queryClient.invalidateQueries({
+      queryKey: ['spot-complete']
+    });
+  };
+  
+  return {
+    invalidateSpot,
+    invalidateAllSpots,
+  };
+};

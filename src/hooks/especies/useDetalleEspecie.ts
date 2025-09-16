@@ -1,53 +1,57 @@
-import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
-import apiFishSpot from "../../api/apiFishSpot"
-import type { EspecieConNombreComun } from "../../modelo/EspecieConNombreComun"
-import type { Carnada } from "../../modelo/Carnada"
-import type { TipoPesca } from "../../modelo/TipoPesca"
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from "react-router-dom";
+import apiFishSpot from "../../api/apiFishSpot";
+import type { EspecieConNombreComun } from "../../modelo/EspecieConNombreComun";
+import type { Carnada } from "../../modelo/Carnada";
+import type { TipoPesca } from "../../modelo/TipoPesca";
+import { CACHE_TIMES } from "../../constants/cache";
+
+interface EspecieCompleteData {
+  especie: EspecieConNombreComun;
+  carnadas: Carnada[];
+  tiposPesca: TipoPesca[];
+}
+
+const fetchEspecieComplete = async (id: string): Promise<EspecieCompleteData> => {
+  const response = await apiFishSpot.get(`/especie/${id}/complete`);
+  return response.data;
+};
 
 interface DetalleEspecieResult {
-  especie: EspecieConNombreComun | null
-  carnadas: Carnada[]
-  tiposPesca: TipoPesca[]
-  cargando: boolean
-  error: string | null
+  especie: EspecieConNombreComun | null;
+  carnadas: Carnada[];
+  tiposPesca: TipoPesca[];
+  cargando: boolean;
+  error: string | null;
 }
 
 export function useDetalleEspecie(): DetalleEspecieResult {
-  const { id } = useParams<{ id: string }>()
-  const [especie, setEspecie] = useState<EspecieConNombreComun | null>(null)
-  const [carnadas, setCarnadas] = useState<Carnada[]>([])
-  const [tiposPesca, setTiposPesca] = useState<TipoPesca[]>([])
-  const [cargando, setCargando] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { id } = useParams<{ id: string }>();
+  
+  const {
+    data,
+    isLoading: cargando,
+    error
+  } = useQuery({
+    queryKey: ['especie-complete', id],
+    queryFn: () => fetchEspecieComplete(id!),
+    enabled: !!id,
+    ...CACHE_TIMES.STATIC_DATA,
+    retry: 2,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
 
-  useEffect(() => {
-    if (!id) return
+  const especie = data?.especie || null;
+  const carnadas = data?.carnadas || [];
+  const tiposPesca = data?.tiposPesca || [];
 
-    async function fetchDetalle() {
-      try {
-        setCargando(true)
-        setError(null)
-
-        const respEspecie = await apiFishSpot.get(`/especie/${id}`)
-        setEspecie(respEspecie.data)
-
-        const respCarnadas = await apiFishSpot.get(`/especie/${id}/carnadas`)
-        setCarnadas(respCarnadas.data || [])
-
-        const respTipos = await apiFishSpot.get(`/especie/${id}/tipoPesca`)
-
-        setTiposPesca(Array.isArray(respTipos.data) ? respTipos.data : [])
-
-      } catch (err) {
-        setError("Error cargando detalle de la especie")
-      } finally {
-        setCargando(false)
-      }
-    }
-
-    fetchDetalle()
-  }, [id])
-
-  return { especie, carnadas, tiposPesca, cargando, error }
+  return { 
+    especie, 
+    carnadas, 
+    tiposPesca, 
+    cargando, 
+    error: error?.message || null 
+  };
 }

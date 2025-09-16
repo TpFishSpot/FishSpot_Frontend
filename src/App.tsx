@@ -7,7 +7,7 @@ import PWAInstallPrompt from "./components/ui/PWAInstallPrompt"
 function App() {
   return (
     <ThemeProvider>
-      <div className="min-h-screen">
+      <div className="min-h-screen safe-area-inset-top">
         <AppRoutes />
         <PWAInstallPrompt />
       </div>

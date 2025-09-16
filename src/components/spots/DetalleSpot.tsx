@@ -1,5 +1,6 @@
 import type React from "react"
 import { useState } from "react"
+import { useParams } from "react-router-dom"
 import ListaEspecies from "../especies/ListaEspecies"
 import SpotHeader from "./SpotHeader"
 import { useDetalleSpot } from "../../hooks/spots/useDetalleSpot"
@@ -10,7 +11,8 @@ const formatNumber = (num: number | undefined | null, decimals = 1): string => {
 }
 
 export default function DetalleSpot() {
-  const { spot, especies, tiposPesca, cargando, cargandoEspecies, cargandoTiposPesca, error } = useDetalleSpot()
+  const { id } = useParams<{ id: string }>();
+  const { spot, especies, tiposPesca, loading, error } = useDetalleSpot(id!);
   const [esFavorito, setEsFavorito] = useState(false)
   const [reseña, setReseña] = useState("")
   const [calificacion, setCalificacion] = useState(0)
@@ -33,7 +35,7 @@ export default function DetalleSpot() {
     alert("Funcionalidad de reseñas próximamente disponible")
   }
 
-  if (cargando) return <p>Cargando...</p>
+  if (loading) return <p>Cargando...</p>
   if (error || !spot) return <p>{error || "Spot no encontrado"}</p>
 
   const coordenadas = obtenerCoordenadas(spot)
@@ -63,7 +65,7 @@ export default function DetalleSpot() {
               <span className="text-accent">🐟</span>
               Especies Registradas
             </h2>
-            <ListaEspecies especies={especies} cargando={cargandoEspecies} />
+            <ListaEspecies especies={especies} cargando={loading} />
           </div>
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
@@ -71,7 +73,7 @@ export default function DetalleSpot() {
               <span className="text-secondary">🎣</span>
               Tipos de Pesca
             </h2>
-            {cargandoTiposPesca ? (
+            {loading ? (
               <p className="text-muted-foreground">Cargando tipos de pesca...</p>
             ) : tiposPesca.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

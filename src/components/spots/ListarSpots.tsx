@@ -7,6 +7,8 @@ import { useUserRoles } from "../../hooks/auth/useUserRoles"
 import apiFishSpot from "../../api/apiFishSpot"
 import { SpotsFilter } from "./SpotsFilter"
 import { SpotCard } from "./Spotcard"
+import { PullToRefresh } from "../ui/PullToRefresh"
+import { LoadingSkeleton } from "../LoadingSkeleton"
 
 const filtros = [
   { id: "all", name: "Todos" },
@@ -91,10 +93,15 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
 
   if (!user || rolesLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Cargando...</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <NavigationBar />
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-6">
+            <h1 className="text-3xl font-bold italic">Spots</h1>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <LoadingSkeleton variant="spots" count={6} />
         </div>
       </div>
     )
@@ -136,21 +143,23 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-        <SpotsFilter filtros={filtros} selectedFilter={selectedFilter} onSelect={setSelectedFilter} />
-        {filteredSpots.map(spot => (
-          <SpotCard
-            key={spot.id}
-            spot={spot}
-            idUsuarioActivo={user.uid}
-            onApprove={aprobar}
-            onReject={rechazar}
-            onDelete={borrar}
-            onViewMap={verEnMapa}
-            onClick={() => navigate(`/ver/${spot.id}`)}
-          />
-        ))}
-      </div>
+      <PullToRefresh onRefresh={cargarSpots}>
+        <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+          <SpotsFilter filtros={filtros} selectedFilter={selectedFilter} onSelect={setSelectedFilter} />
+          {filteredSpots.map(spot => (
+            <SpotCard
+              key={spot.id}
+              spot={spot}
+              idUsuarioActivo={user.uid}
+              onApprove={aprobar}
+              onReject={rechazar}
+              onDelete={borrar}
+              onViewMap={verEnMapa}
+              onClick={() => navigate(`/ver/${spot.id}`)}
+            />
+          ))}
+        </div>
+      </PullToRefresh>
     </div>
   )
 }

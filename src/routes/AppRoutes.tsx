@@ -1,65 +1,137 @@
-
 import type React from "react";
-import { Route, Routes } from "react-router-dom";
-import DetalleSpot from "../components/spots/DetalleSpot";
-import { CrearSpot } from "../components/spots/CrearSpot";
+import { lazy, Suspense } from "react"; 
+import { Route, Routes } from "react-router-dom"; 
 import { Mapa } from "../components/mapa/Mapa";
-import DetalleEspecie from "../components/especies/DetalleEspecie"
-import { ListaSpots } from "../components/spots/ListarSpots";
 import Login from "../components/usuario/Login";
 import Register from "../components/usuario/Register";
 import ProtectedRoute from "../components/common/ProtectedRoute";
-import GuiaEspecies from "../components/especies/GuiaEspecies";
-import MisCapturas from "../components/capturas/MisCapturas";
-import { ListaUsuarios } from "../components/usuario/ListarUsuarios";
-import ListaCarnadas from "../components/carnadas/ListaCarnadas";
 import { useAuth } from "../contexts/AuthContext";
-import { EditarUsuario } from "../components/usuario/EditarUsuario";
+import { LoadingSkeleton } from "../components/LoadingSkeleton";
+import { MobileLayout } from "../components/layouts/MobileLayout";
+
+// Cargan solo cuando se necesitan
+const DetalleSpot = lazy(() => import("../components/spots/DetalleSpot"));
+const CrearSpot = lazy(() => import("../components/spots/CrearSpot").then(module => ({ default: module.CrearSpot })));
+const DetalleEspecie = lazy(() => import("../components/especies/DetalleEspecie"));
+const ListaSpots = lazy(() => import("../components/spots/ListarSpots").then(module => ({ default: module.ListaSpots })));
+const GuiaEspecies = lazy(() => import("../components/especies/GuiaEspecies"));
+const MisCapturas = lazy(() => import("../components/capturas/MisCapturas"));
+const ListaUsuarios = lazy(() => import("../components/usuario/ListarUsuarios").then(module => ({ default: module.ListaUsuarios })));
+const ListaCarnadas = lazy(() => import("../components/carnadas/ListaCarnadas"));
+const EditarUsuario = lazy(() => import("../components/usuario/EditarUsuario").then(module => ({ default: module.EditarUsuario })));
 
 export const AppRoutes: React.FC = () => {
   const { user } = useAuth();
 
   return (
-  <Routes>
-    <Route path="/" element={<Mapa />} />
-    <Route path="/mapa" element={<Mapa />} />
-    <Route path="/login" element={<Login />} />
-    <Route path="/registro" element={<Register />} />
-    <Route path="/ver/:id" element={<DetalleSpot />} />
-    <Route path="/spots/:id" element={<DetalleSpot />} />
-    <Route path="/especie/:id" element={<DetalleEspecie />} />
-    <Route path="/especies-guide" element={<GuiaEspecies />} />
-    <Route path="/mis-capturas" element={<MisCapturas />} />
-    <Route path="/carnada" element={<ListaCarnadas />} />
-    <Route
-      path="/crear-spot"
-      element={
-        <ProtectedRoute>
-          <CrearSpot />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/spots/pendientes"
-      element={
-        <ProtectedRoute>
-          <ListaSpots />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/usuarios"
-      element={
-        <ProtectedRoute>
-          <ListaUsuarios />
-        </ProtectedRoute>
+    <MobileLayout>
+      <Routes>
+        {/* rutas mas importantes se cargan en inicio*/}
+        <Route path="/" element={<Mapa />} />
+        <Route path="/mapa" element={<Mapa />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Register />} />
+
+        {/* rutas que se cargan cuando el usuario navega */}
+        <Route 
+          path="/ver/:id" 
+          element={
+            <Suspense fallback={<LoadingSkeleton />}>
+              <DetalleSpot />
+            </Suspense>
+          } 
+        />
+        <Route 
+          path="/spots/:id" 
+          element={
+            <Suspense fallback={<LoadingSkeleton />}>
+              <DetalleSpot />
+            </Suspense>
+          } 
+        />
+      <Route 
+        path="/especie/:id" 
+        element={
+          <Suspense fallback={<LoadingSkeleton />}>
+            <DetalleEspecie />
+          </Suspense>
+        } 
+      />
+      <Route 
+        path="/especies-guide" 
+        element={
+          <Suspense fallback={<LoadingSkeleton />}>
+            <GuiaEspecies />
+          </Suspense>
+        } 
+      />
+      <Route 
+        path="/mis-capturas" 
+        element={
+          <Suspense fallback={<LoadingSkeleton />}>
+            <MisCapturas />
+          </Suspense>
+        } 
+      />
+      <Route 
+        path="/carnada" 
+        element={
+          <Suspense fallback={<LoadingSkeleton />}>
+            <ListaCarnadas />
+          </Suspense>
+        } 
+      />
+
+      {/* protegidas que cargan con lazy */}
+      <Route
+        path="/crear-spot"
+        element={
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingSkeleton />}>
+              <CrearSpot />
+            </Suspense>
+          </ProtectedRoute>
         }
       />
-      <Route path="/my-spots" element={
-        <ProtectedRoute>
-          <ListaSpots idUsuario={user?.uid}/>
-        </ProtectedRoute>
-      } /> 
-      <Route path="/profile" element={<EditarUsuario/>} />
-    </Routes>
-)};
+      <Route
+        path="/spots/pendientes"
+        element={
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingSkeleton />}>
+              <ListaSpots />
+            </Suspense>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/usuarios"
+        element={
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingSkeleton />}>
+              <ListaUsuarios />
+            </Suspense>
+          </ProtectedRoute>
+        }
+      />
+      <Route 
+        path="/my-spots" 
+        element={
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingSkeleton />}>
+              <ListaSpots idUsuario={user?.uid}/>
+            </Suspense>
+          </ProtectedRoute>
+        } 
+      /> 
+      <Route 
+        path="/profile" 
+        element={
+          <Suspense fallback={<LoadingSkeleton />}>
+            <EditarUsuario/>
+          </Suspense>
+        } 
+      />
+      </Routes>
+    </MobileLayout>
+  );
+};
