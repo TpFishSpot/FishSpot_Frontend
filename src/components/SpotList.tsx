@@ -15,7 +15,7 @@ export const SpotCard = memo(({ spot, onClick, className = '' }: SpotCardProps) 
   }, [onClick, spot]);
 
   const imageUrl = spot.imagenPortada 
-    ? `http://localhost:3000/uploads/${spot.imagenPortada}`
+    ? `${import.meta.env.BASE_URL}/uploads/${spot.imagenPortada}`
     : '/images/placeholder-spot.jpg';
 
   return (

@@ -14,8 +14,8 @@ export const obtenerImagenEspecie = (especie: Especie): string => {
   }
   
   if (especie.imagen.startsWith('uploads/')) {
-    return `http://localhost:3000/${especie.imagen}`
+    return `${import.meta.env.BASE_URL}/${especie.imagen}`
   }
   
-  return `http://localhost:3000/uploads/${especie.imagen}`
+  return `${import.meta.env.BASE_URL}/uploads/${especie.imagen}`
 }
