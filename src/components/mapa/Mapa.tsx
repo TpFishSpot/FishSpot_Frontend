@@ -62,11 +62,13 @@ export const Mapa = () => {
         <MapContainer 
           center={position} 
           zoom={esUbicacionUsuario ? 12 : 10} 
-          className="h-full w-full z-0"
+          className="h-full w-full z-0 [&_.leaflet-control-attribution]:hidden [&_.leaflet-bottom]:hidden"
+          attributionControl={false}
+          zoomControl={false}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution=""
           />
 
           <UseMapaLogic />

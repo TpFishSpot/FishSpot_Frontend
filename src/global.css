@@ -30,6 +30,12 @@
   }
 }
 
+.leaflet-control-attribution,
+.leaflet-attribution-flag,
+.leaflet-bottom.leaflet-right {
+  display: none !important;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #4b5563;
