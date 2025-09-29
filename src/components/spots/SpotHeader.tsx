@@ -1,10 +1,12 @@
-import { Fish, MapPin, Heart, Share2, ArrowLeft } from "lucide-react"
-import type { Spot } from "../../modelo/Spot"
-import { obtenerCoordenadas, obtenerUrlImagen, obtenerColorEstado } from "../../utils/spotUtils"
-import UserMenu from "../usuario/UserMenu"
-import { BotonBorrar } from "../botones/Botones"
-import apiFishSpot from "../../api/apiFishSpot"
-import { useAuth } from "../../contexts/AuthContext"
+import { useState } from "react";
+import { Fish, MapPin, Heart, Share2, ArrowLeft } from "lucide-react";
+import type { Spot } from "../../modelo/Spot";
+import { obtenerCoordenadas, obtenerUrlImagen, obtenerColorEstado } from "../../utils/spotUtils";
+import UserMenu from "../usuario/UserMenu";
+import { BotonBorrar } from "../botones/Botones";
+import apiFishSpot from "../../api/apiFishSpot";
+import { useAuth } from "../../contexts/AuthContext";
+import ReporteModal from "../ui/ReporteModal";
 
 const formatNumber = (num: number | undefined | null, decimals = 1): string => {
   return (num || 0).toFixed(decimals);
@@ -18,14 +20,20 @@ interface Props {
   manejarVolver: () => void
 }
 
-export default function SpotHeader({ spot, esFavorito, manejarFavorito, manejarCompartir, manejarVolver }: Props) {
-  const coordenadas = obtenerCoordenadas(spot)
-  const { user } = useAuth()
+export default function SpotHeader({
+  spot,
+  esFavorito,
+  manejarFavorito,
+  manejarCompartir,
+  manejarVolver,
+}: Props) {
+  const coordenadas = obtenerCoordenadas(spot);
+  const { user } = useAuth();
   const puedeBorrar = spot.estado === "Esperando" && spot.idUsuario === user?.uid;
-  
+  const [modalReporteOpen, setModalReporteOpen] = useState(false);
+
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-2xl mb-8 group">
-      {}
       <div className="absolute top-0 left-0 right-0 z-20 p-4">
         <div className="flex justify-between items-center">
           <button
@@ -90,8 +98,19 @@ export default function SpotHeader({ spot, esFavorito, manejarFavorito, manejarC
               <Heart className={`w-4 h-4 ${esFavorito ? "fill-current" : ""}`} />
               {esFavorito ? "Favorito" : "Agregar"}
             </button>
+
+            <button
+              onClick={() => setModalReporteOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-red-500 text-white shadow-lg shadow-red-500/25 hover:bg-red-600 transition-all duration-300 backdrop-blur-sm"
+            >
+              <Fish className="w-4 h-4" />
+              Reportar
+            </button>
+
             {puedeBorrar && (
-              <BotonBorrar id={spot.id} onDelete={async () => {
+              <BotonBorrar
+                id={spot.id}
+                onDelete={async () => {
                   try {
                     await apiFishSpot.delete(`/spot/${spot.id}`);
                     alert('Spot eliminado');
@@ -103,6 +122,7 @@ export default function SpotHeader({ spot, esFavorito, manejarFavorito, manejarC
                 }}
               />
             )}
+
             <button
               onClick={manejarCompartir}
               className="flex items-center gap-2 px-4 py-2 bg-white/20 text-white rounded-xl font-medium hover:bg-white/30 transition-all duration-300 backdrop-blur-sm"
@@ -113,6 +133,13 @@ export default function SpotHeader({ spot, esFavorito, manejarFavorito, manejarC
           </div>
         </div>
       </div>
+
+      {modalReporteOpen && (
+        <ReporteModal
+          spotId={spot.id}
+          onClose={() => setModalReporteOpen(false)}
+        />
+      )}
     </div>
-  )
+  );
 }

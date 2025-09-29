@@ -32,8 +32,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
       </button>
     );
   }
-  const nombre = usuario?.nombre || user.displayName || 'Usuario';
-  const email = usuario?.email || user.email || '';
+  const nombre = user.displayName || usuario?.nombre || 'Usuario';
+  const email = user.email || usuario?.email || '';
   const foto = usuario?.foto || user.photoURL || '';
 
   return (
