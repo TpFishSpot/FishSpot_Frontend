@@ -38,7 +38,11 @@ export const EditarUsuario: React.FC = () => {
 
   const usuarioActualizadoData = new FormData();
   usuarioActualizadoData.append("nombre", nombre);
-  if (file) usuarioActualizadoData.append("foto", file);
+  if (file) {
+    usuarioActualizadoData.append("foto", file);
+  } else if (imagePreview === undefined) {
+    usuarioActualizadoData.append("foto", "null");
+  }
 
     try {
       await apiFishSpot.patch(`/usuario/${user.uid}/actualizar`, usuarioActualizadoData, {
