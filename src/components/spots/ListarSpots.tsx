@@ -84,7 +84,8 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
 
   const verEnMapa = (spot: Spot) => {
     const [lng, lat] = spot.ubicacion.coordinates
-    window.open(`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`, "_blank")
+    // window.open(`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`, "_blank")
+    navigate(`/?id=${spot.id}`)
   }
 
   const filteredSpots = spots.filter(

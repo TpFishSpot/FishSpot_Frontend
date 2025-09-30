@@ -24,6 +24,11 @@ export const Mapa = () => {
     limpiarFiltros,
   } = useFiltroCompleto()
   const [searchQuery, setSearchQuery] = useState("")
+  const searchParams = new URLSearchParams(location.search)
+  const spotId = searchParams.get("id")
+
+  const spotUnico = spotId ? allSpots.find((s: any) => s.id === spotId) : null
+
 
   const spotsParaMostrar = (tiposPescaSeleccionados.length > 0 || especiesSeleccionadas.length > 0) ? spotsFiltrados : allSpots
   const cargando = cargandoSpots || cargandoFiltros || cargandoPosicion
@@ -71,9 +76,13 @@ export const Mapa = () => {
 
           <UseMapaLogic />
 
-          {filteredSpots.map((spot: any) => (
-            <SpotMarker key={spot.id} spot={spot} />
-          ))}
+          {spotUnico ? (
+            <SpotMarker key={spotUnico.id} spot={spotUnico} />
+          ) : (
+            filteredSpots.map((spot: any) => (
+              <SpotMarker key={spot.id} spot={spot} />
+            ))
+          )}
         </MapContainer>
 
         <FiltroCompleto
