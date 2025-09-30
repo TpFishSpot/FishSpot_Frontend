@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Download, X, Smartphone, Share } from 'lucide-react'
 import { usePWA } from '../../hooks/ui/usePWA'
 
@@ -7,6 +7,23 @@ const PWAInstallPrompt: React.FC = () => {
   const [showPrompt, setShowPrompt] = useState(true)
   const [showInstructions, setShowInstructions] = useState(false)
 
+  
+  useEffect(() => {
+    const dismissed = localStorage.getItem('pwa-install-dismissed')
+    if (dismissed) {
+      const dismissedTime = parseInt(dismissed)
+      const now = Date.now()
+      const twentyFourHours = 24 * 60 * 60 * 1000
+
+      if (now - dismissedTime < twentyFourHours) {
+        setShowPrompt(false)
+      } else {
+        localStorage.removeItem('pwa-install-dismissed')
+      }
+    }
+  }, [])
+
+ 
   if (isInstalled || isStandalone || !canInstall || !showPrompt) {
     return null
   }
@@ -26,21 +43,6 @@ const PWAInstallPrompt: React.FC = () => {
     setShowPrompt(false)
     localStorage.setItem('pwa-install-dismissed', Date.now().toString())
   }
-
-  React.useEffect(() => {
-    const dismissed = localStorage.getItem('pwa-install-dismissed')
-    if (dismissed) {
-      const dismissedTime = parseInt(dismissed)
-      const now = Date.now()
-      const twentyFourHours = 24 * 60 * 60 * 1000
-
-      if (now - dismissedTime < twentyFourHours) {
-        setShowPrompt(false)
-      } else {
-        localStorage.removeItem('pwa-install-dismissed')
-      }
-    }
-  }, [])
 
   if (showInstructions) {
     const instructions = getInstallInstructions()
