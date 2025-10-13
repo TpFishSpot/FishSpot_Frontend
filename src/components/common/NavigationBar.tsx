@@ -1,6 +1,6 @@
 import type React from "react";
 import { useState, useEffect } from "react";
-import { MapPin, Plus, Menu, X, Search, User, Settings, HelpCircle, Fish, Sun, Moon, Monitor, Camera } from "lucide-react";
+import { MapPin, Menu, X, Search, User, Settings, HelpCircle, Fish, Sun, Moon, Monitor, Camera, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserMenu from "../usuario/UserMenu";
 import { useAuth } from "../../contexts/AuthContext";
@@ -11,12 +11,11 @@ import { DEBOUNCE_DELAYS } from "../../constants/cache";
 import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface NavigationBarProps {
-  onCreateSpotClick?: () => void
   onSearch?: (query: string) => void
   className?: string
 }
 
-const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSearch, className = "" }) => {
+const NavigationBar: React.FC<NavigationBarProps> = ({ onSearch, className = "" }) => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { theme, setTheme } = useTheme()
@@ -25,18 +24,6 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
   const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_DELAYS.SEARCH)
   const { isModerator } = useUserRoles();
   const isMobile = useIsMobile();
-
-  const handleCreateSpot = () => {
-    if (!user) {
-      navigate("/login")
-      return
-    }
-    if (onCreateSpotClick) {
-      onCreateSpotClick()
-    } else {
-      navigate("/crear-spot")
-    }
-  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -102,21 +89,13 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
             </div>
 
             <div className="flex items-center space-x-3">
-              <button
-                onClick={handleCreateSpot}
-                className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition font-medium"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Crear Spot</span>
-              </button>
-
               {user && isModerator && (
                 <button
                   onClick={() => navigate("/usuarios")}
                   className="flex items-center space-x-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-2 rounded-lg transition font-medium"
                 >
                   <span className="hidden sm:inline">Usuarios</span>
-                  <span className="sm:hidden">P</span>
+                  <Users className="sm:hidden"/>
                 </button>
               )}
               {user && isModerator && (
@@ -125,7 +104,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
                   className="flex items-center space-x-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-2 rounded-lg transition font-medium"
                 >
                   <span className="hidden sm:inline">Spots</span>
-                  <span className="sm:hidden">P</span>
+                  <MapPin className="sm:hidden"/>
                 </button>
               )}
 

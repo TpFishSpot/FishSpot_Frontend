@@ -1,10 +1,13 @@
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import ListaEspecies from "../especies/ListaEspecies"
 import SpotHeader from "./SpotHeader"
 import { useDetalleSpot } from "../../hooks/spots/useDetalleSpot"
 import { obtenerCoordenadas } from "../../utils/spotUtils"
+import apiFishSpot from "../../api/apiFishSpot"
+import type { Comentario } from "../../modelo/Comentario"
+import ComentariosList from "../comentario/ComentariosList"
 
 const formatNumber = (num: number | undefined | null, decimals = 1): string => {
   return (num || 0).toFixed(decimals);
@@ -14,8 +17,11 @@ export default function DetalleSpot() {
   const { id } = useParams<{ id: string }>();
   const { spot, especies, tiposPesca, loading, error } = useDetalleSpot(id!);
   const [esFavorito, setEsFavorito] = useState(false)
-  const [reseña, setReseña] = useState("")
-  const [calificacion, setCalificacion] = useState(0)
+
+  const [comentarios, setComentarios] = useState<Comentario[]>([])
+  const [nuevoComentario, setNuevoComentario] = useState("")
+  const [loadingComentarios, setLoadingComentarios] = useState(false)
+  const [errorComentarios, setErrorComentarios] = useState("")
 
   const manejarFavorito = () => setEsFavorito(!esFavorito)
 
@@ -30,10 +36,54 @@ export default function DetalleSpot() {
   }
 
   const manejarVolver = () => window.history.back()
-  const manejarEnviarReseña = (e: React.FormEvent) => {
-    e.preventDefault()
-    alert("Funcionalidad de reseñas próximamente disponible")
-  }
+
+  const cargarComentarios = async () => {
+    if (!id) return;
+    try {
+      setLoadingComentarios(true);
+
+      const token = localStorage.getItem("token");
+      const { data } = await apiFishSpot.get(`/comentario/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setComentarios(data);
+    } catch (err: any) {
+      setErrorComentarios(err.message);
+    } finally {
+      setLoadingComentarios(false);
+    }
+  };
+
+  const enviarComentario = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nuevoComentario.trim()) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await apiFishSpot.post(
+        "/comentario",
+        { idSpot: id, contenido: nuevoComentario },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      alert("✅ Comentario publicado con éxito");
+      setNuevoComentario("");
+      cargarComentarios();
+    } catch (err: any) {
+      alert(`❌ Error: ${err.message}`);
+    }
+  };
+
+  useEffect(() => {
+    cargarComentarios()
+  }, [id])
 
   if (loading) return <p>Cargando...</p>
   if (error || !spot) return <p>{error || "Spot no encontrado"}</p>
@@ -91,62 +141,15 @@ export default function DetalleSpot() {
               <p className="text-muted-foreground italic">No hay tipos de pesca registrados para este spot.</p>
             )}
           </div>
-
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
-              <span className="text-yellow-500">⭐</span>
-              Escribir Reseña
-            </h2>
-            <form onSubmit={manejarEnviarReseña} className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-3">Calificación</label>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((estrella) => (
-                    <button
-                      key={estrella}
-                      type="button"
-                      onClick={() => setCalificacion(estrella)}
-                      className={`text-3xl transition-all duration-200 hover:scale-110 ${
-                        estrella <= calificacion
-                          ? "text-yellow-400 drop-shadow-sm"
-                          : "text-muted-foreground hover:text-yellow-200"
-                      }`}
-                    >
-                      ★
-                    </button>
-                  ))}
-                </div>
-                {calificacion > 0 && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {calificacion === 1 && "Muy malo"}
-                    {calificacion === 2 && "Malo"}
-                    {calificacion === 3 && "Regular"}
-                    {calificacion === 4 && "Bueno"}
-                    {calificacion === 5 && "Excelente"}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-3">Tu experiencia</label>
-                <textarea
-                  value={reseña}
-                  onChange={(e) => setReseña(e.target.value)}
-                  placeholder="Comparte tu experiencia en este spot de pesca..."
-                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all duration-200 bg-card text-card-foreground"
-                  rows={4}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={!calificacion || !reseña.trim()}
-                className="w-full bg-primary text-primary-foreground font-semibold py-3 px-6 rounded-lg hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] disabled:hover:scale-100"
-              >
-                Enviar Reseña
-              </button>
-            </form>
-          </div>
+          
+          <ComentariosList
+            comentarios={comentarios}
+            loading={loadingComentarios}
+            error={errorComentarios}
+            nuevoComentario={nuevoComentario}
+            setNuevoComentario={setNuevoComentario}
+            enviarComentario={enviarComentario}
+          />
         </div>
 
         <div className="space-y-6">
