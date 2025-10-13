@@ -3,6 +3,8 @@ import { Search, Heart, Fish, MapPin, Zap } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import NavigationBar from '../common/NavigationBar'
 import { useEspecies } from '../../hooks/especies/useEspecies'
+import MobileNavigationBar from '../common/MobileNavigationBar'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 const obtenerUrlImagenEspecie = (imagen?: string) => {
   if (!imagen) return "/placeholder-fish.png"
@@ -16,6 +18,7 @@ const GuiaEspecies: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilter, setSelectedFilter] = useState<string>('all')
   const [favorites, setFavorites] = useState<string[]>([])
+  const isMobile = useIsMobile()
 
   const filters = [
     { id: 'all', name: 'Todas', icon: Fish },
@@ -49,7 +52,7 @@ const GuiaEspecies: React.FC = () => {
   const filteredEspecies = especies.filter(especie => {
 
     const matchesSearch = searchQuery === '' ||
-      (especie.nombresComunes && especie.nombresComunes.some((nombreObj: { nombre: string }) =>
+      (especie.nombre_comun && especie.nombresComunes.some((nombreObj: { nombre: string }) =>
         nombreObj.nombre.toLowerCase().includes(searchQuery.toLowerCase())
       )) ||
       especie.nombreCientifico.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,6 +93,7 @@ const GuiaEspecies: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
+        {isMobile && (<MobileNavigationBar />)}
         <NavigationBar />
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
@@ -103,7 +107,8 @@ const GuiaEspecies: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <NavigationBar />
+      {isMobile && (<MobileNavigationBar />)}
+        <NavigationBar />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {}

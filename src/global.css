@@ -3,7 +3,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@supports (padding: max(0px)) {
+@supports(padding: max(0px)) {
   .safe-area-inset-top {
     padding-top: env(safe-area-inset-top);
   }
@@ -19,14 +19,21 @@
 }
 
 @keyframes wave {
-  0%   { transform: translateX(-100%); }
-  50%  { transform: translateX(100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
-@keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
+.leaflet-control-attribution,
+.leaflet-attribution-flag,
+.leaflet-bottom.leaflet-right {
+  display: none !important;
 }
 
 :root {
@@ -40,10 +47,10 @@
   --primary-foreground: #ffffff;
   --secondary: #10b981;
   --secondary-foreground: #ffffff;
-  --accent: #10b981;
-  --accent-foreground: #ffffff;
   --muted: #f9fafb;
   --muted-foreground: #4b5563;
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
   --destructive: #e11d48;
   --destructive-foreground: #ffffff;
   --border: #d1d5db;
@@ -68,6 +75,7 @@
   --fish-gold: #d97706;
   --seaweed-green: #059669;
 }
+
 .dark {
   --background: #0f172a;
   --foreground: #e2e8f0;
@@ -79,10 +87,10 @@
   --primary-foreground: #ffffff;
   --secondary: #10b981;
   --secondary-foreground: #ffffff;
-  --accent: #10b981;
-  --accent-foreground: #ffffff;
   --muted: #334155;
   --muted-foreground: #94a3b8;
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
   --destructive: #e11d48;
   --destructive-foreground: #ffffff;
   --border: #334155;
@@ -120,12 +128,12 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -146,6 +154,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  /* Adding custom fishing colors to theme */
   --color-ocean-blue: var(--ocean-blue);
   --color-deep-water: var(--deep-water);
   --color-fish-gold: var(--fish-gold);
@@ -160,6 +169,7 @@
     @apply bg-background text-foreground;
   }
 }
+
 .leaflet-container {
   background: var(--card) !important;
   border-radius: var(--radius);
@@ -169,8 +179,7 @@
   background: var(--popover) !important;
   color: var(--popover-foreground) !important;
   border-radius: var(--radius) !important;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
-              0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
 }
 
 .leaflet-popup-tip {
@@ -180,18 +189,21 @@
 .sidebar-scroll::-webkit-scrollbar {
   width: 4px;
 }
+
 .sidebar-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .sidebar-scroll::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 2px;
 }
+
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
 }
 
-
+/* PWA and Mobile Specific Styles */
 @media (display-mode: standalone) {
   body {
     padding-top: env(safe-area-inset-top);
@@ -201,6 +213,7 @@
   }
 }
 
+/* iOS Safari specific */
 @supports (-webkit-touch-callout: none) {
   .ios-safe-area {
     padding-top: max(20px, env(safe-area-inset-top));
@@ -208,35 +221,27 @@
   }
 }
 
-
+/* Prevent iOS zoom on input focus */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
-  select,
-  textarea,
-  input[type="text"],
-  input[type="password"],
-  input[type="datetime"],
-  input[type="datetime-local"],
-  input[type="date"],
-  input[type="month"],
-  input[type="time"],
-  input[type="week"],
-  input[type="number"],
-  input[type="email"],
-  input[type="url"],
-  input[type="search"],
-  input[type="tel"],
+  select, textarea, input[type="text"], input[type="password"],
+  input[type="datetime"], input[type="datetime-local"],
+  input[type="date"], input[type="month"], input[type="time"],
+  input[type="week"], input[type="number"], input[type="email"],
+  input[type="url"], input[type="search"], input[type="tel"],
   input[type="color"] {
     font-size: 16px !important;
   }
 }
+
+/* Touch targets for mobile */
 @media (max-width: 768px) {
-  button,
-  .btn,
-  [role="button"] {
+  button, .btn, [role="button"] {
     min-height: 44px;
     min-width: 44px;
     touch-action: manipulation;
   }
+  
+  /* Improve tap targets */
   .touch-target {
     min-height: 48px;
     min-width: 48px;
@@ -246,16 +251,7 @@
   }
 }
 
-@media (max-width: 768px) {
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-}
-
+/* Disable text selection on UI elements */
 .no-select {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -265,6 +261,30 @@
   user-select: none;
 }
 
+/* Hide scrollbars but keep functionality on mobile */
+@media (max-width: 768px) {
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* PWA install button animation */
 .pwa-install-prompt {
   animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

@@ -5,7 +5,9 @@ import { useNavigate } from "react-router-dom";
 import type { Usuario } from "../../modelo/Usuario";
 import apiFishSpot from "../../api/apiFishSpot";
 import NavigationBar from "../common/NavigationBar";
+import MobileNavigationBar from "../common/MobileNavigationBar";
 import UsuarioCard from "./UsuarioCard";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 export const ListaUsuarios: React.FC = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -14,6 +16,7 @@ export const ListaUsuarios: React.FC = () => {
   const { user } = useAuth();
   const { isModerator, loading: rolesLoading } = useUserRoles();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const cargarUsuarios = async () => {
     if (!user) {
@@ -86,7 +89,7 @@ export const ListaUsuarios: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <NavigationBar />
+      {isMobile ? <MobileNavigationBar /> : <NavigationBar />}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold italic text-gray-900 dark:text-white">
