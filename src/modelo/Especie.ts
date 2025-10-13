@@ -10,4 +10,7 @@ export interface Especie {
   descripcion: string;
   imagen?: string;
   nombresComunes: NombreEspecie[];
+  carnadas?: string[];
+  tiposPesca?: string[];
+  spots?: string[];
 }

@@ -5,8 +5,10 @@ import { useSpots } from "../../hooks/spots/useSpots"
 import { useFiltroCompleto } from "../../hooks/spots/useFiltroCompleto"
 import { useGeolocalizacion } from "../../hooks/ui/useGeolocalizacion"
 import NavigationBar from "../common/NavigationBar"
+import MobileNavigationBar from "../common/MobileNavigationBar"
 import { FiltroCompleto } from "./FiltroCompleto"
 import { useState, useMemo } from "react"
+import { useIsMobile } from "../../hooks/useIsMobile"
 import "leaflet/dist/leaflet.css"
 
 export const Mapa = () => {
@@ -24,6 +26,7 @@ export const Mapa = () => {
     limpiarFiltros,
   } = useFiltroCompleto()
   const [searchQuery, setSearchQuery] = useState("")
+  const isMobile = useIsMobile()
 
   const spotsParaMostrar = (tiposPescaSeleccionados.length > 0 || especiesSeleccionadas.length > 0) ? spotsFiltrados : allSpots
   const cargando = cargandoSpots || cargandoFiltros || cargandoPosicion
@@ -57,7 +60,11 @@ export const Mapa = () => {
 
   return (
     <div className="h-screen w-screen flex flex-col">
-      <NavigationBar onSearch={handleSearch} />
+      {isMobile ? (
+        <MobileNavigationBar onSearch={handleSearch} />
+      ) : (
+        <NavigationBar onSearch={handleSearch} />
+      )}
       <div className="flex-1 relative">
         <MapContainer 
           center={position} 

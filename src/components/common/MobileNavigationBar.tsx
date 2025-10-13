@@ -1,83 +1,68 @@
 import type React from "react";
-import { MapPin, Plus } from "lucide-react";
+import { MapPin, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import UserMenu from "../usuario/UserMenu";
 import { useAuth } from "../../contexts/AuthContext";
-import { useUserRoles } from "../../hooks/auth/useUserRoles";
 import { useHapticFeedback } from "../../hooks/ui/useHapticFeedback";
+import { MobileHamburgerMenu } from "../ui/MobileHamburgerMenu";
+import { useState } from "react";
 
 interface NavigationBarProps {
   onCreateSpotClick?: () => void;
+  onSearch?: (query: string) => void;
   className?: string;
 }
 
-const MobileNavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, className = "" }) => {
+const MobileNavigationBar: React.FC<NavigationBarProps> = ({ onSearch, className = "" }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isModerator } = useUserRoles();
   const { triggerSelectionHaptic } = useHapticFeedback();
-
-  const handleCreateSpot = () => {
-    triggerSelectionHaptic();
-    if (!user) {
-      navigate('/auth/login');
-      return;
-    }
-    if (onCreateSpotClick) {
-      onCreateSpotClick();
-    }
-  };
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleNavigation = (path: string) => {
     triggerSelectionHaptic();
     navigate(path);
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onSearch && searchQuery.trim()) {
+      onSearch(searchQuery.trim());
+    }
+  };
+
   return (
-    <div className={`bg-background/95 backdrop-blur-sm shadow-lg border-b border-border relative z-50 ${className}`}>
-      <div className="w-full px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16">
-          <div 
-            className="flex items-center space-x-3 cursor-pointer active:scale-95 transition-transform" 
+    <div className={`bg-background/95 backdrop-blur-sm shadow-lg border-b border-border z-[100] ${className}`} style={{overflow: 'visible'}}>
+      <div className="w-full px-2">
+        <div className="flex items-center h-14 justify-between relative" style={{overflow: 'visible'}}>
+          <button
+            className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center active:scale-95 ml-1"
             onClick={() => handleNavigation("/")}
           >
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-primary-foreground" />
+            <MapPin className="w-5 h-5 text-primary-foreground" />
+          </button>
+          <form onSubmit={handleSearchSubmit} className="flex-1 flex justify-center">
+            <div className="relative w-full max-w-[140px]">
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Buscar..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-2 py-0.5 text-sm bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                style={{minWidth: '0'}}
+              />
             </div>
-            <span className="text-xl font-bold text-foreground">FishSpot</span>
-          </div>
-
-          <div className="hidden md:flex items-center space-x-3">
-            <button
-              onClick={handleCreateSpot}
-              className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl transition-all font-medium min-h-[44px] active:scale-95"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Crear Spot</span>
-            </button>
-
-            {user && isModerator && (
-              <>
-                <button
-                  onClick={() => handleNavigation("/usuarios")}
-                  className="flex items-center space-x-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-3 rounded-xl transition-all font-medium min-h-[44px] active:scale-95"
-                >
-                  Usuarios
-                </button>
-                <button
-                  onClick={() => handleNavigation("/spots/pendientes")}
-                  className="flex items-center space-x-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-3 rounded-xl transition-all font-medium min-h-[44px] active:scale-95"
-                >
-                  Spots
-                </button>
-              </>
+          </form>
+          <div className="flex items-center pr-2 z-[101]" style={{overflow: 'visible'}}>
+            {user && <MobileHamburgerMenu />}
+            {!user && (
+              <button
+                onClick={() => handleNavigation('/login')}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 rounded-xl transition font-medium flex-shrink-0 active:scale-95 text-sm"
+              >
+                Entrar
+              </button>
             )}
-
-            <UserMenu />
-          </div>
-
-          <div className="md:hidden">
-            <UserMenu />
           </div>
         </div>
       </div>

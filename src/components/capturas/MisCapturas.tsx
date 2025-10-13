@@ -8,6 +8,8 @@ import type { NuevaCapturaData, Captura } from '../../api/capturasApi'
 import { buildImageUrl } from '../../utils/imageUtils'
 import { PullToRefresh } from '../ui/PullToRefresh'
 import NavigationBar from '../common/NavigationBar'
+import MobileNavigationBar from '../common/MobileNavigationBar'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 const formatNumber = (num: number | undefined | null, decimals = 1): string => {
   if (num === undefined || num === null) return '0';
@@ -34,6 +36,7 @@ const MisCapturas: React.FC = () => {
   const { capturas, loading, error, loadCapturas, agregarCaptura, borrarCaptura } = useCapturas()
   const [showAddModal, setShowAddModal] = useState(false)
   const [filtroEspecie, setFiltroEspecie] = useState<string>('all')
+  const isMobile = useIsMobile()
 
   const normalizeCapturaData = (captura: Captura): Captura => {
     return {
@@ -128,6 +131,7 @@ const MisCapturas: React.FC = () => {
 
   return (
     <div>
+      {isMobile && (<MobileNavigationBar />)}
       <NavigationBar />
     
       <div className="min-h-screen bg-background">

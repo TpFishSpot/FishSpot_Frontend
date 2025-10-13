@@ -26,6 +26,18 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
   const { isModerator } = useUserRoles();
   const isMobile = useIsMobile();
 
+useEffect(() => {
+    if (onSearch && debouncedSearchQuery.trim()) {
+      onSearch(debouncedSearchQuery.trim());
+    }
+  }, [debouncedSearchQuery, onSearch]);
+
+  
+  if (isMobile) {
+    return <div className={className} />; 
+  }
+ 
+
   const handleCreateSpot = () => {
     if (!user) {
       navigate("/login")
@@ -48,13 +60,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
   }
-
-  useEffect(() => {
-    if (onSearch && debouncedSearchQuery.trim()) {
-      onSearch(debouncedSearchQuery.trim())
-    }
-  }, [debouncedSearchQuery, onSearch])
-
+  
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
