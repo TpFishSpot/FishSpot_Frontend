@@ -1,9 +1,10 @@
-import { ArrowLeft, Upload, MapPin, Loader2, Camera } from "lucide-react";
+import { ArrowLeft, Upload, MapPin, Loader2, Camera, Navigation } from "lucide-react";
 import { useCrearSpot } from "../../hooks/spots/useCrearSpot";
 import ListaEspeciesSeleccion from "../especies/ListaEspeciesSeleccion";
 import SeleccionCarnadaTipoPesca from "../carnadas/SeleccionCarnadaTipoPesca";
+import { useGeolocalizacion } from "../../hooks/ui/useGeolocalizacion";
+import { useState, useEffect } from "react";
 
-// Función auxiliar simple
 const formatNumber = (num: number | undefined | null, decimals = 1): string => {
   return (num || 0).toFixed(decimals);
 }
@@ -14,12 +15,42 @@ export function CrearSpot() {
     descripcion, setDescripcion,
     imagePreview, handleImageChange, clearImage,
     errors, isLoading, handleSubmit,
-    lat, lng, navigate,
+    lat, lng, coordenadas, setCoordenadas, navigate,
     especies, addEspecie, removeEspecie,
     todasEspecies,
     carnadas, setCarnadas,
     tiposPesca, setTiposPesca
   } = useCrearSpot();
+
+  const { position, cargandoPosicion, esUbicacionUsuario } = useGeolocalizacion();
+  const [gpsConfirmado, setGpsConfirmado] = useState(false);
+  const [gpsRechazado, setGpsRechazado] = useState(false);
+
+  useEffect(() => {
+    if (position && esUbicacionUsuario && Array.isArray(position) && !coordenadas && !gpsRechazado) {
+      const [latGps, lngGps] = position;
+      setCoordenadas({ lat: latGps, lng: lngGps });
+    }
+  }, [position, esUbicacionUsuario, coordenadas, gpsRechazado, setCoordenadas]);
+
+  const handleAceptarGPS = () => {
+    if (position && Array.isArray(position)) {
+      const [latGps, lngGps] = position;
+      setCoordenadas({ lat: latGps, lng: lngGps });
+      setGpsConfirmado(true);
+      setGpsRechazado(false);
+    }
+  };
+
+  const handleRechazarGPS = () => {
+    setGpsConfirmado(false);
+    setGpsRechazado(true);
+    setCoordenadas(null);
+  };
+
+  const handleSeleccionarEnMapa = () => {
+    navigate("/mapa", { state: { modoSeleccion: true, returnPath: "/crear-spot" } });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
@@ -37,19 +68,78 @@ export function CrearSpot() {
           </div>
         </div>
 
-        {lat !== undefined && lng !== undefined ? (
-          <div className="bg-card rounded-lg p-4 mb-6 shadow-sm border border-border">
-            <div className="flex items-center gap-2 text-foreground">
-              <MapPin className="w-4 h-4" />
-              <span className="text-sm font-medium">Ubicación seleccionada:</span>
-              <span className="text-sm font-mono">{formatNumber(lat, 6)}, {formatNumber(lng, 6)}</span>
+        <div className="bg-card rounded-lg p-4 mb-6 shadow-sm border border-border">
+          <label className="text-sm font-medium text-card-foreground flex items-center space-x-2 mb-3">
+            <MapPin className="w-4 h-4" />
+            <span>Ubicación *</span>
+          </label>
+
+          {!cargandoPosicion && lat && lng && !gpsConfirmado && !gpsRechazado && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-2 font-medium">
+                📍 Ubicación GPS detectada
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-300 mb-3">
+                Coordenadas: {formatNumber(lat, 6)}, {formatNumber(lng, 6)}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleAceptarGPS}
+                  className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Usar esta ubicación
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRechazarGPS}
+                  className="flex-1 px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Elegir otra
+                </button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="bg-card rounded-lg p-4 mb-6 shadow-sm border border-border text-sm text-gray-400">
-            Ubicación no disponible
-          </div>
-        )}
+          )}
+
+          {gpsConfirmado && lat && lng && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-green-800 dark:text-green-200 font-medium flex items-center gap-2">
+                  <Navigation className="w-4 h-4" />
+                  Ubicación confirmada
+                </span>
+                <button
+                  type="button"
+                  onClick={handleRechazarGPS}
+                  className="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 transition-colors"
+                >
+                  Cambiar
+                </button>
+              </div>
+              <p className="text-xs text-green-600 dark:text-green-300">
+                GPS: {formatNumber(lat, 6)}, {formatNumber(lng, 6)}
+              </p>
+            </div>
+          )}
+
+          {(gpsRechazado || (!lat && !cargandoPosicion)) && (
+            <button
+              type="button"
+              onClick={handleSeleccionarEnMapa}
+              className="w-full px-4 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors flex items-center justify-center space-x-2"
+            >
+              <MapPin className="w-5 h-5" />
+              <span>Seleccionar ubicación en el mapa</span>
+            </button>
+          )}
+
+          {cargandoPosicion && (
+            <div className="flex items-center justify-center py-4 text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              <span className="text-sm">Obteniendo ubicación GPS...</span>
+            </div>
+          )}
+        </div>
 
         <form onSubmit={handleSubmit} className="bg-card rounded-xl shadow-lg p-6 space-y-6">
 

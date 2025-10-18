@@ -19,6 +19,8 @@ export function useCrearSpot() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  
+  const [coordenadas, setCoordenadas] = useState<{ lat: number; lng: number } | null>(state || null);
 
   const [especies, setEspecies] = useState<EspecieConNombreComun[]>([]);
   const [todasEspecies, setTodasEspecies] = useState<EspecieConNombreComun[]>([]);
@@ -91,8 +93,8 @@ export function useCrearSpot() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    if (!state?.lat || !state?.lng) {
-      alert("No se encontraron coordenadas.");
+    if (!coordenadas?.lat || !coordenadas?.lng) {
+      alert("Por favor selecciona una ubicación en el mapa o activa el GPS.");
       return;
     }
 
@@ -106,7 +108,7 @@ export function useCrearSpot() {
     const formData = new FormData();
     formData.append("nombre", nombre.trim());
     formData.append("descripcion", descripcion.trim());
-    formData.append("ubicacion", JSON.stringify({ type: "Point", coordinates: [state.lng, state.lat] }));
+    formData.append("ubicacion", JSON.stringify({ type: "Point", coordinates: [coordenadas.lng, coordenadas.lat] }));
     formData.append("estado", "Esperando");
     formData.append("idUsuario", user.uid);
     formData.append("idUsuarioActualizo", user.uid);
@@ -160,8 +162,10 @@ export function useCrearSpot() {
     isLoading,
     handleSubmit,
     isDark,
-    lat: state?.lat,
-    lng: state?.lng,
+    lat: coordenadas?.lat,
+    lng: coordenadas?.lng,
+    coordenadas,
+    setCoordenadas,
     navigate,
     especies,
     setEspecies,

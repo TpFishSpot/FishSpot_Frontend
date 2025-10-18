@@ -1,12 +1,5 @@
 import apiFishSpot from './apiFishSpot'
-
-export interface TipoPesca {
-  id: string
-  nombre: string
-  descripcion: string
-  equipamiento?: string
-  ambiente?: string
-}
+import type { TipoPesca } from '../modelo/TipoPesca'
 
 export const obtenerTiposPesca = async (): Promise<TipoPesca[]> => {
   try {

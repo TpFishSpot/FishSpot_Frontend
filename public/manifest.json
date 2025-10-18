@@ -2,12 +2,77 @@
   "id": "/",
   "name": "FishSpot - App de spots de pesca",
   "short_name": "FishSpot",
-  "description": "Encuentra y comparte los mejores spots de pesca",
+  "description": "Encuentra y comparte los mejores spots de pesca. Descubre especies, registra tus capturas y conecta con otros pescadores.",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#0d9488",
   "theme_color": "#0d9488",
-  "orientation": "portrait-primary",
+  "orientation": "any",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "categories": ["sports", "lifestyle", "travel", "social"],
+  "lang": "es-AR",
+  "dir": "ltr",
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "Ver Mapa",
+      "short_name": "Mapa",
+      "description": "Abre el mapa de spots de pesca",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/icons/fishing-spot-icon.png",
+          "sizes": "500x500",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Crear Spot",
+      "short_name": "Crear",
+      "description": "Crea un nuevo spot de pesca",
+      "url": "/crear-spot",
+      "icons": [
+        {
+          "src": "/icons/fishing-spot-icon.png",
+          "sizes": "500x500",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Mis Capturas",
+      "short_name": "Capturas",
+      "description": "Ver mis capturas de pesca",
+      "url": "/mis-capturas",
+      "icons": [
+        {
+          "src": "/icons/fishing-spot-icon.png",
+          "sizes": "500x500",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Guía de Especies",
+      "short_name": "Especies",
+      "description": "Explora la guía de especies de peces",
+      "url": "/especies-guide",
+      "icons": [
+        {
+          "src": "/icons/fishing-spot-icon.png",
+          "sizes": "500x500",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "permissions": [
+    "geolocation"
+  ],
   "icons": [
     {
       "src": "/icons/fishing-spot-icon.png",
@@ -27,13 +92,15 @@
       "src": "/icons/fishing-spot-icon.png",
       "sizes": "500x500",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "Vista del mapa de spots de pesca"
     },
     {
       "src": "/icons/fishing-spot-icon.png",
       "sizes": "500x500",
       "type": "image/png",
-      "form_factor": "wide"
+      "form_factor": "wide",
+      "label": "Explora spots y especies en FishSpot"
     }
   ]
 }

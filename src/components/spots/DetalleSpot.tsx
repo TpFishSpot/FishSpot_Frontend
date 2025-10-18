@@ -8,15 +8,18 @@ import { obtenerCoordenadas } from "../../utils/spotUtils"
 import apiFishSpot from "../../api/apiFishSpot"
 import type { Comentario } from "../../modelo/Comentario"
 import ComentariosList from "../comentario/ComentariosList"
-
-const formatNumber = (num: number | undefined | null, decimals = 1): string => {
-  return (num || 0).toFixed(decimals);
-}
+import { useCapturasDestacadas } from "../../hooks/capturas/useCapturasDestacadas"
+import { CapturaDestacadaCard } from "../capturas/CapturaDestacadaCard"
+import { Trophy, FishIcon } from "lucide-react"
+import FormularioCaptura from "../capturas/FormularioCaptura"
+import { crearCaptura } from "../../api/capturasApi"
 
 export default function DetalleSpot() {
   const { id } = useParams<{ id: string }>();
   const { spot, especies, tiposPesca, loading, error } = useDetalleSpot(id!);
+  const { capturas: capturasDestacadas, loading: loadingCapturas } = useCapturasDestacadas(id);
   const [esFavorito, setEsFavorito] = useState(false)
+  const [formularioAbierto, setFormularioAbierto] = useState(false)
 
   const [comentarios, setComentarios] = useState<Comentario[]>([])
   const [nuevoComentario, setNuevoComentario] = useState("")
@@ -81,6 +84,26 @@ export default function DetalleSpot() {
     }
   };
 
+  const manejarGuardarCaptura = async (capturaData: any) => {
+    try {
+      const coordenadas = spot ? obtenerCoordenadas(spot) : undefined;
+      
+      const datosConSpot = {
+        ...capturaData,
+        spotId: id,
+        latitud: coordenadas?.latitud,
+        longitud: coordenadas?.longitud,
+      };
+
+      await crearCaptura(datosConSpot);
+      alert("✅ Captura registrada con éxito en este spot");
+      setFormularioAbierto(false);
+      window.location.reload();
+    } catch (err: any) {
+      alert(`❌ Error al registrar la captura: ${err.message}`);
+    }
+  };
+
   useEffect(() => {
     cargarComentarios()
   }, [id])
@@ -104,7 +127,6 @@ export default function DetalleSpot() {
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <h2 className="text-2xl font-bold text-card-foreground mb-4 flex items-center gap-2">
-              <span className="text-primary">📍</span>
               Descripción
             </h2>
             <p className="text-foreground leading-relaxed text-lg">{spot.descripcion}</p>
@@ -112,7 +134,28 @@ export default function DetalleSpot() {
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
-              <span className="text-accent">🐟</span>
+              <Trophy className="w-6 h-6 text-yellow-500" />
+              Capturas Destacadas
+            </h2>
+            {loadingCapturas ? (
+              <p className="text-muted-foreground">Cargando capturas...</p>
+            ) : capturasDestacadas.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {capturasDestacadas.map((captura, index) => (
+                  <CapturaDestacadaCard key={captura.id} captura={captura} ranking={index + 1} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <p className="text-muted-foreground">Aún no hay capturas registradas en este spot</p>
+                <p className="text-sm text-muted-foreground mt-1">¡Sé el primero en registrar una!</p>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
               Especies Registradas
             </h2>
             <ListaEspecies especies={especies} cargando={loading} />
@@ -120,7 +163,6 @@ export default function DetalleSpot() {
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
-              <span className="text-secondary">🎣</span>
               Tipos de Pesca
             </h2>
             {loading ? (
@@ -180,26 +222,32 @@ export default function DetalleSpot() {
             </div>
           </div>
 
-          {coordenadas && (
-            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-              <h3 className="text-xl font-bold text-card-foreground mb-4 flex items-center gap-2">
-                <span className="text-primary">🗺️</span>
-                Coordenadas
-              </h3>
-              <div className="space-y-2 text-sm text-foreground">
-                <div className="flex justify-between">
-                  <span className="font-medium">Latitud:</span>
-                  <span className="font-mono">{formatNumber(coordenadas.latitud, 6)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Longitud:</span>
-                  <span className="font-mono">{formatNumber(coordenadas.longitud, 6)}</span>
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl shadow-sm border-2 border-primary/30 p-6 hover:border-primary/50 transition-all duration-300">
+            <h3 className="text-xl font-bold text-card-foreground mb-4 flex items-center gap-2">
+              <FishIcon className="w-6 h-6 text-primary" />
+              Registra tu captura
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              ¿Pescaste en este spot? Registra tu captura y compite por el podio de las mejores capturas.
+            </p>
+            <button
+              onClick={() => setFormularioAbierto(true)}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+            >
+              <FishIcon className="w-5 h-5" />
+              Registrar Captura Aquí
+            </button>
+          </div>
         </div>
       </div>
+
+      <FormularioCaptura
+        isOpen={formularioAbierto}
+        onClose={() => setFormularioAbierto(false)}
+        onSave={manejarGuardarCaptura}
+        coordenadasSpot={coordenadas ?? undefined}
+        nombreSpot={spot.nombre}
+      />
     </div>
   )
 }

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { X, Camera, Upload, Calendar, MapPin, Ruler, Weight, Fish, Target } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Camera, Upload, Calendar, MapPin, Ruler, Weight, Fish, Target, Navigation, Loader2 } from 'lucide-react';
 import { useEspecies } from '../../hooks/especies/useEspecies';
 import { useCarnadas } from '../../hooks/carnadas/useCarnadas';
 import { useTiposPesca } from '../../hooks/carnadas/useTiposPesca';
+import { useGeolocalizacion } from '../../hooks/ui/useGeolocalizacion';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { obtenerNombreMostrar } from '../../utils/especiesUtils';
 
 interface NuevaCapturaData {
@@ -10,8 +12,11 @@ interface NuevaCapturaData {
   especieNombre: string
   fecha: string
   ubicacion: string
-  peso?: number
+  spotId?: string
+  latitud?: number
   longitud?: number
+  peso?: number
+  tamanio?: number
   carnada: string
   tipoPesca: string
   foto?: File
@@ -24,9 +29,15 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   onSave: (captura: NuevaCapturaData) => void
+  coordenadasSpot?: { latitud: number; longitud: number }
+  nombreSpot?: string
 }
 
-const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
+const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenadasSpot, nombreSpot }) => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { position, cargandoPosicion, esUbicacionUsuario } = useGeolocalizacion()
+  
   const [formData, setFormData] = useState<NuevaCapturaData>({
     especieId: '',
     especieNombre: '',
@@ -37,6 +48,10 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
     horaCaptura: new Date().toTimeString().slice(0, 5)
   })
   const [fotoPreview, setFotoPreview] = useState<string>('')
+  const [gpsConfirmado, setGpsConfirmado] = useState(false)
+  const [gpsRechazado, setGpsRechazado] = useState(false)
+
+  const esDesdeSpot = !!coordenadasSpot
 
   const { especies, loading: loadingEspecies, error: errorEspecies } = useEspecies()
   const { carnadas, loading: loadingCarnadas, error: errorCarnadas } = useCarnadas()
@@ -46,7 +61,7 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
   const hasErrors = errorEspecies || errorCarnadas || errorTipos
 
   const carnadasPorTipo = carnadas.reduce<Record<string, typeof carnadas[0][]>>((grupos, carnada) => {
-    const tipo = carnada.tipoCarnada
+    const tipo = carnada.tipo
     if (!grupos[tipo]) {
       grupos[tipo] = []
     }
@@ -62,6 +77,56 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
     'Tormentoso',
     'Neblina'
   ]
+
+  useEffect(() => {
+    if (isOpen && position && esUbicacionUsuario && Array.isArray(position) && !gpsConfirmado && !gpsRechazado && !esDesdeSpot) {
+      const [lat, lng] = position
+      setFormData(prev => ({
+        ...prev,
+        latitud: lat,
+        longitud: lng
+      }))
+    }
+  }, [isOpen, position, esUbicacionUsuario, gpsConfirmado, gpsRechazado, esDesdeSpot])
+
+  useEffect(() => {
+    if (coordenadasSpot) {
+      setFormData(prev => ({
+        ...prev,
+        latitud: coordenadasSpot.latitud,
+        longitud: coordenadasSpot.longitud,
+        ubicacion: nombreSpot || prev.ubicacion
+      }))
+      setGpsConfirmado(true)
+    }
+  }, [coordenadasSpot, nombreSpot])
+
+  useEffect(() => {
+    if (location.state?.coordenadas && !esDesdeSpot) {
+      const { lat, lng } = location.state.coordenadas
+      setFormData(prev => ({
+        ...prev,
+        latitud: lat,
+        longitud: lng
+      }))
+      setGpsConfirmado(true)
+    }
+  }, [location.state, esDesdeSpot])
+
+  const handleAceptarGPS = () => {
+    setGpsConfirmado(true)
+    setGpsRechazado(false)
+  }
+
+  const handleRechazarGPS = () => {
+    setGpsRechazado(true)
+    setGpsConfirmado(false)
+    setFormData(prev => ({
+      ...prev,
+      latitud: undefined,
+      longitud: undefined
+    }))
+  }
 
   const handleInputChange = (field: keyof NuevaCapturaData, value: string | number) => {
     setFormData(prev => ({
@@ -93,11 +158,20 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
     }
   }
 
+  const handleSeleccionarEnMapa = () => {
+    navigate('/mapa', { state: { modoSeleccion: true, volverModal: true } })
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.especieId || !formData.ubicacion || !formData.carnada || !formData.tipoPesca) {
+    if (!formData.especieId || !formData.carnada || !formData.tipoPesca) {
       alert('Por favor completa los campos obligatorios')
+      return
+    }
+
+    if (!formData.latitud || !formData.longitud) {
+      alert('Por favor selecciona una ubicación en el mapa o activa el GPS')
       return
     }
 
@@ -116,6 +190,8 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
       horaCaptura: new Date().toTimeString().slice(0, 5)
     })
     setFotoPreview('')
+    setGpsConfirmado(false)
+    setGpsRechazado(false)
     onClose()
   }
 
@@ -294,12 +370,12 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground flex items-center space-x-2">
                 <Ruler className="w-4 h-4" />
-                <span>Longitud (cm)</span>
+                <span>Tamaño (cm)</span>
               </label>
               <input
                 type="number"
-                value={formData.longitud || ''}
-                onChange={(e) => handleInputChange('longitud', parseInt(e.target.value) || 0)}
+                value={formData.tamanio || ''}
+                onChange={(e) => handleInputChange('tamanio', parseInt(e.target.value) || 0)}
                 className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
                 placeholder="Ej: 45"
               />
@@ -311,14 +387,79 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
               <MapPin className="w-4 h-4" />
               <span>Ubicación *</span>
             </label>
-            <input
-              type="text"
-              value={formData.ubicacion}
-              onChange={(e) => handleInputChange('ubicacion', e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
-              placeholder="Ej: Río Paraná - Puerto Iguazú"
-              required
-            />
+
+            {!cargandoPosicion && formData.latitud && formData.longitud && !gpsConfirmado && !gpsRechazado && !esDesdeSpot && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                <p className="text-sm text-blue-800 dark:text-blue-200 mb-2 font-medium">
+                  📍 Ubicación GPS detectada
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-300 mb-3">
+                  Coordenadas: {formData.latitud.toFixed(6)}, {formData.longitud.toFixed(6)}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAceptarGPS}
+                    className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Usar esta ubicación
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRechazarGPS}
+                    className="flex-1 px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Elegir otra
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {gpsConfirmado && formData.latitud && formData.longitud && (
+              <div className={`${esDesdeSpot ? 'bg-primary/10 border-primary' : 'bg-green-50 dark:bg-green-900/20'} border ${esDesdeSpot ? 'border-primary' : 'border-green-200 dark:border-green-800'} rounded-lg p-3`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-sm ${esDesdeSpot ? 'text-primary' : 'text-green-800 dark:text-green-200'} font-medium flex items-center gap-2`}>
+                    <Navigation className="w-4 h-4" />
+                    {esDesdeSpot ? 'Ubicación del Spot' : 'Ubicación confirmada'}
+                  </span>
+                  {!esDesdeSpot && (
+                    <button
+                      type="button"
+                      onClick={handleRechazarGPS}
+                      className="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 transition-colors"
+                    >
+                      Cambiar
+                    </button>
+                  )}
+                </div>
+                <p className={`text-xs ${esDesdeSpot ? 'text-primary/80' : 'text-green-600 dark:text-green-300'}`}>
+                  {esDesdeSpot ? '📍 ' : 'GPS: '}{formData.latitud.toFixed(6)}, {formData.longitud.toFixed(6)}
+                </p>
+                {esDesdeSpot && nombreSpot && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Tu captura se registrará en: <span className="font-semibold">{nombreSpot}</span>
+                  </p>
+                )}
+              </div>
+            )}
+
+            {(gpsRechazado || (!formData.latitud && !cargandoPosicion)) && !esDesdeSpot && (
+              <button
+                type="button"
+                onClick={handleSeleccionarEnMapa}
+                className="w-full px-4 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors flex items-center justify-center space-x-2"
+              >
+                <MapPin className="w-5 h-5" />
+                <span>Seleccionar ubicación en el mapa</span>
+              </button>
+            )}
+
+            {cargandoPosicion && (
+              <div className="flex items-center justify-center py-4 text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                <span className="text-sm">Obteniendo ubicación GPS...</span>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -339,7 +480,7 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave }) => {
               {Object.entries(carnadasPorTipo).map(([tipo, carnadasDelTipo]) => (
                 <optgroup key={tipo} label={tipo}>
                   {carnadasDelTipo.map(carnada => (
-                    <option key={carnada.id} value={carnada.id} title={carnada.descripcion}>
+                    <option key={carnada.idCarnada} value={carnada.idCarnada} title={carnada.descripcion}>
                       {carnada.nombre}
                     </option>
                   ))}

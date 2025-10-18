@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
+    basicSsl(),
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
@@ -147,8 +149,14 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 5173,
     host: true,
+    allowedHosts: [
+      'localhost',
+      '.ngrok-free.app',
+      '.ngrok.io',
+      'd2e7f28b19db.ngrok-free.app'
+    ],
     cors: {
-      origin: ['http://localhost:3000', 'http://localhost:5173'],
+      origin: ['http://localhost:3000', 'http://localhost:5173', 'http://192.168.1.43:3000'],
       credentials: true
     }
   }

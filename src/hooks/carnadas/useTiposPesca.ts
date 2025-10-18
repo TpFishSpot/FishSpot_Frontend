@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { obtenerTiposPesca, type TipoPesca } from '../../api/tiposPescaApi'
+import  { obtenerTiposPesca} from '../../api/tiposPescaApi'
+import type { TipoPesca } from '../../modelo/TipoPesca'
 
 export const useTiposPesca = () => {
   const [tiposPesca, setTiposPesca] = useState<TipoPesca[]>([])

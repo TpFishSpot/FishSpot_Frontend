@@ -9,13 +9,13 @@ import { useAuth } from "../contexts/AuthContext";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { MobileLayout } from "../components/layouts/MobileLayout";
 
-// Cargan solo cuando se necesitan
 const DetalleSpot = lazy(() => import("../components/spots/DetalleSpot"));
 const CrearSpot = lazy(() => import("../components/spots/CrearSpot").then(module => ({ default: module.CrearSpot })));
 const DetalleEspecie = lazy(() => import("../components/especies/DetalleEspecie"));
 const ListaSpots = lazy(() => import("../components/spots/ListarSpots").then(module => ({ default: module.ListaSpots })));
 const GuiaEspecies = lazy(() => import("../components/especies/GuiaEspecies"));
 const MisCapturas = lazy(() => import("../components/capturas/MisCapturas"));
+const NuevaCaptura = lazy(() => import("../components/capturas/NuevaCaptura"));
 const ListaUsuarios = lazy(() => import("../components/usuario/ListarUsuarios").then(module => ({ default: module.ListaUsuarios })));
 const ListaCarnadas = lazy(() => import("../components/carnadas/ListaCarnadas"));
 const EditarUsuario = lazy(() => import("../components/usuario/EditarUsuario").then(module => ({ default: module.EditarUsuario })));
@@ -26,13 +26,11 @@ export const AppRoutes: React.FC = () => {
   return (
     <MobileLayout>
       <Routes>
-        {/* rutas mas importantes se cargan en inicio*/}
         <Route path="/" element={<Mapa />} />
         <Route path="/mapa" element={<Mapa />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
 
-        {/* rutas que se cargan cuando el usuario navega */}
         <Route 
           path="/ver/:id" 
           element={
@@ -74,6 +72,14 @@ export const AppRoutes: React.FC = () => {
         } 
       />
       <Route 
+        path="/nueva-captura" 
+        element={
+          <Suspense fallback={<LoadingSkeleton />}>
+            <NuevaCaptura />
+          </Suspense>
+        } 
+      />
+      <Route 
         path="/carnada" 
         element={
           <Suspense fallback={<LoadingSkeleton />}>
@@ -82,7 +88,6 @@ export const AppRoutes: React.FC = () => {
         } 
       />
 
-      {/* protegidas que cargan con lazy */}
       <Route
         path="/crear-spot"
         element={

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import type { TipoPesca } from '../../modelo/TipoPesca'
-import type { Especie } from '../../api/especiesApi'
+import type { Especie } from '../../modelo/Especie'
 import { obtenerNombreMostrar, obtenerImagenEspecie } from '../../utils/especiesUtils'
 
 interface FiltroCompletoProps {
@@ -12,6 +12,9 @@ interface FiltroCompletoProps {
   onToggleEspecie: (especie: string) => void
   onLimpiarFiltros: () => void
   cargando: boolean
+  distanciaMax?: number | null
+  onDistanciaChange?: (distancia: number | null) => void
+  isMobile?: boolean
 }
 
 export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
@@ -22,7 +25,10 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
   onToggleTipoPesca,
   onToggleEspecie,
   onLimpiarFiltros,
-  cargando
+  cargando,
+  distanciaMax,
+  onDistanciaChange,
+  isMobile = false
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'tipos' | 'especies'>('tipos')
@@ -41,7 +47,7 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
   }
 
   return (
-    <div className="absolute top-4 right-4 z-10">
+    <div className="absolute top-4 right-4 z-[60] flex flex-col gap-2 items-end">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
@@ -71,9 +77,42 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
         </svg>
       </button>
 
+      {onDistanciaChange && (
+        <div className={`bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md border flex items-center gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
+          <label className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-700 whitespace-nowrap`}>
+            {isMobile ? 'Distancia:' : 'Distancia máx:'}
+          </label>
+          <select
+            value={distanciaMax ?? ""}
+            onChange={(e) => onDistanciaChange(e.target.value ? Number(e.target.value) : null)}
+            className={`border rounded px-2 py-1 ${isMobile ? 'text-xs' : 'text-sm'} bg-white`}
+          >
+            <option value="">Sin límite</option>
+            {isMobile ? (
+              <>
+                <option value="1">1 km</option>
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+                <option value="25">25 km</option>
+                <option value="50">50 km</option>
+              </>
+            ) : (
+              <>
+                <option value="15">15 km</option>
+                <option value="30">30 km</option>
+                <option value="50">50 km</option>
+                <option value="100">100 km</option>
+                <option value="200">200 km</option>
+                <option value="300">300 km</option>
+              </>
+            )}
+          </select>
+        </div>
+      )}
+
       {isOpen && (
-        <div className="absolute top-12 right-0 bg-white rounded-lg shadow-lg border border-gray-200 w-96 max-h-96 overflow-hidden">
-          <div className="flex items-center justify-between p-4 border-b">
+        <div className={`fixed ${isMobile ? 'inset-x-4 top-20 bottom-24' : 'absolute top-12 right-0 w-96 max-h-96'} bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden flex flex-col`}>
+          <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
             <h4 className="font-medium text-gray-900">Filtros</h4>
             {totalFiltros > 0 && (
               <button
@@ -85,8 +124,7 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
             )}
           </div>
 
-          {/* Pestañas */}
-          <div className="flex border-b">
+          <div className="flex border-b flex-shrink-0">
             <button
               onClick={() => setActiveTab('tipos')}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
@@ -109,8 +147,7 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
             </button>
           </div>
 
-          {/* Contenido de pestañas */}
-          <div className="p-4 max-h-64 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto p-4">
             {activeTab === 'tipos' && (
               <div className="space-y-2">
                 {tiposPescaDisponibles.length === 0 ? (
@@ -175,9 +212,9 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
                             <span className="text-sm text-gray-700 block font-medium">
                               {nombreEspecie}
                             </span>
-                            {especie.nombre_comun && especie.nombre_comun[0] && (
+                            {especie.nombresComunes && especie.nombresComunes[0] && (
                               <span className="text-xs text-gray-500 italic">
-                                {especie.nombre_cientifico}
+                                {especie.nombreCientifico}
                               </span>
                             )}
                           </div>
@@ -192,7 +229,6 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
         </div>
       )}
 
-      {/* Filtros activos */}
       {totalFiltros > 0 && !isOpen && (
         <div className="mt-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md border max-w-sm">
           <p className="text-xs text-gray-600 mb-1">Filtros activos:</p>
@@ -202,7 +238,7 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
                 key={`tipo-${tipo}`}
                 className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
               >
-                🎣 {tipo}
+                {tipo}
                 <button
                   onClick={() => onToggleTipoPesca(tipo)}
                   className="hover:bg-blue-200 rounded-full p-0.5"
@@ -218,7 +254,7 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
                 key={`especie-${especie}`}
                 className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
               >
-                🐟 {especie}
+                {especie}
                 <button
                   onClick={() => onToggleEspecie(especie)}
                   className="hover:bg-green-200 rounded-full p-0.5"

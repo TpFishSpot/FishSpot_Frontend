@@ -31,7 +31,7 @@ const MobileNavigationBar: React.FC<NavigationBarProps> = ({ onSearch, className
   };
 
   return (
-    <div className={`bg-background/95 backdrop-blur-sm shadow-lg border-b border-border z-[100] ${className}`} style={{overflow: 'visible'}}>
+    <div className={`fixed top-0 left-0 right-0 bg-background/95 backdrop-blur-sm shadow-lg border-b border-border z-[100] safe-area-inset-top ${className}`} style={{overflow: 'visible'}}>
       <div className="w-full px-2">
         <div className="flex items-center h-14 justify-between relative" style={{overflow: 'visible'}}>
           <button
