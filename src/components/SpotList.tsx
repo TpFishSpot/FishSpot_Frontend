@@ -15,7 +15,7 @@ export const SpotCard = memo(({ spot, onClick, className = '' }: SpotCardProps) 
   }, [onClick, spot]);
 
   const imageUrl = spot.imagenPortada 
-    ? `${import.meta.env.BASE_URL}/uploads/${spot.imagenPortada}`
+    ? `${import.meta.env.VITE_API_URL}/uploads/${spot.imagenPortada}`
     : '/images/placeholder-spot.jpg';
 
   return (

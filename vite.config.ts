@@ -149,14 +149,8 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 5173,
     host: true,
-    allowedHosts: [
-      'localhost',
-      '.ngrok-free.app',
-      '.ngrok.io',
-      'd2e7f28b19db.ngrok-free.app'
-    ],
     cors: {
-      origin: ['http://localhost:3000', 'http://localhost:5173', 'http://192.168.1.43:3000'],
+      origin: ['http://localhost:3000', 'http://localhost:5173'],
       credentials: true
     }
   }

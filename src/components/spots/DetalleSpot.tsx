@@ -1,13 +1,10 @@
-import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useParams } from "react-router-dom"
 import ListaEspecies from "../especies/ListaEspecies"
 import SpotHeader from "./SpotHeader"
 import { useDetalleSpot } from "../../hooks/spots/useDetalleSpot"
 import { obtenerCoordenadas } from "../../utils/spotUtils"
-import apiFishSpot from "../../api/apiFishSpot"
-import type { Comentario } from "../../modelo/Comentario"
-import ComentariosList from "../comentario/ComentariosList"
+import { ComentariosList } from "../comentario/ComentariosList"
 import { useCapturasDestacadas } from "../../hooks/capturas/useCapturasDestacadas"
 import { CapturaDestacadaCard } from "../capturas/CapturaDestacadaCard"
 import { Trophy, FishIcon } from "lucide-react"
@@ -20,11 +17,6 @@ export default function DetalleSpot() {
   const { capturas: capturasDestacadas, loading: loadingCapturas } = useCapturasDestacadas(id);
   const [esFavorito, setEsFavorito] = useState(false)
   const [formularioAbierto, setFormularioAbierto] = useState(false)
-
-  const [comentarios, setComentarios] = useState<Comentario[]>([])
-  const [nuevoComentario, setNuevoComentario] = useState("")
-  const [loadingComentarios, setLoadingComentarios] = useState(false)
-  const [errorComentarios, setErrorComentarios] = useState("")
 
   const manejarFavorito = () => setEsFavorito(!esFavorito)
 
@@ -40,61 +32,15 @@ export default function DetalleSpot() {
 
   const manejarVolver = () => window.history.back()
 
-  const cargarComentarios = async () => {
-    if (!id) return;
-    try {
-      setLoadingComentarios(true);
-
-      const token = localStorage.getItem("token");
-      const { data } = await apiFishSpot.get(`/comentario/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      setComentarios(data);
-    } catch (err: any) {
-      setErrorComentarios(err.message);
-    } finally {
-      setLoadingComentarios(false);
-    }
-  };
-
-  const enviarComentario = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!nuevoComentario.trim()) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      await apiFishSpot.post(
-        "/comentario",
-        { idSpot: id, contenido: nuevoComentario },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      alert("✅ Comentario publicado con éxito");
-      setNuevoComentario("");
-      cargarComentarios();
-    } catch (err: any) {
-      alert(`❌ Error: ${err.message}`);
-    }
-  };
-
   const manejarGuardarCaptura = async (capturaData: any) => {
     try {
       const coordenadas = spot ? obtenerCoordenadas(spot) : undefined;
-      
       const datosConSpot = {
         ...capturaData,
         spotId: id,
         latitud: coordenadas?.latitud,
         longitud: coordenadas?.longitud,
       };
-
       await crearCaptura(datosConSpot);
       alert("✅ Captura registrada con éxito en este spot");
       setFormularioAbierto(false);
@@ -103,10 +49,6 @@ export default function DetalleSpot() {
       alert(`❌ Error al registrar la captura: ${err.message}`);
     }
   };
-
-  useEffect(() => {
-    cargarComentarios()
-  }, [id])
 
   if (loading) return <p>Cargando...</p>
   if (error || !spot) return <p>{error || "Spot no encontrado"}</p>
@@ -183,15 +125,15 @@ export default function DetalleSpot() {
               <p className="text-muted-foreground italic">No hay tipos de pesca registrados para este spot.</p>
             )}
           </div>
-          
-          <ComentariosList
-            comentarios={comentarios}
-            loading={loadingComentarios}
-            error={errorComentarios}
-            nuevoComentario={nuevoComentario}
-            setNuevoComentario={setNuevoComentario}
-            enviarComentario={enviarComentario}
-          />
+
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-2xl font-bold text-card-foreground mb-4">
+              Comentarios
+            </h2>
+
+            <ComentariosList idSpot={id!} />
+          </div>
+
         </div>
 
         <div className="space-y-6">
