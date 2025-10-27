@@ -8,22 +8,19 @@ const api = axios.create({
 export interface DashboardData {
   spots: any[];
   especies: any[];
-  tiposPesca: any[];
   timestamp: string;
 }
 
 export const dashboardApi = {
   getDashboardData: async (): Promise<DashboardData> => {
-    const [spotsRes, especiesRes, tiposPescaRes] = await Promise.all([
+    const [spotsRes, especiesRes] = await Promise.all([
       api.get('/spot'),
       api.get('/especie'),
-      api.get('/tipopesca')
     ]);
 
     return {
       spots: spotsRes.data,
       especies: especiesRes.data,
-      tiposPesca: tiposPescaRes.data,
       timestamp: new Date().toISOString()
     };
   },
@@ -40,28 +37,19 @@ export const spotsApi = {
     return data;
   },
 
-  getTiposPesca: async (id: string) => {
-    const { data } = await api.get(`/spot/${id}/tipoPesca`);
-    return data;
-  },
-
   getCarnadas: async (id: string) => {
     const { data } = await api.get(`/spot/${id}/carnadas`);
     return data;
   },
 
-  filtrar: async (params: { tiposPesca?: string[], especies?: string[] }) => {
+  filtrar: async (params: { especies?: string[] }) => {
     const queryParams = new URLSearchParams();
-    
-    if (params.tiposPesca?.length) {
-      queryParams.append('tiposPesca', params.tiposPesca.join(','));
-    }
     
     if (params.especies?.length) {
       queryParams.append('especies', params.especies.join(','));
     }
 
-    const endpoint = params.especies?.length ? '/spot/filtrar-especies' : '/spot/filtrar';
+    const endpoint = '/spot/filtrar-especies';
     const { data } = await api.get(`${endpoint}?${queryParams.toString()}`);
     return data;
   },
