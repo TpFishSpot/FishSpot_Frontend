@@ -117,3 +117,12 @@ export const obtenerCapturasDestacadas = async (spotId: string): Promise<Captura
     throw error
   }
 }
+
+export const obtenerEstadisticasSpot = async (spotId: string): Promise<any> => {
+  try {
+    const response = await apiFishSpot.get(`/capturas/spot/${spotId}/estadisticas`)
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}

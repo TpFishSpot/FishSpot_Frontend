@@ -10,13 +10,16 @@ import type { Comentario } from "../../modelo/Comentario"
 import ComentariosList from "../comentario/ComentariosList"
 import { useCapturasDestacadas } from "../../hooks/capturas/useCapturasDestacadas"
 import { CapturaDestacadaCard } from "../capturas/CapturaDestacadaCard"
-import { Trophy, FishIcon } from "lucide-react"
+import { Trophy, FishIcon, BarChart3, Target } from "lucide-react"
 import FormularioCaptura from "../capturas/FormularioCaptura"
 import { crearCaptura } from "../../api/capturasApi"
+import { EstadisticasSpot } from "../capturas/EstadisticasSpot"
+import { useEstadisticasSpot } from "../../hooks/capturas/useEstadisticasSpot"
 
 export default function DetalleSpot() {
   const { id } = useParams<{ id: string }>();
-  const { spot, especies, tiposPesca, loading, error } = useDetalleSpot(id!);
+  const { spot, especies, loading, error } = useDetalleSpot(id!);
+  const { estadisticas, loading: loadingEstadisticas } = useEstadisticasSpot(id);
   const { capturas: capturasDestacadas, loading: loadingCapturas } = useCapturasDestacadas(id);
   const [esFavorito, setEsFavorito] = useState(false)
   const [formularioAbierto, setFormularioAbierto] = useState(false)
@@ -156,6 +159,14 @@ export default function DetalleSpot() {
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
+              <BarChart3 className="w-6 h-6 text-primary" />
+              Estadísticas del Spot
+            </h2>
+            <EstadisticasSpot spotId={id!} />
+          </div>
+
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
               Especies Registradas
             </h2>
             <ListaEspecies especies={especies} cargando={loading} />
@@ -163,24 +174,48 @@ export default function DetalleSpot() {
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
-              Tipos de Pesca
+              <Target className="w-6 h-6 text-primary" />
+              Tipos de Pesca Más Usados
             </h2>
-            {loading ? (
-              <p className="text-muted-foreground">Cargando tipos de pesca...</p>
-            ) : tiposPesca.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {tiposPesca.map((tipoPesca) => (
-                  <div
-                    key={tipoPesca.id}
-                    className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-all duration-200"
-                  >
-                    <h3 className="font-bold text-card-foreground text-lg mb-2">{tipoPesca.nombre}</h3>
-                    <p className="text-foreground text-sm leading-relaxed">{tipoPesca.descripcion}</p>
-                  </div>
-                ))}
+            {loadingEstadisticas ? (
+              <p className="text-muted-foreground">Cargando estadísticas...</p>
+            ) : estadisticas?.estadisticas?.tiposPescaMasUsados && estadisticas.estadisticas.tiposPescaMasUsados.length > 0 ? (
+              <div className="space-y-3">
+                {estadisticas.estadisticas.tiposPescaMasUsados.slice(0, 3).map((tipo, index) => {
+                  const total = estadisticas!.estadisticas.totalCapturas
+                  const porcentaje = ((tipo.cantidad / total) * 100).toFixed(1)
+                  
+                  return (
+                    <div
+                      key={tipo.nombre}
+                      className="bg-gradient-to-r from-primary/5 to-transparent border border-border rounded-lg p-4 hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold text-primary">#{index + 1}</span>
+                          <h3 className="font-bold text-card-foreground text-lg">{tipo.nombre}</h3>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">
+                            {tipo.cantidad} {tipo.cantidad === 1 ? 'captura' : 'capturas'}
+                          </p>
+                          <p className="text-xs text-primary font-semibold">{porcentaje}%</p>
+                        </div>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div 
+                          className="bg-primary rounded-full h-2 transition-all duration-500" 
+                          style={{ width: `${porcentaje}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             ) : (
-              <p className="text-muted-foreground italic">No hay tipos de pesca registrados para este spot.</p>
+              <p className="text-muted-foreground italic">
+                Aún no hay capturas registradas para mostrar estadísticas de tipos de pesca.
+              </p>
             )}
           </div>
           

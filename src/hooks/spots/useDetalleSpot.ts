@@ -2,7 +2,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import type { Spot } from '../../modelo/Spot';
 import type { EspecieConNombreComun } from '../../modelo/EspecieConNombreComun';
-import type { TipoPesca } from '../../modelo/TipoPesca';
 import { CACHE_TIMES } from '../../constants/cache';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -10,14 +9,19 @@ const API_BASE_URL = import.meta.env.VITE_API_URL;
 interface SpotCompleteData {
   spot: Spot;
   especies: EspecieConNombreComun[];
-  tiposPesca: TipoPesca[];
 }
-
 
 const fetchSpotComplete = async (spotId: string): Promise<SpotCompleteData> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/spot/${spotId}/complete`);
-    return response.data;
+    const [spotResponse, especiesResponse] = await Promise.all([
+      axios.get(`${API_BASE_URL}/spot/${spotId}`),
+      axios.get(`${API_BASE_URL}/spot/${spotId}/especies`)
+    ]);
+
+    return {
+      spot: spotResponse.data,
+      especies: especiesResponse.data
+    };
   } catch (error: any) {
     if (error.response?.status === 404) {
       throw new Error(`Spot con ID ${spotId} no encontrado`);
@@ -46,13 +50,11 @@ export const useDetalleSpot = (spotId: string) => {
 
   const spot = data?.spot;
   const especies = data?.especies || [];
-  const tiposPesca = data?.tiposPesca || [];
   const loading = isLoading || isRefetching;
 
   return {
     spot,
     especies,
-    tiposPesca,
     loading,
     error: error?.message || null,
     refetch,
