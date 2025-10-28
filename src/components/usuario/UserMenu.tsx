@@ -37,7 +37,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   const foto = usuario?.foto || user.photoURL || '';
 
   return (
-    <div className={`relative group ${className}`}>
+    <div className={`relative group z-[1000] ${className}`}>
       <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-muted transition-colors">
         {foto ? (
           <img

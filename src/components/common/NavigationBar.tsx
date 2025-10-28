@@ -67,7 +67,7 @@ useEffect(() => {
 
   return (
     <>
-      <div className={`bg-background/95 backdrop-blur-sm shadow-lg border-b border-border relative z-50 safe-area-inset-top ${className}`}>
+      <div className={`bg-background/95 backdrop-blur-sm shadow-lg border-b border-border relative z-[1001] safe-area-inset-top ${className}`}>
         <div className="w-full px-2 sm:px-3">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-2">

@@ -6,6 +6,7 @@ import { useTiposPesca } from '../../hooks/carnadas/useTiposPesca';
 import { useGeolocalizacion } from '../../hooks/ui/useGeolocalizacion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { obtenerNombreMostrar } from '../../utils/especiesUtils';
+import { compressImage } from '../../utils/imageCompression';
 
 interface NuevaCapturaData {
   especieId: string
@@ -145,16 +146,23 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
     }
   }
 
-  const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      setFormData(prev => ({ ...prev, foto: file }))
+      try {
+        const compressedFile = await compressImage(file, 1920, 1920, 0.8)
+        
+        setFormData(prev => ({ ...prev, foto: compressedFile }))
 
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setFotoPreview(reader.result as string)
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setFotoPreview(reader.result as string)
+        }
+        reader.readAsDataURL(compressedFile)
+      } catch (error) {
+        console.error('Error al comprimir la imagen:', error)
+        alert('Error al procesar la imagen. Por favor intenta con otra foto.')
       }
-      reader.readAsDataURL(file)
     }
   }
 
