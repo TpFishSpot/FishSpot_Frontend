@@ -3,6 +3,7 @@ import { ComentarioItem } from "./ComentarioItem";
 import ComentarioForm from "./ComentarioForm";
 import apiFishSpot from "../../api/apiFishSpot";
 import type { Comentario } from "../../modelo/Comentario";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface Props {
   idSpot: string;
@@ -19,6 +20,7 @@ export const ComentariosList = ({ idSpot }: Props) => {
   const cargadoRef = useRef(false);
   const [hayMas, setHayMas] = useState(true);
   const [mensajeFinal, setMensajeFinal] = useState("");
+  const { user } = useAuth();
 
 
   const cargarComentarios = async (reset = false) => {
@@ -121,11 +123,13 @@ export const ComentariosList = ({ idSpot }: Props) => {
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">
-      <ComentarioForm
-        nuevoComentario={nuevoComentario}
-        setNuevoComentario={setNuevoComentario}
-        enviarComentario={enviarComentario}
-      />
+      {user && (
+        <ComentarioForm
+          nuevoComentario={nuevoComentario}
+          setNuevoComentario={setNuevoComentario}
+          enviarComentario={enviarComentario}
+        />
+      )}
 
       {comentarios.length === 0 && !cargando && (
         <p className="text-sm text-muted-foreground text-center">No hay comentarios todavía.</p>

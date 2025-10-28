@@ -15,7 +15,12 @@ export const ComentarioItem = ({
 }: Props) => {
   const [respondiendo, setRespondiendo] = useState(false);
   const [respuesta, setRespuesta] = useState("");
-  const foto = `${comentario.usuario.foto}`|| `${import.meta.env.VITE_API_URL}${comentario.usuario.foto}` || '';
+  const fotoUsuario = comentario.usuario?.foto;
+  const foto = fotoUsuario 
+    ? fotoUsuario?.startsWith('http') 
+        ? fotoUsuario
+        :`${import.meta.env.VITE_API_URL}${fotoUsuario}`
+    : null;
 
   const enviarRespuesta = async (e: React.FormEvent) => {
     e.preventDefault();
