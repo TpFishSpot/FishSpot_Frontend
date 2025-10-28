@@ -194,7 +194,11 @@ const MisCapturas: React.FC = () => {
           {filteredCapturas.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCapturas.map((c) => (
-                <div key={c.id} className="bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div 
+                  key={c.id} 
+                  onClick={() => navigate(`/capturas/${c.id}`)}
+                  className="bg-card border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                >
                   <div className="relative h-48 bg-muted">
                     {c.foto ? (
                       <img
@@ -215,13 +219,19 @@ const MisCapturas: React.FC = () => {
                     </div>
                     <div className="absolute top-2 right-2 flex space-x-1">
                       <button
-                        onClick={() => alert('Función de editar próximamente disponible')}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          alert('Función de editar próximamente disponible')
+                        }}
                         className="p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => c.id && handleDeleteCaptura(c.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          c.id && handleDeleteCaptura(c.id)
+                        }}
                         className="p-1 bg-black/50 text-white rounded-full hover:bg-red-600 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />

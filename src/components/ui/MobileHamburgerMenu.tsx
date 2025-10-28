@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Menu, X, User, LogOut, Users, MapPin, Settings, Sun, Moon, Monitor } from 'lucide-react';
+import { Menu, X, User, LogOut, Users, MapPin, Settings, Sun, Moon, Monitor, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../auth/AuthFirebase';
@@ -119,6 +119,14 @@ export const MobileHamburgerMenu = () => {
                 >
                   <Settings className="w-5 h-5" />
                   <span className="text-sm font-medium">Configuración</span>
+                </button>
+
+                <button
+                  onClick={() => handleNavigation('/estadisticas')}
+                  className="w-full flex items-center space-x-3 px-5 py-3 text-foreground hover:bg-muted transition-colors active:bg-muted/70 rounded-xl mb-2"
+                >
+                  <TrendingUp className="w-5 h-5" />
+                  <span className="text-sm font-medium">Destacados</span>
                 </button>
 
                 <div className="px-4 py-2 mb-1">

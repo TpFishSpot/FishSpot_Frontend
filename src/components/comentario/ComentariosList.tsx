@@ -5,10 +5,11 @@ import apiFishSpot from "../../api/apiFishSpot";
 import type { Comentario } from "../../modelo/Comentario";
 
 interface Props {
-  idSpot: string;
+  idSpot?: string;
+  idCaptura?: string;
 }
 
-export const ComentariosList = ({ idSpot }: Props) => {
+export const ComentariosList = ({ idSpot, idCaptura }: Props) => {
   const [comentarios, setComentarios] = useState<Comentario[]>([]);
   const [nuevoComentario, setNuevoComentario] = useState("");
   const [lastFecha, setLastFecha] = useState<string | null>(null);
@@ -19,6 +20,9 @@ export const ComentariosList = ({ idSpot }: Props) => {
   const cargadoRef = useRef(false);
   const [hayMas, setHayMas] = useState(true);
   const [mensajeFinal, setMensajeFinal] = useState("");
+
+  const entityId = idSpot || idCaptura;
+  const entityType = idSpot ? 'spot' : 'captura';
 
 
   const cargarComentarios = async (reset = false) => {
@@ -33,7 +37,7 @@ export const ComentariosList = ({ idSpot }: Props) => {
           : "";
 
       const { data } = await apiFishSpot.get<Comentario[]>(
-        `/comentario/${idSpot}${query}`,
+        `/comentario/${entityId}${query}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -73,9 +77,13 @@ export const ComentariosList = ({ idSpot }: Props) => {
     if (!nuevoComentario.trim()) return;
 
     try {
+      const payload = idSpot 
+        ? { idSpot, contenido: nuevoComentario }
+        : { idCaptura, contenido: nuevoComentario };
+
       const { data } = await apiFishSpot.post<Comentario>(
         "/comentario",
-        { idSpot, contenido: nuevoComentario },
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -90,9 +98,13 @@ export const ComentariosList = ({ idSpot }: Props) => {
 
   const handleResponder = async (idComentarioPadre: string, contenido: string) => {
     try {
+      const payload = idSpot
+        ? { idSpot, idComentarioPadre, contenido }
+        : { idCaptura, idComentarioPadre, contenido };
+
       const { data } = await apiFishSpot.post<Comentario>(
         "/comentario/responder",
-        { idSpot, idComentarioPadre, contenido },
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -117,7 +129,7 @@ export const ComentariosList = ({ idSpot }: Props) => {
     setComentarios([]);
     setLastFecha(null);
     cargarComentarios(true);
-  }, [idSpot]);
+  }, [entityId]);
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-6 space-y-4">

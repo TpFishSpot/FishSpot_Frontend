@@ -19,6 +19,8 @@ const NuevaCaptura = lazy(() => import("../components/capturas/NuevaCaptura"));
 const ListaUsuarios = lazy(() => import("../components/usuario/ListarUsuarios").then(module => ({ default: module.ListaUsuarios })));
 const ListaCarnadas = lazy(() => import("../components/carnadas/ListaCarnadas"));
 const EditarUsuario = lazy(() => import("../components/usuario/EditarUsuario").then(module => ({ default: module.EditarUsuario })));
+const EstadisticasGlobales = lazy(() => import("../components/estadisticas/EstadisticasGlobales").then(module => ({ default: module.EstadisticasGlobales })));
+const DetalleCaptura = lazy(() => import("../components/capturas/DetalleCaptura"));
 
 export const AppRoutes: React.FC = () => {
   const { user } = useAuth();
@@ -87,6 +89,14 @@ export const AppRoutes: React.FC = () => {
           </Suspense>
         } 
       />
+      <Route 
+        path="/capturas/:id" 
+        element={
+          <Suspense fallback={<LoadingSkeleton />}>
+            <DetalleCaptura />
+          </Suspense>
+        } 
+      />
 
       <Route
         path="/crear-spot"
@@ -133,6 +143,14 @@ export const AppRoutes: React.FC = () => {
         element={
           <Suspense fallback={<LoadingSkeleton />}>
             <EditarUsuario/>
+          </Suspense>
+        } 
+      />
+      <Route 
+        path="/estadisticas" 
+        element={
+          <Suspense fallback={<LoadingSkeleton />}>
+            <EstadisticasGlobales/>
           </Suspense>
         } 
       />

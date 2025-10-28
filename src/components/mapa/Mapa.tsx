@@ -7,13 +7,15 @@ import { useGeolocalizacion } from "../../hooks/ui/useGeolocalizacion"
 import NavigationBar from "../common/NavigationBar"
 import MobileNavigationBar from "../common/MobileNavigationBar"
 import { FiltroCompleto } from "./FiltroCompleto"
+import { HeatmapLayer } from "./HeatmapLayer"
 import { useState, useMemo, useEffect } from "react"
 import { useIsMobile } from "../../hooks/useIsMobile"
 import { useNavigate, useLocation } from "react-router-dom"
-import { Check, X } from "lucide-react"
+import { Check, X, Flame } from "lucide-react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import type { LatLngExpression } from "leaflet"
+import { obtenerHeatmap } from "../../api/capturasApi"
 
 const calcularDistancia = (coord1: [number, number], coord2: [number, number]) => {
   const R = 6371
@@ -102,6 +104,9 @@ export const Mapa = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [distanciaMax, setDistanciaMax] = useState<number | null>(null)
   const [puntoSeleccionado, setPuntoSeleccionado] = useState<[number, number] | null>(null)
+  const [mostrarHeatmap, setMostrarHeatmap] = useState(false)
+  const [heatmapData, setHeatmapData] = useState<any[]>([])
+  const [mesSeleccionado, setMesSeleccionado] = useState<number>()
   const isMobile = useIsMobile()
 
   const handleSeleccionPunto = (lat: number, lng: number) => {
@@ -130,6 +135,22 @@ export const Mapa = () => {
   const handleCancelarSeleccion = () => {
     navigate(-1)
   }
+
+  useEffect(() => {
+    if (mostrarHeatmap) {
+      const cargarHeatmap = async () => {
+        try {
+          const especieId = especiesSeleccionadas.length === 1 ? especiesSeleccionadas[0] : undefined
+          const data = await obtenerHeatmap(especieId, mesSeleccionado)
+          setHeatmapData(data.puntos || [])
+        } catch (error) {
+          console.error('Error cargando heatmap:', error)
+          setHeatmapData([])
+        }
+      }
+      cargarHeatmap()
+    }
+  }, [mostrarHeatmap, especiesSeleccionadas, mesSeleccionado])
 
   useEffect(() => {
     if (isMobile) {
@@ -291,9 +312,11 @@ export const Mapa = () => {
 
           <UseMapaLogic />
 
-          {filteredSpots.map((spot: any) => (
+          {!mostrarHeatmap && filteredSpots.map((spot: any) => (
             <SpotMarker key={spot.id} spot={spot} />
           ))}
+
+          {mostrarHeatmap && <HeatmapLayer puntos={heatmapData} visible={mostrarHeatmap} />}
 
           {modoSeleccion && (
             <>
@@ -351,6 +374,10 @@ export const Mapa = () => {
           distanciaMax={distanciaMax}
           onDistanciaChange={setDistanciaMax}
           isMobile={isMobile}
+          mostrarHeatmap={mostrarHeatmap}
+          onToggleHeatmap={setMostrarHeatmap}
+          mesHeatmap={mesSeleccionado}
+          onMesHeatmapChange={setMesSeleccionado}
         />
 
         {(searchQuery ||

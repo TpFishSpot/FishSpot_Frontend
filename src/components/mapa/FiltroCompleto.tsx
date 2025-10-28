@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import type { TipoPesca } from '../../modelo/TipoPesca'
 import type { Especie } from '../../modelo/Especie'
 import { obtenerNombreMostrar, obtenerImagenEspecie } from '../../utils/especiesUtils'
+import { Flame } from 'lucide-react'
 
 interface FiltroCompletoProps {
   tiposPescaDisponibles: TipoPesca[]
@@ -15,6 +16,10 @@ interface FiltroCompletoProps {
   distanciaMax?: number | null
   onDistanciaChange?: (distancia: number | null) => void
   isMobile?: boolean
+  mostrarHeatmap?: boolean
+  onToggleHeatmap?: (mostrar: boolean) => void
+  mesHeatmap?: number
+  onMesHeatmapChange?: (mes: number | undefined) => void
 }
 
 export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
@@ -28,10 +33,19 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
   cargando,
   distanciaMax,
   onDistanciaChange,
-  isMobile = false
+  isMobile = false,
+  mostrarHeatmap = false,
+  onToggleHeatmap,
+  mesHeatmap,
+  onMesHeatmapChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'tipos' | 'especies'>('tipos')
+
+  const meses = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ]
 
   const totalFiltros = tiposPescaSeleccionados.length + especiesSeleccionadas.length
 
@@ -77,6 +91,22 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
         </svg>
       </button>
 
+      {onToggleHeatmap && (
+        <button
+          onClick={() => onToggleHeatmap(!mostrarHeatmap)}
+          className={`
+            flex items-center gap-2 px-4 py-2 rounded-lg shadow-md border transition-all
+            ${mostrarHeatmap 
+              ? 'bg-orange-600 text-white border-orange-600' 
+              : 'bg-white/90 backdrop-blur-sm text-gray-700 border-gray-200 hover:bg-white'
+            }
+          `}
+        >
+          <Flame className="w-4 h-4" />
+          <span className="text-sm font-medium">Mapa de Calor</span>
+        </button>
+      )}
+
       {onDistanciaChange && (
         <div className={`bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md border flex items-center gap-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
           <label className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-700 whitespace-nowrap`}>
@@ -106,6 +136,22 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
                 <option value="300">300 km</option>
               </>
             )}
+          </select>
+        </div>
+      )}
+
+      {mostrarHeatmap && onMesHeatmapChange && (
+        <div className="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md border flex items-center gap-2 text-sm">
+          <label className="text-sm text-gray-700 whitespace-nowrap">Mes:</label>
+          <select
+            value={mesHeatmap ?? ""}
+            onChange={(e) => onMesHeatmapChange(e.target.value ? Number(e.target.value) : undefined)}
+            className="border rounded px-2 py-1 text-sm bg-white"
+          >
+            <option value="">Todos</option>
+            {meses.map((mes, idx) => (
+              <option key={idx} value={idx + 1}>{mes}</option>
+            ))}
           </select>
         </div>
       )}
