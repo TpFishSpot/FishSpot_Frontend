@@ -17,6 +17,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      window.localStorage.removeItem('token');
       navigate('/login');
     } catch (error) { 
     }
