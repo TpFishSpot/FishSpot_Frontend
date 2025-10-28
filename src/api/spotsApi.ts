@@ -16,7 +16,6 @@ export const obtenerTodosLosSpots = async (): Promise<Spot[]> => {
     const response = await apiFishSpot.get('/spot')
     return response.data
   } catch (error) {
-    console.error('Error al obtener spots:', error)
     throw error
   }
 }
@@ -28,7 +27,6 @@ export const obtenerSpotsPorTipoPesca = async (tiposPesca: string[]): Promise<Sp
     })
     return response.data
   } catch (error) {
-    console.error('Error al filtrar spots por tipo de pesca:', error)
     throw error
   }
 }
@@ -40,7 +38,6 @@ export const obtenerSpotsPorEspecies = async (especies: string[]): Promise<Spot[
     })
     return response.data
   } catch (error) {
-    console.error('Error al filtrar spots por especies:', error)
     throw error
   }
 }
@@ -58,7 +55,6 @@ export const obtenerSpotsConFiltros = async (tiposPesca: string[], especies: str
     const response = await apiFishSpot.get('/spot/filtrar-completo', { params })
     return response.data
   } catch (error) {
-    console.error('Error al filtrar spots con filtros combinados:', error)
     throw error
   }
 }
@@ -68,7 +64,6 @@ export const obtenerSpotPorId = async (id: string): Promise<Spot> => {
     const response = await apiFishSpot.get(`/spot/${id}`)
     return response.data
   } catch (error) {
-    console.error('Error al obtener spot:', error)
     throw error
   }
 }
@@ -92,7 +87,6 @@ export const crearSpot = async (spot: SpotCreacion, imagen?: File): Promise<Spot
     })
     return response.data
   } catch (error) {
-    console.error('Error al crear spot:', error)
     throw error
   }
 }

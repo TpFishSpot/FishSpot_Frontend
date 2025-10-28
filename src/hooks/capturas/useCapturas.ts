@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { obtenerCapturas, crearCaptura, actualizarCaptura, eliminarCaptura, obtenerEstadisticas } from '../../api/capturasApi'
-import type { Captura, NuevaCapturaData, EstadisticasCapturas } from '../../api/capturasApi'
+import type { Captura, NuevaCapturaData, EstadisticasCapturas } from '../../modelo/Captura'
 import { useAuth } from '../../contexts/AuthContext'
 
 export const useCapturas = () => {

@@ -1,21 +1,25 @@
-import type React from "react"
 import { useState } from "react"
 import { useParams } from "react-router-dom"
 import ListaEspecies from "../especies/ListaEspecies"
 import SpotHeader from "./SpotHeader"
 import { useDetalleSpot } from "../../hooks/spots/useDetalleSpot"
 import { obtenerCoordenadas } from "../../utils/spotUtils"
-
-const formatNumber = (num: number | undefined | null, decimals = 1): string => {
-  return (num || 0).toFixed(decimals);
-}
+import { ComentariosList } from "../comentario/ComentariosList"
+import { useCapturasDestacadas } from "../../hooks/capturas/useCapturasDestacadas"
+import { CapturaDestacadaCard } from "../capturas/CapturaDestacadaCard"
+import { Trophy, FishIcon, BarChart3, Target } from "lucide-react"
+import FormularioCaptura from "../capturas/FormularioCaptura"
+import { crearCaptura } from "../../api/capturasApi"
+import { EstadisticasSpot } from "../capturas/EstadisticasSpot"
+import { useEstadisticasSpot } from "../../hooks/capturas/useEstadisticasSpot"
 
 export default function DetalleSpot() {
   const { id } = useParams<{ id: string }>();
-  const { spot, especies, tiposPesca, loading, error } = useDetalleSpot(id!);
+  const { spot, especies, loading, error } = useDetalleSpot(id!);
+  const { estadisticas, loading: loadingEstadisticas } = useEstadisticasSpot(id);
+  const { capturas: capturasDestacadas, loading: loadingCapturas } = useCapturasDestacadas(id);
   const [esFavorito, setEsFavorito] = useState(false)
-  const [reseña, setReseña] = useState("")
-  const [calificacion, setCalificacion] = useState(0)
+  const [formularioAbierto, setFormularioAbierto] = useState(false)
 
   const manejarFavorito = () => setEsFavorito(!esFavorito)
 
@@ -30,10 +34,24 @@ export default function DetalleSpot() {
   }
 
   const manejarVolver = () => window.history.back()
-  const manejarEnviarReseña = (e: React.FormEvent) => {
-    e.preventDefault()
-    alert("Funcionalidad de reseñas próximamente disponible")
-  }
+
+  const manejarGuardarCaptura = async (capturaData: any) => {
+    try {
+      const coordenadas = spot ? obtenerCoordenadas(spot) : undefined;
+      const datosConSpot = {
+        ...capturaData,
+        spotId: id,
+        latitud: coordenadas?.latitud,
+        longitud: coordenadas?.longitud,
+      };
+      await crearCaptura(datosConSpot);
+      alert("✅ Captura registrada con éxito en este spot");
+      setFormularioAbierto(false);
+      window.location.reload();
+    } catch (err: any) {
+      alert(`❌ Error al registrar la captura: ${err.message}`);
+    }
+  };
 
   if (loading) return <p>Cargando...</p>
   if (error || !spot) return <p>{error || "Spot no encontrado"}</p>
@@ -54,7 +72,6 @@ export default function DetalleSpot() {
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <h2 className="text-2xl font-bold text-card-foreground mb-4 flex items-center gap-2">
-              <span className="text-primary">📍</span>
               Descripción
             </h2>
             <p className="text-foreground leading-relaxed text-lg">{spot.descripcion}</p>
@@ -62,7 +79,36 @@ export default function DetalleSpot() {
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
-              <span className="text-accent">🐟</span>
+              <Trophy className="w-6 h-6 text-yellow-500" />
+              Capturas Destacadas
+            </h2>
+            {loadingCapturas ? (
+              <p className="text-muted-foreground">Cargando capturas...</p>
+            ) : capturasDestacadas.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {capturasDestacadas.map((captura, index) => (
+                  <CapturaDestacadaCard key={captura.id} captura={captura} ranking={index + 1} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                <p className="text-muted-foreground">Aún no hay capturas registradas en este spot</p>
+                <p className="text-sm text-muted-foreground mt-1">¡Sé el primero en registrar una!</p>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
+              <BarChart3 className="w-6 h-6 text-primary" />
+              Estadísticas del Spot
+            </h2>
+            <EstadisticasSpot spotId={id!} />
+          </div>
+
+          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
               Especies Registradas
             </h2>
             <ListaEspecies especies={especies} cargando={loading} />
@@ -70,83 +116,59 @@ export default function DetalleSpot() {
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
-              <span className="text-secondary">🎣</span>
-              Tipos de Pesca
+              <Target className="w-6 h-6 text-primary" />
+              Tipos de Pesca Más Usados
             </h2>
-            {loading ? (
-              <p className="text-muted-foreground">Cargando tipos de pesca...</p>
-            ) : tiposPesca.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {tiposPesca.map((tipoPesca) => (
-                  <div
-                    key={tipoPesca.id}
-                    className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-all duration-200"
-                  >
-                    <h3 className="font-bold text-card-foreground text-lg mb-2">{tipoPesca.nombre}</h3>
-                    <p className="text-foreground text-sm leading-relaxed">{tipoPesca.descripcion}</p>
-                  </div>
-                ))}
+            {loadingEstadisticas ? (
+              <p className="text-muted-foreground">Cargando estadísticas...</p>
+            ) : estadisticas?.estadisticas?.tiposPescaMasUsados && estadisticas.estadisticas.tiposPescaMasUsados.length > 0 ? (
+              <div className="space-y-3">
+                {estadisticas.estadisticas.tiposPescaMasUsados.slice(0, 3).map((tipo, index) => {
+                  const total = estadisticas!.estadisticas.totalCapturas
+                  const porcentaje = ((tipo.cantidad / total) * 100).toFixed(1)
+                  
+                  return (
+                    <div
+                      key={tipo.nombre}
+                      className="bg-gradient-to-r from-primary/5 to-transparent border border-border rounded-lg p-4 hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold text-primary">#{index + 1}</span>
+                          <h3 className="font-bold text-card-foreground text-lg">{tipo.nombre}</h3>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">
+                            {tipo.cantidad} {tipo.cantidad === 1 ? 'captura' : 'capturas'}
+                          </p>
+                          <p className="text-xs text-primary font-semibold">{porcentaje}%</p>
+                        </div>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div 
+                          className="bg-primary rounded-full h-2 transition-all duration-500" 
+                          style={{ width: `${porcentaje}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             ) : (
-              <p className="text-muted-foreground italic">No hay tipos de pesca registrados para este spot.</p>
+              <p className="text-muted-foreground italic">
+                Aún no hay capturas registradas para mostrar estadísticas de tipos de pesca.
+              </p>
             )}
           </div>
 
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
-              <span className="text-yellow-500">⭐</span>
-              Escribir Reseña
+            <h2 className="text-2xl font-bold text-card-foreground mb-4">
+              Comentarios
             </h2>
-            <form onSubmit={manejarEnviarReseña} className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-3">Calificación</label>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((estrella) => (
-                    <button
-                      key={estrella}
-                      type="button"
-                      onClick={() => setCalificacion(estrella)}
-                      className={`text-3xl transition-all duration-200 hover:scale-110 ${
-                        estrella <= calificacion
-                          ? "text-yellow-400 drop-shadow-sm"
-                          : "text-muted-foreground hover:text-yellow-200"
-                      }`}
-                    >
-                      ★
-                    </button>
-                  ))}
-                </div>
-                {calificacion > 0 && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {calificacion === 1 && "Muy malo"}
-                    {calificacion === 2 && "Malo"}
-                    {calificacion === 3 && "Regular"}
-                    {calificacion === 4 && "Bueno"}
-                    {calificacion === 5 && "Excelente"}
-                  </p>
-                )}
-              </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-3">Tu experiencia</label>
-                <textarea
-                  value={reseña}
-                  onChange={(e) => setReseña(e.target.value)}
-                  placeholder="Comparte tu experiencia en este spot de pesca..."
-                  className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none transition-all duration-200 bg-card text-card-foreground"
-                  rows={4}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={!calificacion || !reseña.trim()}
-                className="w-full bg-primary text-primary-foreground font-semibold py-3 px-6 rounded-lg hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] disabled:hover:scale-100"
-              >
-                Enviar Reseña
-              </button>
-            </form>
+            <ComentariosList idSpot={id!} />
           </div>
+
         </div>
 
         <div className="space-y-6">
@@ -177,26 +199,32 @@ export default function DetalleSpot() {
             </div>
           </div>
 
-          {coordenadas && (
-            <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-              <h3 className="text-xl font-bold text-card-foreground mb-4 flex items-center gap-2">
-                <span className="text-primary">🗺️</span>
-                Coordenadas
-              </h3>
-              <div className="space-y-2 text-sm text-foreground">
-                <div className="flex justify-between">
-                  <span className="font-medium">Latitud:</span>
-                  <span className="font-mono">{formatNumber(coordenadas.latitud, 6)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Longitud:</span>
-                  <span className="font-mono">{formatNumber(coordenadas.longitud, 6)}</span>
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl shadow-sm border-2 border-primary/30 p-6 hover:border-primary/50 transition-all duration-300">
+            <h3 className="text-xl font-bold text-card-foreground mb-4 flex items-center gap-2">
+              <FishIcon className="w-6 h-6 text-primary" />
+              Registra tu captura
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              ¿Pescaste en este spot? Registra tu captura y compite por el podio de las mejores capturas.
+            </p>
+            <button
+              onClick={() => setFormularioAbierto(true)}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+            >
+              <FishIcon className="w-5 h-5" />
+              Registrar Captura Aquí
+            </button>
+          </div>
         </div>
       </div>
+
+      <FormularioCaptura
+        isOpen={formularioAbierto}
+        onClose={() => setFormularioAbierto(false)}
+        onSave={manejarGuardarCaptura}
+        coordenadasSpot={coordenadas ?? undefined}
+        nombreSpot={spot.nombre}
+      />
     </div>
   )
 }

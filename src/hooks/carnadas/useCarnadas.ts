@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { obtenerCarnadas, type Carnada } from '../../api/carnadasApi'
+import { obtenerCarnadas } from '../../api/carnadasApi'
+import type { Carnada } from '../../modelo/Carnada'
 
 export const useCarnadas = () => {
   const [carnadas, setCarnadas] = useState<Carnada[]>([])

@@ -3,6 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useUsuario } from "../../hooks/usuario/useUsuario";
 import apiFishSpot from "../../api/apiFishSpot";
 import { useNavigate } from "react-router-dom";
+import { compressImage } from "../../utils/imageCompression";
 
 export const EditarUsuario: React.FC = () => {
   const { user } = useAuth();
@@ -19,11 +20,17 @@ export const EditarUsuario: React.FC = () => {
     setImagePreview(usuario.foto || user?.photoURL || undefined);
   }, [usuario, user]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      setImagePreview(URL.createObjectURL(selectedFile));
+      try {
+        const compressedFile = await compressImage(selectedFile, 1024, 1024, 0.8);
+        setFile(compressedFile);
+        setImagePreview(URL.createObjectURL(compressedFile));
+      } catch (error) {
+        console.error('Error al comprimir la imagen:', error);
+        alert('Error al procesar la imagen. Por favor intenta con otra foto.');
+      }
     }
   };
 

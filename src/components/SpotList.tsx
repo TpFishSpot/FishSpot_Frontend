@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react';
 import { LazyImage } from './LazyImage';
 import { LoadingSkeleton } from './LoadingSkeleton';
-import type { Spot } from '../types/api';
+import type { Spot } from '../modelo/Spot';
 
 interface SpotCardProps {
   spot: Spot;
@@ -15,7 +15,7 @@ export const SpotCard = memo(({ spot, onClick, className = '' }: SpotCardProps) 
   }, [onClick, spot]);
 
   const imageUrl = spot.imagenPortada 
-    ? `${import.meta.env.BASE_URL}/uploads/${spot.imagenPortada}`
+    ? `${import.meta.env.VITE_API_URL}/uploads/${spot.imagenPortada}`
     : '/images/placeholder-spot.jpg';
 
   return (
@@ -27,7 +27,7 @@ export const SpotCard = memo(({ spot, onClick, className = '' }: SpotCardProps) 
         src={imageUrl}
         alt={spot.nombre}
         className="w-full h-48 object-cover"
-        placeholder="🎣"
+        placeholder=""
       />
       
       <div className="p-4">
@@ -41,10 +41,10 @@ export const SpotCard = memo(({ spot, onClick, className = '' }: SpotCardProps) 
         
         <div className="flex items-center justify-between text-xs text-gray-500">
           <span className="flex items-center">
-            📍 {spot.ubicacion}
+            {spot.ubicacion.coordinates[1].toFixed(4)}, {spot.ubicacion.coordinates[0].toFixed(4)}
           </span>
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-            spot.estado === 'activo' 
+            spot.estado === 'Aceptado' 
               ? 'bg-green-100 text-green-800' 
               : 'bg-gray-100 text-gray-800'
           }`}>
@@ -77,7 +77,7 @@ export const SpotList = memo(({ spots, isLoading, onSpotClick, className = '' }:
   if (!spots.length) {
     return (
       <div className="text-center py-12">
-        <div className="text-6xl mb-4">🎣</div>
+        <div className="text-6xl mb-4"></div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">
           No se encontraron spots
         </h3>

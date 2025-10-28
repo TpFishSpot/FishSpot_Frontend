@@ -1,6 +1,6 @@
 import type React from "react";
 import { useState, useEffect } from "react";
-import { MapPin, Plus, Menu, X, Search, User, Settings, HelpCircle, Fish, Sun, Moon, Monitor, Camera } from "lucide-react";
+import { MapPin, Menu, X, Search, User, Settings, HelpCircle, Fish, Sun, Moon, Monitor, Camera, FishIcon, MapPinPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserMenu from "../usuario/UserMenu";
 import { useAuth } from "../../contexts/AuthContext";
@@ -67,10 +67,9 @@ useEffect(() => {
 
   return (
     <>
-      <div className={`bg-background/95 backdrop-blur-sm shadow-lg border-b border-border relative z-50 safe-area-inset-top ${className}`}>
+      <div className={`bg-background/95 backdrop-blur-sm shadow-lg border-b border-border relative z-[1001] safe-area-inset-top ${className}`}>
         <div className="w-full px-2 sm:px-3">
           <div className="flex items-center justify-between h-16">
-            {}
             <div className="flex items-center space-x-2">
               {!isMobile && (
                 <button
@@ -82,7 +81,6 @@ useEffect(() => {
                 </button>
               )}
 
-              {}
               <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate("/")}>
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <MapPin className="w-5 h-5 text-primary-foreground" />
@@ -91,7 +89,6 @@ useEffect(() => {
               </div>
             </div>
 
-            {}
             <div className="flex-1 max-w-md mx-8">
               <form onSubmit={handleSearch} className="relative">
                 <div className="relative">
@@ -112,9 +109,19 @@ useEffect(() => {
                 onClick={handleCreateSpot}
                 className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition font-medium"
               >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Crear Spot</span>
+                <MapPinPlus className="w-4 h-4" />
+                <span className="hidden sm:inline">Compartir Spot</span>
               </button>
+
+              {user && (
+                <button
+                  onClick={() => navigate("/nueva-captura")}
+                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition font-medium"
+                >
+                  <FishIcon className="w-4 h-4" />
+                  <span className="hidden sm:inline">Registrar Captura</span>
+                </button>
+              )}
 
               {user && isModerator && (
                 <button
@@ -146,10 +153,8 @@ useEffect(() => {
           {}
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={toggleMenu} />
 
-          {}
           <div className="fixed left-0 top-0 h-full w-80 bg-background border-r border-border shadow-xl">
             <div className="flex flex-col h-full">
-              {}
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -162,7 +167,6 @@ useEffect(() => {
                 </button>
               </div>
 
-              {}
               <nav className="flex-1 p-4 space-y-2">
                 {!user && (
                   <button
@@ -287,7 +291,6 @@ useEffect(() => {
                 </button>
               </nav>
 
-              {}
               {user && (
                 <div className="p-4 border-t border-border">
                   <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">

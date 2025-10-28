@@ -79,7 +79,7 @@ export default function ListaEspeciesSeleccion({ todasEspecies, especiesSeleccio
                       }}
                     />
                   ) : null}
-                  <div className={`text-xs ${esp.imagen ? 'hidden' : ''}`}>🐟</div>
+                  <div className={`text-xs ${esp.imagen ? 'hidden' : ''}`}></div>
                 </div>
 
                 <span className="truncate max-w-24">{obtenerNombrePrincipal(esp)}</span>
@@ -132,7 +132,6 @@ export default function ListaEspeciesSeleccion({ todasEspecies, especiesSeleccio
                       ) : null}
 
                       <div className={`text-muted-foreground text-xs font-bold ${esp.imagen ? 'hidden' : ''}`}>
-                        🐟
                       </div>
                     </div>
                   </div>

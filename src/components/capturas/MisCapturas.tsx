@@ -3,8 +3,7 @@ import { Camera, Plus, Edit3, Trash2, Fish, Trophy, Weight, TrendingUp, Filter, 
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCapturas } from '../../hooks/capturas/useCapturas'
-import FormularioCaptura from './FormularioCaptura'
-import type { NuevaCapturaData, Captura } from '../../api/capturasApi'
+import type { Captura } from '../../modelo/Captura'
 import { buildImageUrl } from '../../utils/imageUtils'
 import { PullToRefresh } from '../ui/PullToRefresh'
 import NavigationBar from '../common/NavigationBar'
@@ -33,8 +32,7 @@ const isValidNumber = (value: any): boolean => {
 const MisCapturas: React.FC = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const { capturas, loading, error, loadCapturas, agregarCaptura, borrarCaptura } = useCapturas()
-  const [showAddModal, setShowAddModal] = useState(false)
+  const { capturas, loading, error, loadCapturas, borrarCaptura } = useCapturas()
   const [filtroEspecie, setFiltroEspecie] = useState<string>('all')
   const isMobile = useIsMobile()
 
@@ -55,11 +53,6 @@ const MisCapturas: React.FC = () => {
     }
     loadCapturas()
   }, [user])
-
-  const handleSaveCaptura = async (nuevaCaptura: NuevaCapturaData) => {
-    await agregarCaptura(nuevaCaptura)
-    setShowAddModal(false)
-  }
 
   const handleDeleteCaptura = async (id: string) => {
     if (confirm('¿Estás seguro de que quieres eliminar esta captura?')) {
@@ -138,7 +131,7 @@ const MisCapturas: React.FC = () => {
         <PullToRefresh onRefresh={loadCapturas}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-foreground mb-2">🎣 Mi Estanque</h1>
+              <h1 className="text-4xl font-bold text-foreground mb-2">Mi Estanque</h1>
               <p className="text-muted-foreground text-lg">Tu diario personal de pesca</p>
             </div>
 
@@ -190,7 +183,7 @@ const MisCapturas: React.FC = () => {
               </select>
             </div>
             <button
-              onClick={() => setShowAddModal(true)}
+              onClick={() => navigate('/nueva-captura')}
               className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg transition-colors font-medium"
             >
               <Plus className="w-5 h-5" />
@@ -288,7 +281,7 @@ const MisCapturas: React.FC = () => {
               </h3>
               <p className="text-muted-foreground mb-6">¡Comienza registrando tu primera captura!</p>
               <button
-                onClick={() => setShowAddModal(true)}
+                onClick={() => navigate('/nueva-captura')}
                 className="inline-flex items-center space-x-2 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg transition-colors font-medium"
               >
                 <Plus className="w-5 h-5" />
@@ -296,8 +289,6 @@ const MisCapturas: React.FC = () => {
               </button>
             </div>
           )}
-
-          <FormularioCaptura isOpen={showAddModal} onClose={() => setShowAddModal(false)} onSave={handleSaveCaptura} />
           </div>
         </PullToRefresh>
       </div>

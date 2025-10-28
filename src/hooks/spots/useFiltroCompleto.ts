@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { Spot } from '../../modelo/Spot'
 import type { TipoPesca } from '../../modelo/TipoPesca'
-import type { Especie } from '../../api/especiesApi'
+import type { Especie } from '../../modelo/Especie'
 import { obtenerTodosLosSpots, obtenerSpotsConFiltros } from '../../api/spotsApi'
 import { obtenerTiposPesca } from '../../api/tiposPescaApi'
 import { obtenerTodasLasEspecies } from '../../api/especiesApi'
@@ -92,7 +92,6 @@ export const useFiltroCompleto = () => {
     }
   }
 
-  // Funciones para manejar filtros de especies
   const agregarFiltroEspecie = (nombreCientifico: string) => {
     if (!especiesSeleccionadas.includes(nombreCientifico)) {
       setEspeciesSeleccionadas(prev => [...prev, nombreCientifico])

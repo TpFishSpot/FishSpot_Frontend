@@ -34,7 +34,7 @@ export default function DetalleEspecie() {
               onClick={irAlMapaConFiltro}
               className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors flex items-center gap-2"
             >
-              📍 Dónde pescar
+              Dónde pescar
             </button>
             <button
               onClick={manejarFavorito}
@@ -113,7 +113,7 @@ export default function DetalleEspecie() {
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-              <span className="text-yellow-600">🎣</span> Tipos de pesca recomendados
+              Tipos de pesca recomendados
             </h2>
             {tiposPesca?.length ? (
               <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300">

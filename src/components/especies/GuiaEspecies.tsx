@@ -114,7 +114,7 @@ const GuiaEspecies: React.FC = () => {
         {}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            🐟 Guía de Especies
+            Guía de Especies
           </h1>
           <p className="text-muted-foreground text-lg">
             Descubre todo sobre los peces de nuestros ríos y lagunas

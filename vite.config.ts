@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
 export default defineConfig(({ mode }) => ({
   plugins: [
@@ -14,7 +16,7 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: false,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.ngrok-free\.app\/api\/(especie|carnada|tipopesca)/i,
+            urlPattern: /^https:\/\/192\.168\.1\.41:3000\/api\/(especie|carnada|tipopesca)/i,
             handler: 'CacheFirst', 
             options: {
               cacheName: 'static-api-cache',
@@ -25,7 +27,7 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
-            urlPattern: /^https:\/\/.*\.ngrok-free\.app\/api\/spot/i,
+            urlPattern: /^https:\/\/192\.168\.1\.41:3000\/api\/spot/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'spots-cache',
@@ -61,92 +63,129 @@ export default defineConfig(({ mode }) => ({
       },
       includeAssets: [
         'favicon.ico',
-        'icons/fishing-spot-icon.png',
+        'icons/fishing-spot-icon-192.png',
+        'icons/fishing-spot-icon-512.png',
+        'screenshots/screenshot-1.jpg',
+        'screenshots/screenshot-2.jpg',
+        'screenshots/screenshot-3.jpg',
+        'screenshots/screenshot-wide.jpg',
         'apple-touch-icon.png',
         'masked-icon.svg'
       ],
       manifest: {
+        id: '/?source=pwa',
         name: 'FishSpot - App de spots de pesca',
         short_name: 'FishSpot',
-        description: 'App de spots de pesca para encontrar y compartir los mejores lugares',
+        description: 'Encuentra y comparte los mejores spots de pesca. Registra tus capturas y conecta con otros pescadores.',
         theme_color: '#0d9488',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait-primary',
-        start_url: '/',
+        start_url: '/?source=pwa',
         scope: '/',
-        id: '/',
+        categories: ['sports', 'lifestyle', 'travel'],
+        lang: 'es-AR',
+        dir: 'ltr',
+        prefer_related_applications: false,
         icons: [
           {
-            src: 'icons/fishing-spot-icon.png',
+            src: 'icons/fishing-spot-icon-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'icons/fishing-spot-icon.png',
+            src: 'icons/fishing-spot-icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'icons/fishing-spot-icon.png',
+            src: 'icons/fishing-spot-icon-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'maskable'
           },
           {
-            src: 'icons/fishing-spot-icon.png',
+            src: 'icons/fishing-spot-icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
           }
         ],
-        categories: ['sports', 'lifestyle', 'entertainment'],
-        lang: 'es-AR',
-        dir: 'ltr',
-        prefer_related_applications: false,
+        screenshots: [
+          {
+            src: 'screenshots/screenshot-1.jpg',
+            sizes: '942x1600',
+            type: 'image/jpeg',
+            form_factor: 'narrow',
+            label: 'Mapa de spots de pesca'
+          },
+          {
+            src: 'screenshots/screenshot-2.jpg',
+            sizes: '942x1600',
+            type: 'image/jpeg',
+            form_factor: 'narrow',
+            label: 'Detalle del spot'
+          },
+          {
+            src: 'screenshots/screenshot-3.jpg',
+            sizes: '942x1600',
+            type: 'image/jpeg',
+            form_factor: 'narrow',
+            label: 'Estadísticas del spot'
+          },
+          {
+            src: 'screenshots/screenshot-wide.jpg',
+            sizes: '1920x1080',
+            type: 'image/jpeg',
+            form_factor: 'wide',
+            label: 'Vista de escritorio'
+          }
+        ],
         shortcuts: [
           {
             name: 'Explorar Spots',
             short_name: 'Spots',
             description: 'Buscar spots de pesca',
-            url: '/spots',
-            icons: [{ src: 'icons/fishing-spot-icon.png', sizes: '192x192' }]
+            url: '/',
+            icons: [{ src: 'icons/fishing-spot-icon-192.png', sizes: '192x192', type: 'image/png' }]
           },
           {
             name: 'Mis Capturas',
             short_name: 'Capturas',
             description: 'Ver mis capturas',
             url: '/mis-capturas',
-            icons: [{ src: 'icons/fishing-spot-icon.png', sizes: '192x192' }]
+            icons: [{ src: 'icons/fishing-spot-icon-192.png', sizes: '192x192', type: 'image/png' }]
           },
           {
             name: 'Nueva Captura',
             short_name: 'Capturar',
             description: 'Registrar nueva captura',
             url: '/nueva-captura',
-            icons: [{ src: 'icons/fishing-spot-icon.png', sizes: '192x192' }]
+            icons: [{ src: 'icons/fishing-spot-icon-192.png', sizes: '192x192', type: 'image/png' }]
           },
           {
             name: 'Guía de Especies',
             short_name: 'Especies',
             description: 'Consultar especies de peces',
             url: '/especies',
-            icons: [{ src: 'icons/fishing-spot-icon.png', sizes: '192x192' }]
+            icons: [{ src: 'icons/fishing-spot-icon-192.png', sizes: '192x192', type: 'image/png' }]
           }
-        ],
-        screenshots: [],
-        related_applications: []
+        ]
       },
       devOptions: {
-        enabled: false
+        enabled: true
       }
     })
   ],
   server: {
     port: 5173,
     host: true,
+    https: {
+      key: readFileSync(resolve(__dirname, 'src/cert/key.pem')),
+      cert: readFileSync(resolve(__dirname, 'src/cert/cert.pem'))
+    },
     cors: {
       origin: ['http://localhost:3000', 'http://localhost:5173'],
       credentials: true

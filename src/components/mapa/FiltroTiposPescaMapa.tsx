@@ -31,7 +31,6 @@ export const FiltroTiposPescaMapa: React.FC<FiltroTiposPescaMapaProps> = ({
 
   return (
     <div className="absolute top-4 right-4 z-10">
-      {/* Botón principal del filtro */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
@@ -61,7 +60,6 @@ export const FiltroTiposPescaMapa: React.FC<FiltroTiposPescaMapaProps> = ({
         </svg>
       </button>
 
-      {/* Panel desplegable */}
       {isOpen && (
         <div className="absolute top-12 right-0 bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-80 max-h-96 overflow-y-auto">
           <div className="flex items-center justify-between mb-3">
@@ -103,7 +101,6 @@ export const FiltroTiposPescaMapa: React.FC<FiltroTiposPescaMapaProps> = ({
         </div>
       )}
 
-      {/* Filtros activos */}
       {tiposPescaSeleccionados.length > 0 && !isOpen && (
         <div className="mt-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md border">
           <p className="text-xs text-gray-600 mb-1">Filtros activos:</p>

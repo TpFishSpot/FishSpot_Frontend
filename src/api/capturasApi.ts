@@ -1,49 +1,5 @@
 import apiFishSpot from './apiFishSpot'
-
-export interface Captura {
-  id?: string
-  idUsuario: string
-  especieId: string
-  fecha: string
-  ubicacion: string
-  peso?: number
-  longitud?: number
-  carnada: string
-  tipoPesca: string
-  foto?: string
-  notas?: string
-  clima?: string
-  horaCaptura?: string
-  fechaCreacion?: string
-
-  especie?: {
-    id: string
-    nombreCientifico: string
-    descripcion: string
-    imagen: string
-    nombresComunes?: any[]
-  }
-}
-
-export interface NuevaCapturaData {
-  especieId: string
-  fecha: string
-  ubicacion: string
-  peso?: number
-  longitud?: number
-  carnada: string
-  tipoPesca: string
-  foto?: File
-  notas?: string
-  clima?: string
-  horaCaptura?: string
-}
-
-export interface EstadisticasCapturas {
-  totalCapturas: number
-  especiesCapturadas: number
-  capturasPorMes: Record<string, number>
-}
+import type { Captura, NuevaCapturaData, EstadisticasCapturas } from '../modelo/Captura'
 
 export const obtenerCapturas = async (usuarioId?: string): Promise<Captura[]> => {
   try {
@@ -65,8 +21,11 @@ export const crearCaptura = async (captura: NuevaCapturaData): Promise<Captura> 
     formData.append('carnada', captura.carnada)
     formData.append('tipoPesca', captura.tipoPesca)
 
+    if (captura.spotId) formData.append('spotId', captura.spotId)
+    if (captura.latitud !== undefined) formData.append('latitud', captura.latitud.toString())
+    if (captura.longitud !== undefined) formData.append('longitud', captura.longitud.toString())
     if (captura.peso) formData.append('peso', captura.peso.toString())
-    if (captura.longitud) formData.append('longitud', captura.longitud.toString())
+    if (captura.tamanio) formData.append('tamanio', captura.tamanio.toString())
     if (captura.notas) formData.append('notas', captura.notas)
     if (captura.clima) formData.append('clima', captura.clima)
     if (captura.horaCaptura) formData.append('horaCaptura', captura.horaCaptura)
@@ -144,6 +103,24 @@ export const subirFotoCaptura = async (foto: File): Promise<{ url: string }> => 
       },
     })
 
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}
+
+export const obtenerCapturasDestacadas = async (spotId: string): Promise<Captura[]> => {
+  try {
+    const response = await apiFishSpot.get(`/capturas/spot/${spotId}/destacadas`)
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}
+
+export const obtenerEstadisticasSpot = async (spotId: string): Promise<any> => {
+  try {
+    const response = await apiFishSpot.get(`/capturas/spot/${spotId}/estadisticas`)
     return response.data
   } catch (error) {
     throw error

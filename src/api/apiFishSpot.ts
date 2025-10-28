@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuthToken } from '../auth/authService';
 
-export const baseApi = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+export const baseApi = import.meta.env.VITE_API_URL || 'https://localhost:3000';
 
 const apiFishSpot = axios.create({
   baseURL: baseApi,
