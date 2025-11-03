@@ -17,6 +17,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      window.localStorage.removeItem('token');
       navigate('/login');
     } catch (error) { 
     }
@@ -62,7 +63,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
           <p className="text-xs text-muted-foreground">{email}</p>
         </div>
         <button
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/EditarPerfil')}
           className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition"
         >
           Editar perfil

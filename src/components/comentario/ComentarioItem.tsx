@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ComentarioForm from "./ComentarioForm";
 import type { Comentario } from "../../modelo/Comentario";
 
@@ -15,7 +16,14 @@ export const ComentarioItem = ({
 }: Props) => {
   const [respondiendo, setRespondiendo] = useState(false);
   const [respuesta, setRespuesta] = useState("");
-  const foto = comentario.usuario.foto || '';
+  const navigate = useNavigate();
+
+  const fotoUsuario = comentario.usuario?.foto;
+  const foto = fotoUsuario 
+    ? fotoUsuario?.startsWith('http') 
+        ? fotoUsuario
+        :`${import.meta.env.VITE_API_URL}${fotoUsuario}`
+    : null;
 
   const enviarRespuesta = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +50,10 @@ export const ComentarioItem = ({
           </div>
         )}
         <div>
-          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <p
+            className="text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer hover:underline"
+            onClick={() => navigate(`/profile/${comentario.usuario.id}`)}
+          >
             {comentario.usuario.nombre}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">

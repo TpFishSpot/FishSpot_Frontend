@@ -8,6 +8,7 @@ import ProtectedRoute from "../components/common/ProtectedRoute";
 import { useAuth } from "../contexts/AuthContext";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { MobileLayout } from "../components/layouts/MobileLayout";
+import { PerfilUsuario } from "../components/usuario/PerfilUsuario";
 
 const DetalleSpot = lazy(() => import("../components/spots/DetalleSpot"));
 const CrearSpot = lazy(() => import("../components/spots/CrearSpot").then(module => ({ default: module.CrearSpot })));
@@ -139,7 +140,7 @@ export const AppRoutes: React.FC = () => {
         } 
       /> 
       <Route 
-        path="/profile" 
+        path="/EditarPerfil" 
         element={
           <Suspense fallback={<LoadingSkeleton />}>
             <EditarUsuario/>
@@ -151,6 +152,23 @@ export const AppRoutes: React.FC = () => {
         element={
           <Suspense fallback={<LoadingSkeleton />}>
             <EstadisticasGlobales/>
+           </Suspense>
+          }
+        />
+       <Route 
+        path="/profile" 
+        element={
+          <Suspense fallback={<LoadingSkeleton />}>
+            <PerfilUsuario/>
+          </Suspense>
+        } 
+      />
+
+      <Route 
+        path="/profile/:id" 
+        element={
+          <Suspense fallback={<LoadingSkeleton />}>
+            <PerfilUsuario/>
           </Suspense>
         } 
       />
