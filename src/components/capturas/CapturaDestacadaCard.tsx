@@ -1,4 +1,5 @@
 import { Calendar, Weight, Ruler, User } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import type { Captura } from '../../modelo/Captura'
 
 interface CapturaDestacadaCardProps {
@@ -30,9 +31,13 @@ export const CapturaDestacadaCard = ({ captura, ranking }: CapturaDestacadaCardP
   const medalla = getMedalla(ranking)
   const nombreUsuario = (captura as any).usuario?.nombre || 'Pescador anónimo'
   const fotoUsuario = (captura as any).usuario?.fotoPerfil
+  const navigate = useNavigate()
 
   return (
-    <div className="bg-card border border-border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all">
+    <div 
+      onClick={() => navigate(`/capturas/${captura.id}`)}
+      className="bg-card border border-border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all cursor-pointer"
+    >
       <div className="relative">
         <div className={`absolute top-2 left-2 z-10 bg-gradient-to-br ${medalla.color} text-white px-3 py-1 rounded-full flex items-center gap-1 shadow-lg`}>
           <span className="text-lg">{medalla.emoji}</span>

@@ -126,3 +126,25 @@ export const obtenerEstadisticasSpot = async (spotId: string): Promise<any> => {
     throw error
   }
 }
+
+export const obtenerHeatmap = async (especieId?: string, mes?: number): Promise<any> => {
+  try {
+    const params = new URLSearchParams()
+    if (especieId) params.append('especie', especieId)
+    if (mes) params.append('mes', mes.toString())
+    
+    const response = await apiFishSpot.get(`/capturas/heatmap?${params.toString()}`)
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}
+
+export const obtenerEstadisticasGlobales = async (): Promise<any> => {
+  try {
+    const response = await apiFishSpot.get('/capturas/estadisticas/globales')
+    return response.data
+  } catch (error) {
+    throw error
+  }
+}

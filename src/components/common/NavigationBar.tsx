@@ -1,6 +1,6 @@
 import type React from "react";
 import { useState, useEffect } from "react";
-import { MapPin, Menu, X, Search, User, Settings, HelpCircle, Fish, Sun, Moon, Monitor, Camera, FishIcon, MapPinPlus } from "lucide-react";
+import { MapPin, Menu, X, Search, User, Settings, HelpCircle, Fish, Sun, Moon, Monitor, Camera, FishIcon, MapPinPlus, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserMenu from "../usuario/UserMenu";
 import { useAuth } from "../../contexts/AuthContext";
@@ -227,6 +227,17 @@ useEffect(() => {
                 >
                   <Fish className="w-5 h-5 text-foreground" />
                   <span className="text-foreground">Guía de Especies</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    navigate("/estadisticas")
+                    toggleMenu()
+                  }}
+                  className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
+                >
+                  <TrendingUp className="w-5 h-5 text-foreground" />
+                  <span className="text-foreground">Destacados</span>
                 </button>
 
                 <button
