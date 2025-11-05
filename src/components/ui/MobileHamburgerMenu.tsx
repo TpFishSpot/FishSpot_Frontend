@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Menu, X, User, LogOut, Users, MapPin, Settings, Sun, Moon, Monitor, TrendingUp } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../auth/AuthFirebase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -54,6 +54,7 @@ export const MobileHamburgerMenu = () => {
 
   const nombre = user.displayName || usuario?.nombre || 'Usuario';
   const email = user.email || usuario?.email || '';
+  const id = user.uid || usuario?.id;
 
   return (
     <>
@@ -77,17 +78,19 @@ export const MobileHamburgerMenu = () => {
                 padding: '18px 0',
               }}
             >
-              <div className="px-5 pb-4 border-b border-border bg-muted/30 rounded-t-3xl">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                    <User className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-base font-semibold text-foreground truncate">{nombre}</p>
-                    <p className="text-xs text-muted-foreground truncate">{email}</p>
+              <Link to={`/profile/${id}`} className="group">
+                <div className="px-5 pb-4 border-b border-border rounded-t-3xl">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-primary-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base font-semibold text-foreground truncate">{nombre}</p>
+                      <p className="text-xs text-muted-foreground truncate">{email}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
 
               <div className="py-3 px-2">
                 {isModerator && (
@@ -114,11 +117,11 @@ export const MobileHamburgerMenu = () => {
                 )}
 
                 <button
-                  onClick={() => handleNavigation('/perfil')}
+                  onClick={() => handleNavigation('/EditarPerfil')}
                   className="w-full flex items-center space-x-3 px-5 py-3 text-foreground hover:bg-muted transition-colors active:bg-muted/70 rounded-xl mb-2"
                 >
                   <Settings className="w-5 h-5" />
-                  <span className="text-sm font-medium">Configuración</span>
+                  <span className="text-sm font-medium">Editar Perfil</span>
                 </button>
 
                 <button
