@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
         skipWaiting: false,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/192\.168\.1\.41:3000\/api\/(especie|carnada|tipopesca)/i,
+            urlPattern: /^https:\/\/192\.168\.1\.135:3000\/api\/(especie|carnada|tipopesca)/i,
             handler: 'CacheFirst', 
             options: {
               cacheName: 'static-api-cache',
@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
-            urlPattern: /^https:\/\/192\.168\.1\.41:3000\/api\/spot/i,
+            urlPattern: /^https:\/\/192\.168\.1\.135:3000\/api\/spot/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'spots-cache',
@@ -181,13 +181,25 @@ export default defineConfig(({ mode }) => ({
   ],
   server: {
     port: 5173,
-    host: true,
+    host: '0.0.0.0',
     https: {
       key: readFileSync(resolve(__dirname, 'src/cert/key.pem')),
       cert: readFileSync(resolve(__dirname, 'src/cert/cert.pem'))
     },
+    hmr: {
+      host: '192.168.1.135',
+      protocol: 'wss', 
+      clientPort: 5173,
+    },
     cors: {
-      origin: ['http://localhost:3000', 'http://localhost:5173'],
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'https://localhost:3000',
+        'https://localhost:5173',
+        'https://192.168.1.135:3000',
+        'https://192.168.1.135:5173'
+      ],
       credentials: true
     }
   }

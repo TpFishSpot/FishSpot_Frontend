@@ -1,88 +1,100 @@
-import { ArrowLeft, Upload, MapPin, Loader2, Camera, Navigation } from "lucide-react";
-import { useCrearSpot } from "../../hooks/spots/useCrearSpot";
-import ListaEspeciesSeleccion from "../especies/ListaEspeciesSeleccion";
-import SeleccionCarnadaTipoPesca from "../carnadas/SeleccionCarnadaTipoPesca";
-import { useGeolocalizacion } from "../../hooks/ui/useGeolocalizacion";
-import { useState, useEffect } from "react";
+import { ArrowLeft, Upload, MapPin, Loader2, Camera, Navigation } from "lucide-react"
+import { useCrearSpot } from "../../hooks/spots/useCrearSpot"
+import ListaEspeciesSeleccion from "../especies/ListaEspeciesSeleccion"
+import SeleccionCarnadaTipoPesca from "../carnadas/SeleccionCarnadaTipoPesca"
+import { useGeolocalizacion } from "../../hooks/ui/useGeolocalizacion"
+import { useState, useEffect } from "react"
 
 const formatNumber = (num: number | undefined | null, decimals = 1): string => {
-  return (num || 0).toFixed(decimals);
+  return (num || 0).toFixed(decimals)
 }
 
 export function CrearSpot() {
   const {
-    nombre, setNombre,
-    descripcion, setDescripcion,
-    imagePreview, handleImageChange, clearImage,
-    errors, isLoading, handleSubmit,
-    lat, lng, coordenadas, setCoordenadas, navigate,
-    especies, addEspecie, removeEspecie,
+    nombre,
+    setNombre,
+    descripcion,
+    setDescripcion,
+    imagePreview,
+    handleImageChange,
+    clearImage,
+    errors,
+    isLoading,
+    handleSubmit,
+    lat,
+    lng,
+    coordenadas,
+    setCoordenadas,
+    navigate,
+    especies,
+    addEspecie,
+    removeEspecie,
     todasEspecies,
-    carnadas, setCarnadas,
-    tiposPesca, setTiposPesca
-  } = useCrearSpot();
+    carnadas,
+    setCarnadas,
+    tiposPesca,
+    setTiposPesca,
+  } = useCrearSpot()
 
-  const { position, cargandoPosicion, esUbicacionUsuario } = useGeolocalizacion();
-  const [gpsConfirmado, setGpsConfirmado] = useState(false);
-  const [gpsRechazado, setGpsRechazado] = useState(false);
+  const { position, cargandoPosicion, esUbicacionUsuario } = useGeolocalizacion()
+  const [gpsConfirmado, setGpsConfirmado] = useState(false)
+  const [gpsRechazado, setGpsRechazado] = useState(false)
 
   useEffect(() => {
     if (position && esUbicacionUsuario && Array.isArray(position) && !coordenadas && !gpsRechazado) {
-      const [latGps, lngGps] = position;
-      setCoordenadas({ lat: latGps, lng: lngGps });
+      const [latGps, lngGps] = position
+      setCoordenadas({ lat: latGps, lng: lngGps })
     }
-  }, [position, esUbicacionUsuario, coordenadas, gpsRechazado, setCoordenadas]);
+  }, [position, esUbicacionUsuario, coordenadas, gpsRechazado, setCoordenadas])
 
   const handleAceptarGPS = () => {
     if (position && Array.isArray(position)) {
-      const [latGps, lngGps] = position;
-      setCoordenadas({ lat: latGps, lng: lngGps });
-      setGpsConfirmado(true);
-      setGpsRechazado(false);
+      const [latGps, lngGps] = position
+      setCoordenadas({ lat: latGps, lng: lngGps })
+      setGpsConfirmado(true)
+      setGpsRechazado(false)
     }
-  };
+  }
 
   const handleRechazarGPS = () => {
-    setGpsConfirmado(false);
-    setGpsRechazado(true);
-    setCoordenadas(null);
-  };
+    setGpsConfirmado(false)
+    setGpsRechazado(true)
+    setCoordenadas(null)
+  }
 
   const handleSeleccionarEnMapa = () => {
-    navigate("/mapa", { state: { modoSeleccion: true, returnPath: "/crear-spot" } });
-  };
+    navigate("/mapa", { state: { modoSeleccion: true, returnPath: "/crear-spot" } })
+  }
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4">
+    <div className="min-h-screen bg-background text-foreground p-4 pb-safe">
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-card shadow-md hover:shadow-lg transition-shadow"
+            className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-card shadow-md hover:shadow-lg transition-shadow flex-shrink-0"
           >
             <ArrowLeft className="w-5 h-5 text-primary" />
           </button>
-          <div>
-            <h1 className="text-2xl font-bold text-card-foreground">Crear Nuevo Spot</h1>
-            <p className="text-muted-foreground">Comparte tu lugar de pesca favorito</p>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-card-foreground truncate">Crear Nuevo Spot</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">Comparte tu lugar de pesca favorito</p>
           </div>
         </div>
 
-        <div className="bg-card rounded-lg p-4 mb-6 shadow-sm border border-border">
+        <div className="bg-card rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 shadow-sm border border-border">
           <label className="text-sm font-medium text-card-foreground flex items-center space-x-2 mb-3">
-            <MapPin className="w-4 h-4" />
+            <MapPin className="w-4 h-4 flex-shrink-0" />
             <span>Ubicación *</span>
           </label>
 
           {!cargandoPosicion && lat && lng && !gpsConfirmado && !gpsRechazado && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-              <p className="text-sm text-blue-800 dark:text-blue-200 mb-2 font-medium">
-                📍 Ubicación GPS detectada
-              </p>
-              <p className="text-xs text-blue-600 dark:text-blue-300 mb-3">
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-2 font-medium">📍 Ubicación GPS detectada</p>
+              <p className="text-xs text-blue-600 dark:text-blue-300 mb-3 break-all">
                 Coordenadas: {formatNumber(lat, 6)}, {formatNumber(lng, 6)}
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   type="button"
                   onClick={handleAceptarGPS}
@@ -103,20 +115,20 @@ export function CrearSpot() {
 
           {gpsConfirmado && lat && lng && (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2 gap-2">
                 <span className="text-sm text-green-800 dark:text-green-200 font-medium flex items-center gap-2">
-                  <Navigation className="w-4 h-4" />
-                  Ubicación confirmada
+                  <Navigation className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">Ubicación confirmada</span>
                 </span>
                 <button
                   type="button"
                   onClick={handleRechazarGPS}
-                  className="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 transition-colors"
+                  className="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 transition-colors whitespace-nowrap"
                 >
                   Cambiar
                 </button>
               </div>
-              <p className="text-xs text-green-600 dark:text-green-300">
+              <p className="text-xs text-green-600 dark:text-green-300 break-all">
                 GPS: {formatNumber(lat, 6)}, {formatNumber(lng, 6)}
               </p>
             </div>
@@ -126,9 +138,9 @@ export function CrearSpot() {
             <button
               type="button"
               onClick={handleSeleccionarEnMapa}
-              className="w-full px-4 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors flex items-center justify-center space-x-2"
+              className="w-full px-4 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors flex items-center justify-center space-x-2 text-sm sm:text-base"
             >
-              <MapPin className="w-5 h-5" />
+              <MapPin className="w-5 h-5 flex-shrink-0" />
               <span>Seleccionar ubicación en el mapa</span>
             </button>
           )}
@@ -141,67 +153,86 @@ export function CrearSpot() {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-card rounded-xl shadow-lg p-6 space-y-6">
-
+        <form onSubmit={handleSubmit} className="bg-card rounded-xl shadow-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="space-y-2">
-            <label htmlFor="nombre" className="block text-sm font-semibold text-card-foreground">Nombre del Spot *</label>
+            <label htmlFor="nombre" className="block text-sm font-semibold text-card-foreground">
+              Nombre del Spot *
+            </label>
             <input
               id="nombre"
               type="text"
               value={nombre}
-              onChange={(e) => { setNombre(e.target.value); if (errors.nombre) errors.nombre = ""; }}
+              onChange={(e) => {
+                setNombre(e.target.value)
+                if (errors.nombre) errors.nombre = ""
+              }}
               placeholder="Ej: Bahía del Pescador"
-              className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-card text-card-foreground border-border ${errors.nombre ? "border-destructive bg-destructive-foreground/10" : "hover:border-primary"}`}
+              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-card text-card-foreground border-border ${errors.nombre ? "border-destructive bg-destructive-foreground/10" : "hover:border-primary"}`}
             />
             {errors.nombre && <p className="text-destructive text-sm">{errors.nombre}</p>}
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="descripcion" className="block text-sm font-semibold text-card-foreground">Descripción *</label>
+            <label htmlFor="descripcion" className="block text-sm font-semibold text-card-foreground">
+              Descripción *
+            </label>
             <textarea
               id="descripcion"
               value={descripcion}
-              onChange={(e) => { setDescripcion(e.target.value); if (errors.descripcion) errors.descripcion = ""; }}
+              onChange={(e) => {
+                setDescripcion(e.target.value)
+                if (errors.descripcion) errors.descripcion = ""
+              }}
               placeholder="Describe el spot: tipo de peces, mejores horarios, acceso, etc."
               rows={4}
-              className={`w-full px-4 py-3 border-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none bg-card text-card-foreground border-border ${errors.descripcion ? "border-destructive bg-destructive-foreground/10" : "hover:border-primary"}`}
+              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base border-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none bg-card text-card-foreground border-border ${errors.descripcion ? "border-destructive bg-destructive-foreground/10" : "hover:border-primary"}`}
             />
             {errors.descripcion && <p className="text-destructive text-sm">{errors.descripcion}</p>}
           </div>
 
-         <div className="space-y-2">
-        <label className="block text-sm font-semibold text-card-foreground">Especies capturadas *</label>
-        <ListaEspeciesSeleccion
-        todasEspecies={todasEspecies}
-        especiesSeleccionadas={especies}
-        addEspecie={addEspecie}
-        removeEspecie={removeEspecie}
-        />
-      </div>
-      <div className="space-y-2">
-        <label className="block text-sm font-semibold text-card-foreground">Carnadas y técnicas de pesca</label>
-        <SeleccionCarnadaTipoPesca
-          especiesSeleccionadas={especies}
-          carnadasSeleccionadas={carnadas}
-          tiposPescaSeleccionados={tiposPesca}
-          onCarnadaChange={setCarnadas}
-          onTipoPescaChange={setTiposPesca}
-        />
-      </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-card-foreground">Especies capturadas *</label>
+            <ListaEspeciesSeleccion
+              todasEspecies={todasEspecies}
+              especiesSeleccionadas={especies}
+              addEspecie={addEspecie}
+              removeEspecie={removeEspecie}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-card-foreground">Carnadas y técnicas de pesca</label>
+            <SeleccionCarnadaTipoPesca
+              especiesSeleccionadas={especies}
+              carnadasSeleccionadas={carnadas}
+              tiposPescaSeleccionados={tiposPesca}
+              onCarnadaChange={setCarnadas}
+              onTipoPescaChange={setTiposPesca}
+            />
+          </div>
 
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-card-foreground">Imagen del Spot</label>
             <div className="space-y-4">
               {imagePreview ? (
                 <div className="relative">
-                  <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover rounded-lg border-2 border-border" />
-                  <button type="button" onClick={clearImage} className="absolute top-2 right-2 bg-destructive text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-destructive/80 transition-colors">×</button>
+                  <img
+                    src={imagePreview || "/placeholder.svg"}
+                    alt="Preview"
+                    className="w-full h-40 sm:h-48 object-cover rounded-lg border-2 border-border"
+                  />
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    className="absolute top-2 right-2 bg-destructive text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-destructive/80 transition-colors"
+                  >
+                    ×
+                  </button>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-lg cursor-pointer bg-card hover:bg-card/90 transition-colors">
+                <label className="flex flex-col items-center justify-center w-full h-40 sm:h-48 border-2 border-dashed border-border rounded-lg cursor-pointer bg-card hover:bg-card/90 transition-colors">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Camera className="w-10 h-10 mb-3 text-muted-foreground" />
-                    <p className="mb-2 text-sm text-muted-foreground">
+                    <Camera className="w-8 sm:w-10 h-8 sm:h-10 mb-3 text-muted-foreground" />
+                    <p className="mb-2 text-sm text-muted-foreground text-center px-4">
                       <span className="font-semibold">Haz clic para subir</span> una imagen
                     </p>
                   </div>
@@ -211,14 +242,33 @@ export function CrearSpot() {
             </div>
           </div>
 
-          <div className="flex gap-4 pt-4">
-            <button type="button" onClick={() => navigate(-1)} className="flex-1 px-6 py-3 border-2 border-border text-card-foreground rounded-lg hover:bg-card/50 transition-colors font-medium" disabled={isLoading}>Cancelar</button>
-            <button type="submit" disabled={isLoading} className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-              {isLoading ? (<><Loader2 className="w-4 h-4 animate-spin" /> Creando...</>) : (<><Upload className="w-4 h-4" /> Crear Spot</>)}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="w-full sm:flex-1 px-6 py-3 border-2 border-border text-card-foreground rounded-lg hover:bg-card/50 transition-colors font-medium text-base"
+              disabled={isLoading}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full sm:flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-base"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Creando...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" /> Crear Spot
+                </>
+              )}
             </button>
           </div>
         </form>
       </div>
     </div>
-  );
+  )
 }

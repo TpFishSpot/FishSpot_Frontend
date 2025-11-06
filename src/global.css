@@ -3,7 +3,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@supports(padding: max(0px)) {
+@supports (padding: max(0px)) {
   .safe-area-inset-top {
     padding-top: env(safe-area-inset-top);
   }
@@ -34,6 +34,33 @@
 .leaflet-attribution-flag,
 .leaflet-bottom.leaflet-right {
   display: none !important;
+}
+
+/* Reposition zoom controls on mobile to avoid overlap with bottom navigation */
+@media (max-width: 768px) {
+  .leaflet-container .leaflet-bottom.leaflet-left {
+    bottom: 120px !important;
+    left: 12px !important;
+    z-index: 1000 !important;
+  }
+
+  .leaflet-container .leaflet-control-zoom {
+    margin-bottom: 0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  body[data-map-view="true"] .leaflet-container .leaflet-bottom.leaflet-left {
+    bottom: max(120px, calc(120px + env(safe-area-inset-bottom))) !important;
+  }
+
+  /* Ensure zoom controls are always above other elements */
+  .leaflet-control-zoom-in,
+  .leaflet-control-zoom-out {
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 20px !important;
+  }
 }
 
 :root {
@@ -169,12 +196,12 @@
     overscroll-behavior-x: none;
     overflow-x: hidden;
   }
-  
+
   html {
     overscroll-behavior-x: none;
     overflow-x: hidden;
   }
-  
+
   #root {
     overscroll-behavior-x: none;
   }
@@ -213,15 +240,15 @@
   .leaflet-container {
     cursor: grab !important;
   }
-  
+
   .leaflet-container:active {
     cursor: grabbing !important;
   }
-  
+
   .leaflet-interactive {
     stroke-width: 3 !important;
   }
-  
+
   .leaflet-marker-icon {
     -webkit-tap-highlight-color: transparent;
   }
@@ -270,23 +297,35 @@
 }
 
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
-  select, textarea, input[type="text"], input[type="password"],
-  input[type="datetime"], input[type="datetime-local"],
-  input[type="date"], input[type="month"], input[type="time"],
-  input[type="week"], input[type="number"], input[type="email"],
-  input[type="url"], input[type="search"], input[type="tel"],
+  select,
+  textarea,
+  input[type="text"],
+  input[type="password"],
+  input[type="datetime"],
+  input[type="datetime-local"],
+  input[type="date"],
+  input[type="month"],
+  input[type="time"],
+  input[type="week"],
+  input[type="number"],
+  input[type="email"],
+  input[type="url"],
+  input[type="search"],
+  input[type="tel"],
   input[type="color"] {
     font-size: 16px !important;
   }
 }
 
 @media (max-width: 768px) {
-  button, .btn, [role="button"] {
+  button,
+  .btn,
+  [role="button"] {
     min-height: 44px;
     min-width: 44px;
     touch-action: manipulation;
   }
-  
+
   .touch-target {
     min-height: 48px;
     min-width: 48px;
@@ -310,7 +349,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -355,4 +394,3 @@ body[data-map-view="true"] nav {
     padding-bottom: env(safe-area-inset-bottom) !important;
   }
 }
-

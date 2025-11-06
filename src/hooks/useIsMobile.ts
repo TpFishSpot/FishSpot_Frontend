@@ -10,7 +10,7 @@ export const useIsMobile = (breakpoint: number = 768): boolean => {
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
       const isSmallScreen = window.innerWidth < breakpoint;
       
-      setIsMobile(isMobileDevice && isTouchDevice && isSmallScreen);
+      setIsMobile(isSmallScreen || (isMobileDevice && isTouchDevice));
     };
 
     checkIsMobile();
