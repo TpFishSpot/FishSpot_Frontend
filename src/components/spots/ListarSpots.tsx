@@ -6,15 +6,13 @@ import { useAuth } from "../../contexts/AuthContext"
 import { useUserRoles } from "../../hooks/auth/useUserRoles"
 import apiFishSpot from "../../api/apiFishSpot"
 import { SpotsFilter } from "./SpotsFilter"
-import { SpotCard } from "./Spotcard"
 import { PullToRefresh } from "../ui/PullToRefresh"
 import { LoadingSkeleton } from "../LoadingSkeleton"
+import { SpotCard } from "./Spotcard"
 
 const filtros = [
-  { id: "all", name: "Todos" },
   { id: "Esperando", name: "Pendientes" },
   { id: "Aceptado", name: "Aprobados" },
-  { id: "Rechazado", name: "Rechazados" },
 ]
 
 type ListaSpotsProps = {
@@ -23,42 +21,61 @@ type ListaSpotsProps = {
 
 export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
   const [spots, setSpots] = useState<Spot[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>("")
-  const [selectedFilter, setSelectedFilter] = useState<string>("all")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [selectedFilter, setSelectedFilter] = useState("Esperando")
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
   const { user } = useAuth()
   const { loading: rolesLoading } = useUserRoles()
   const navigate = useNavigate()
 
-  const cargarSpots = async () => {
-    if (!user) return setError("Debes iniciar sesión para ver los spots")
+  const cargarSpots = async (reset = false) => {
+    if (!user) return setError("Debes iniciar sesión para ver los spots");
 
     try {
-      setLoading(true)
-      setError("")
-      const url = idUsuario ? `/spot?idUsuario=${idUsuario}` : '/spot'
-      console.log(url);
-      const res = await apiFishSpot.get(url)
-      setSpots(res.data)
-    } catch (error: any) {
+      if (reset) setLoading(true);
+      setError("");
+
+      const actualPage = reset ? 1 : page;
+      const url = idUsuario
+        ? `/spot?idUsuario=${idUsuario}&estado=${selectedFilter}&page=${actualPage}`
+        : `/spot?estado=${selectedFilter}&page=${actualPage}`;
+
+      const res = await apiFishSpot.get(url);
+      const { data, totalPages } = res.data;
+
+      if (reset) setSpots(data);
+      else setSpots((prev) => [...prev, ...data]);
+
+      setHasMore(actualPage < totalPages);
+    } catch (err: any) {
       setError(
-        error.response?.status === 403
+        err.response?.status === 403
           ? "No tienes permisos para ver los spots"
           : "Error al cargar los spots"
       )
     } finally {
       setLoading(false)
+      setIsLoadingMore(false);
     }
   }
 
   useEffect(() => {
-    cargarSpots()
-  }, [user, idUsuario])
+    setPage(1);
+    cargarSpots(true);
+  }, [user, idUsuario, selectedFilter]);
+
+  useEffect(() => {
+    if (page > 1) cargarSpots();
+  }, [page]);
 
   const aprobar = async (id: string) => {
     try {
       await apiFishSpot.patch(`/spot/${id}/aprobar`)
-      setSpots(spots.map(s => s.id === id ? { ...s, estado: "Aceptado" } : s))
+      setSpots(spots.map((s) => (s.id === id ? { ...s, estado: "Aceptado" } : s)))
     } catch {
       alert("Error al aprobar el spot")
     }
@@ -67,7 +84,7 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
   const rechazar = async (id: string) => {
     try {
       await apiFishSpot.patch(`/spot/${id}/rechazar`)
-      setSpots(spots.map(s => s.id === id ? { ...s, estado: "Rechazado" } : s))
+      setSpots(spots.map((s) => (s.id === id ? { ...s, estado: "Rechazado" } : s)));
     } catch {
       alert("Error al rechazar el spot")
     }
@@ -81,15 +98,6 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
       alert("Error al borrar el spot")
     }
   }
-
-  const verEnMapa = (spot: Spot) => {
-    const [lng, lat] = spot.ubicacion.coordinates
-    window.open(`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`, "_blank")
-  }
-
-  const filteredSpots = spots.filter(
-    s => selectedFilter === "all" || s.estado === selectedFilter
-  )
 
   if (!user || rolesLoading || loading) {
     return (
@@ -135,7 +143,7 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
         <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold italic">Spots</h1>
           <button
-            onClick={cargarSpots}
+            onClick={() => cargarSpots(true)}
             className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold text-gray-700 dark:text-gray-200"
           >
             🔄 Actualizar
@@ -143,10 +151,15 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
         </div>
       </div>
 
-      <PullToRefresh onRefresh={cargarSpots}>
+      <PullToRefresh onRefresh={() => cargarSpots(true)}>
         <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-          <SpotsFilter filtros={filtros} selectedFilter={selectedFilter} onSelect={setSelectedFilter} />
-          {filteredSpots.map(spot => (
+          <SpotsFilter
+            filtros={filtros}
+            selectedFilter={selectedFilter}
+            onSelect={setSelectedFilter}
+          />
+
+          {spots.map((spot) => (
             <SpotCard
               key={spot.id}
               spot={spot}
@@ -154,13 +167,30 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
               onApprove={aprobar}
               onReject={rechazar}
               onDelete={borrar}
-              onViewMap={verEnMapa}
               onClick={() => navigate(`/ver/${spot.id}`)}
             />
           ))}
+
+          {hasMore ? (
+            <div className="text-center pt-6">
+              <button
+                onClick={() => {
+                  setIsLoadingMore(true);
+                  setPage((p) => p + 1);
+                }}
+                disabled={isLoadingMore}
+                className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition"
+              >
+                {isLoadingMore ? "Cargando..." : "Cargar más"}
+              </button>
+            </div>
+          ) : (
+            spots.length > 0 && (
+              <p className="text-center text-gray-500 pt-6">No hay más spots para mostrar.</p>
+            )
+          )}
         </div>
       </PullToRefresh>
     </div>
-  )
-}
-
+  );
+};
