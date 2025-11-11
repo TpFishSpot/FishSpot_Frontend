@@ -88,25 +88,56 @@ export const ListaUsuarios: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <div 
+      className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800"
+      style={
+        isMobile
+          ? {
+              paddingBottom: "max(96px, calc(96px + env(safe-area-inset-bottom)))",
+            }
+          : {}
+      }
+    >
       {isMobile ? <MobileNavigationBar /> : <NavigationBar />}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold italic text-gray-900 dark:text-white">
-            Lista de Usuarios
+      <div 
+        className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm"
+        style={
+          isMobile
+            ? {
+                marginTop: "max(56px, calc(56px + env(safe-area-inset-top)))",
+              }
+            : {}
+        }
+      >
+        <div className={`max-w-6xl mx-auto flex items-center justify-between ${isMobile ? 'px-3 py-4' : 'px-4 py-6'}`}>
+          {isMobile && (
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg shadow-sm hover:shadow-md transition-all active:scale-95"
+            >
+              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Volver</span>
+            </button>
+          )}
+          <h1 className={`font-bold italic text-gray-900 dark:text-white ${isMobile ? 'text-xl' : 'text-3xl'}`}>
+            {isMobile ? 'Usuarios' : 'Lista de Usuarios'}
           </h1>
           <button
             onClick={cargarUsuarios}
-            className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold text-gray-700 dark:text-gray-200"
+            className={`rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold text-gray-700 dark:text-gray-200 transition-all active:scale-95 ${
+              isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2'
+            }`}
           >
-            🔄 Actualizar
+            {isMobile ? '🔄' : '🔄 Actualizar'}
           </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+      <div className={`max-w-6xl mx-auto space-y-4 sm:space-y-6 ${isMobile ? 'px-3 py-4' : 'px-4 py-8'}`}>
         {usuarios.length === 0 ? (
-          <p className="text-center text-gray-600 dark:text-gray-300 text-lg">
+          <p className={`text-center text-gray-600 dark:text-gray-300 ${isMobile ? 'text-base' : 'text-lg'}`}>
             🎉 No hay usuarios registrados
           </p>
         ) : (
