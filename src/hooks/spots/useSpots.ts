@@ -7,7 +7,7 @@ const fetchSpots = async (): Promise<Spot[]> => {
   const response = await apiFishSpot.get("/spot", {
     params: {
       estado: "Aceptado",
-      limit: 1000,
+      limite: 1000,
     },
   });
   return response.data.data; 

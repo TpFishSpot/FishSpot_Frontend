@@ -147,17 +147,25 @@ export const FiltroCompleto: React.FC<FiltroCompletoProps> = ({
       {onDistanciaChange && (
         <div
           className={`
-          bg-white/90 backdrop-blur-sm rounded-lg shadow-md border flex items-center gap-1.5
-          ${isMobile ? "px-2.5 py-1.5 text-xs" : "px-3 py-2 text-sm"}
-        `}
+            bg-white backdrop-blur-sm rounded-lg shadow-md border border-gray-200 
+            flex items-center gap-1.5
+            ${isMobile ? "px-2.5 py-1.5 text-xs" : "px-3 py-2 text-sm"}
+          `}
+          style={{ colorScheme: "light" }}
         >
-          <label className={`${isMobile ? "text-xs" : "text-sm"} text-gray-700 whitespace-nowrap font-medium`}>
+          <label className={`${isMobile ? "text-xs" : "text-sm"} text-gray-800 whitespace-nowrap font-medium`}>
             {isMobile ? "Dist:" : "Distancia:"}
           </label>
           <select
             value={distanciaMax ?? ""}
             onChange={(e) => onDistanciaChange(e.target.value ? Number(e.target.value) : null)}
-            className={`border rounded px-1.5 py-0.5 ${isMobile ? "text-xs" : "text-sm"} bg-white min-w-0`}
+            className={`
+              border rounded px-1.5 py-0.5 
+              ${isMobile ? "text-xs" : "text-sm"}
+              bg-white text-gray-800 border-gray-300 
+              focus:ring-2 focus:ring-blue-500 focus:outline-none
+              shadow-sm
+            `}
           >
             <option value="">Sin límite</option>
             {isMobile ? (
