@@ -5,7 +5,6 @@ import type { EspecieConNombreComun } from "../../modelo/EspecieConNombreComun";
 import type { Carnada } from "../../modelo/Carnada";
 import type { TipoPesca } from "../../modelo/TipoPesca";
 import { useAuth } from "../../contexts/AuthContext";
-import { auth } from "../../auth/AuthFirebase";
 
 export function useCrearSpot() {
   const location = useLocation();
@@ -92,23 +91,26 @@ export function useCrearSpot() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!validate()) return;
-    if (!coordenadas?.lat || !coordenadas?.lng) {
-      alert("Por favor selecciona una ubicación en el mapa o activa el GPS.");
+
+    if (coordenadas?.lat == null || coordenadas?.lng == null) {
+      alert("Selecciona una ubicación en el mapa o activa el GPS.");
       return;
     }
 
-    setIsLoading(true);
     if (!user) {
       alert("Debes iniciar sesión para crear un spot");
       navigate("/login");
       return;
     }
+    setIsLoading(true);
 
     const formData = new FormData();
     formData.append("nombre", nombre.trim());
     formData.append("descripcion", descripcion.trim());
-    formData.append("ubicacion", JSON.stringify({ type: "Point", coordinates: [coordenadas.lng, coordenadas.lat] }));
+    formData.append("ubicacion", JSON.stringify({
+      type: "Point", coordinates: [coordenadas.lng, coordenadas.lat] }));
     formData.append("estado", "Esperando");
     formData.append("idUsuario", user.uid);
     formData.append("idUsuarioActualizo", user.uid);
@@ -117,26 +119,27 @@ export function useCrearSpot() {
     if (especies.length > 0) {
       formData.append("especies", JSON.stringify(especies.map(e => e.id)));
     }
+
     if (carnadas.length > 0) {
+      if (especies.length === 0) {
+        alert("Debes elegir al menos una especie si seleccionas carnadas.");
+        setIsLoading(false);
+        return;
+      }
       const carnadaData = carnadas.map(c => ({
-        idEspecie: especies[0]?.id || "",
+        idEspecie: especies[0].id,
         idCarnada: c.idCarnada
       }));
       formData.append("carnadas", JSON.stringify(carnadaData));
     }
+
     if (tiposPesca.length > 0) {
       formData.append("tiposPesca", JSON.stringify(tiposPesca.map(t => t.id)));
     }
 
     try {
-      const user = auth.currentUser;
-      if (!user) {
-        alert("Debes estar logueado para crear un spot");
-        navigate("/login");
-        return;
-      }
-
-      await apiFishSpot.post("/spot", formData, { headers: { "Content-Type": "multipart/form-data" } });
+      
+      await apiFishSpot.post("/spot", formData);
       navigate("/", { state: { message: "¡Spot creado exitosamente!" } });
     } catch (err) {
       if (err instanceof Error) {

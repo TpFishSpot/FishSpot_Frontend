@@ -1,5 +1,5 @@
 import { useUsuario } from "../../hooks/usuario/useUsuario";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -24,6 +24,7 @@ export const PerfilUsuario = () => {
   const { id } = useParams<{ id: string }>();
   const { usuario: usuarioLogueado, loading } = useUsuario();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   const [usuario, setUsuario] = useState<Usuario>();
   const [estadisticas, setEstadisticas] = useState({
@@ -122,6 +123,15 @@ export const PerfilUsuario = () => {
           </h2>
           <p className="text-gray-500 text-sm">{usuario.email}</p>
         </div>
+
+        {usuarioLogueado?.id === usuario.id && (
+          <button
+            onClick={() => {navigate('/EditarPerfil')}}
+            className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
+          >
+            Editar usuario
+          </button>
+        )}
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full text-sm text-gray-700 dark:text-gray-300">
           <div className="p-3 bg-muted rounded-lg">

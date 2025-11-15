@@ -7,6 +7,7 @@ import { useGeolocalizacion } from '../../hooks/ui/useGeolocalizacion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { obtenerNombreMostrar } from '../../utils/especiesUtils';
 import { compressImage } from '../../utils/imageCompression';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 interface NuevaCapturaData {
   especieId: string
@@ -38,6 +39,7 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
   const navigate = useNavigate()
   const location = useLocation()
   const { position, cargandoPosicion, esUbicacionUsuario } = useGeolocalizacion()
+  const isMobile = useIsMobile()
   
   const [formData, setFormData] = useState<NuevaCapturaData>({
     especieId: '',
@@ -207,13 +209,13 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-border">
+      <div className={`bg-card border border-border rounded-xl shadow-xl w-full max-h-[90vh] overflow-y-auto ${isMobile ? 'max-w-full' : 'max-w-2xl'}`}>
+        <div className={`flex items-center justify-between border-b border-border ${isMobile ? 'p-4' : 'p-6'}`}>
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <Fish className="w-6 h-6 text-primary" />
+              <Fish className={isMobile ? 'w-5 h-5 text-primary' : 'w-6 h-6 text-primary'} />
             </div>
-            <h2 className="text-xl font-bold text-foreground">Nueva Captura</h2>
+            <h2 className={`font-bold text-foreground ${isMobile ? 'text-lg' : 'text-xl'}`}>Nueva Captura</h2>
           </div>
           <button
             onClick={handleClose}
@@ -223,7 +225,7 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className={`space-y-4 sm:space-y-6 ${isMobile ? 'p-4' : 'p-6'}`}>
           {isLoadingData && (
             <div className="flex items-center justify-center py-8">
               <div className="flex items-center space-x-2 text-muted-foreground">
@@ -245,7 +247,7 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
             </div>
           )}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground flex items-center space-x-2">
+            <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
               <Camera className="w-4 h-4" />
               <span>Foto de la captura</span>
             </label>
@@ -255,7 +257,7 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
                 <img
                   src={fotoPreview}
                   alt="Preview"
-                  className="w-full h-48 object-cover rounded-lg border border-border"
+                  className={`w-full object-cover rounded-lg border border-border ${isMobile ? 'h-40' : 'h-48'}`}
                 />
                 <button
                   type="button"
@@ -270,10 +272,10 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
               </div>
             ) : (
               <label className="block">
-                <div className="w-full h-48 border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                <div className={`w-full border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors ${isMobile ? 'h-40' : 'h-48'}`}>
                   <div className="text-center">
-                    <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
+                    <Upload className={`text-muted-foreground mx-auto mb-2 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+                    <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
                       Haz clic para subir una foto
                     </p>
                   </div>
@@ -290,14 +292,14 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground flex items-center space-x-2">
+              <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 <Fish className="w-4 h-4" />
                 <span>Especie *</span>
               </label>
               <select
                 value={formData.especieId}
                 onChange={(e) => handleInputChange('especieId', e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
                 required
                 disabled={loadingEspecies}
               >
@@ -313,14 +315,14 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground flex items-center space-x-2">
+              <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 <Target className="w-4 h-4" />
                 <span>Tipo de Pesca *</span>
               </label>
               <select
                 value={formData.tipoPesca}
                 onChange={(e) => handleInputChange('tipoPesca', e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
                 required
                 disabled={loadingTipos}
               >
@@ -336,7 +338,7 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground flex items-center space-x-2">
+              <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 <Calendar className="w-4 h-4" />
                 <span>Fecha</span>
               </label>
@@ -344,24 +346,24 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
                 type="date"
                 value={formData.fecha}
                 onChange={(e) => handleInputChange('fecha', e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+              <label className={`font-medium text-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 Hora de captura
               </label>
               <input
                 type="time"
                 value={formData.horaCaptura || ''}
                 onChange={(e) => handleInputChange('horaCaptura', e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground flex items-center space-x-2">
+              <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 <Weight className="w-4 h-4" />
                 <span>Peso (kg)</span>
               </label>
@@ -370,13 +372,13 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
                 step="0.1"
                 value={formData.peso || ''}
                 onChange={(e) => handleInputChange('peso', parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
                 placeholder="Ej: 2.5"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground flex items-center space-x-2">
+              <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 <Ruler className="w-4 h-4" />
                 <span>Tamaño (cm)</span>
               </label>
@@ -384,14 +386,14 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
                 type="number"
                 value={formData.tamanio || ''}
                 onChange={(e) => handleInputChange('tamanio', parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
                 placeholder="Ej: 45"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground flex items-center space-x-2">
+            <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
               <MapPin className="w-4 h-4" />
               <span>Ubicación *</span>
             </label>
@@ -471,14 +473,14 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground flex items-center space-x-2">
+            <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
               <Fish className="w-4 h-4" />
               <span>Carnada *</span>
             </label>
             <select
               value={formData.carnada}
               onChange={(e) => handleInputChange('carnada', e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+              className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
               required
               disabled={loadingCarnadas}
             >
@@ -498,13 +500,13 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
+            <label className={`font-medium text-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
               Clima
             </label>
             <select
               value={formData.clima || ''}
               onChange={(e) => handleInputChange('clima', e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
+              className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
             >
               <option value="">Seleccionar clima</option>
               {climas.map(clima => (
@@ -516,30 +518,30 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
+            <label className={`font-medium text-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
               Notas adicionales
             </label>
             <textarea
               value={formData.notas || ''}
               onChange={(e) => handleInputChange('notas', e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground resize-none"
+              rows={isMobile ? 2 : 3}
+              className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground resize-none ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
               placeholder="Describe tu experiencia, condiciones del agua, técnica utilizada, etc."
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-border">
+          <div className={`flex justify-end space-x-3 pt-4 border-t border-border ${isMobile ? 'flex-col space-x-0 space-y-2' : ''}`}>
             <button
               type="button"
               onClick={handleClose}
-              className="px-6 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              className={`text-muted-foreground hover:text-foreground transition-colors ${isMobile ? 'w-full px-4 py-2.5 border border-border rounded-lg' : 'px-6 py-2'}`}
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isLoadingData}
-              className="px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed ${isMobile ? 'w-full px-4 py-2.5 text-sm' : 'px-6 py-2'}`}
             >
               Guardar Captura
             </button>

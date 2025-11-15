@@ -1,6 +1,6 @@
 import type React from "react";
 import { useState, useEffect } from "react";
-import { MapPin, Menu, X, Search, User, Settings, HelpCircle, Fish, Sun, Moon, Monitor, Camera, FishIcon, MapPinPlus, TrendingUp } from "lucide-react";
+import { MapPin, Menu, X, Search, User, HelpCircle, Fish, Sun, Moon, Monitor, Camera, FishIcon, MapPinPlus, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserMenu from "../usuario/UserMenu";
 import { useAuth } from "../../contexts/AuthContext";
@@ -9,6 +9,7 @@ import { useUserRoles } from "../../hooks/auth/useUserRoles";
 import { useDebounce } from "../../hooks/usePerformance";
 import { DEBOUNCE_DELAYS } from "../../constants/cache";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { useUsuario } from "../../hooks/usuario/useUsuario";
 
 interface NavigationBarProps {
   onCreateSpotClick?: () => void
@@ -25,7 +26,13 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ onCreateSpotClick, onSear
   const debouncedSearchQuery = useDebounce(searchQuery, DEBOUNCE_DELAYS.SEARCH)
   const { isModerator } = useUserRoles();
   const isMobile = useIsMobile();
-
+  const { usuario }= useUsuario();
+  const fotoUsuario = usuario?.foto;
+  const foto = fotoUsuario 
+    ? fotoUsuario?.startsWith('http') 
+        ? fotoUsuario
+        :`${import.meta.env.VITE_API_URL}${fotoUsuario}`
+    : null;
 useEffect(() => {
     if (onSearch && debouncedSearchQuery.trim()) {
       onSearch(debouncedSearchQuery.trim());
@@ -134,7 +141,7 @@ useEffect(() => {
               )}
               {user && isModerator && (
                 <button
-                  onClick={() => navigate("/spots/pendientes")}
+                  onClick={() => navigate("/spots")}
                   className="flex items-center space-x-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-2 rounded-lg transition font-medium"
                 >
                   <span className="hidden sm:inline">Spots</span>
@@ -240,17 +247,6 @@ useEffect(() => {
                   <span className="text-foreground">Destacados</span>
                 </button>
 
-                <button
-                  onClick={() => {
-                    navigate("/settings")
-                    toggleMenu()
-                  }}
-                  className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
-                >
-                  <Settings className="w-5 h-5 text-foreground" />
-                  <span className="text-foreground">Configuración</span>
-                </button>
-
                 <div className="border-t border-border my-2 pt-2">
                   <div className="px-3 py-2 text-xs font-semibold text-foreground uppercase tracking-wider">
                     Tema
@@ -305,8 +301,12 @@ useEffect(() => {
               {user && (
                 <div className="p-4 border-t border-border">
                   <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-primary-foreground" />
+                    <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-primary/10">
+                      {foto ? (
+                        <img src={foto} alt={usuario?.nombre} className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-5 h-5 text-primary" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{user.email || "Usuario"}</p>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Download, X, Smartphone, Share } from 'lucide-react'
 import { usePWA } from '../../hooks/ui/usePWA'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
 const PWAInstallPrompt: React.FC = () => {
-  const { isInstallable, isInstalled, isStandalone, isIOS, installApp, getInstallInstructions, canInstall } = usePWA()
+  const { isInstalled, isStandalone, isIOS, installApp, getInstallInstructions, canInstall } = usePWA()
   const [showPrompt, setShowPrompt] = useState(true)
   const [showInstructions, setShowInstructions] = useState(false)
+  const isMobile = useIsMobile()
 
   
   useEffect(() => {
@@ -90,7 +92,14 @@ const PWAInstallPrompt: React.FC = () => {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 pwa-install-prompt">
+    <div 
+      className="fixed left-4 right-4 z-50 pwa-install-prompt"
+      style={
+        isMobile
+          ? { bottom: 'max(88px, calc(88px + env(safe-area-inset-bottom)))' }
+          : { bottom: '1rem' }
+      }
+    >
       <div className="bg-card border border-border rounded-lg shadow-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3 flex-1">

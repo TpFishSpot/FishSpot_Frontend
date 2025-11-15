@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../auth/AuthFirebase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,6 +13,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   const { user } = useAuth();
   const { usuario, loading } = useUsuario();
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     try {
@@ -22,6 +24,16 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
     } catch (error) { 
     }
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   if (!user || loading) {
     return (
@@ -38,8 +50,14 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   const foto = usuario?.foto || user.photoURL || '';
 
   return (
-    <div className={`relative group z-[1000] ${className}`}>
-      <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-muted transition-colors">
+    <div ref={menuRef} className={`relative z-[1000] ${className}`}>
+      <div
+        className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-muted transition-colors"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(!open);
+        }}
+      >
         {foto ? (
           <img
             src={foto}
@@ -57,24 +75,29 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
         </div>
       </div>
 
-      <div className="absolute right-0 top-full mt-1 w-48 bg-background rounded-lg shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[1000]">
-        <div className="p-3 border-b border-border">
-          <p className="text-sm font-medium text-foreground">{nombre}</p>
-          <p className="text-xs text-muted-foreground">{email}</p>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-48 bg-background rounded-lg shadow-lg border border-border z-[1000] animate-in fade-in slide-in-from-top-1">
+          <div className="p-3 border-b border-border">
+            <p className="text-sm font-medium text-foreground">{nombre}</p>
+            <p className="text-xs text-muted-foreground">{email}</p>
+          </div>
+          <button
+            onClick={() => {
+              setOpen(false);
+              navigate('/EditarPerfil');
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition"
+          >
+            Editar perfil
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition"
+          >
+            Cerrar sesión
+          </button>
         </div>
-        <button
-          onClick={() => navigate('/EditarPerfil')}
-          className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition"
-        >
-          Editar perfil
-        </button>
-        <button
-          onClick={handleLogout}
-          className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition"
-        >
-          Cerrar Sesión
-        </button>
-      </div>
+      )}
     </div>
   );
 };

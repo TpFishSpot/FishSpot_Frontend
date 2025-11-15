@@ -110,7 +110,7 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
-        path="/spots/pendientes"
+        path="/spots"
         element={
           <ProtectedRoute>
             <Suspense fallback={<LoadingSkeleton />}>

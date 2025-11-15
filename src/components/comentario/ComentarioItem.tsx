@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ComentarioForm from "./ComentarioForm";
 import type { Comentario } from "../../modelo/Comentario";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface Props {
   comentario: Comentario;
@@ -17,6 +18,7 @@ export const ComentarioItem = ({
   const [respondiendo, setRespondiendo] = useState(false);
   const [respuesta, setRespuesta] = useState("");
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const fotoUsuario = comentario.usuario?.foto;
   const foto = fotoUsuario 
@@ -64,7 +66,7 @@ export const ComentarioItem = ({
 
       <p className="text-gray-800 dark:text-gray-200 mb-2">{comentario.contenido}</p>
 
-      {puedeResponder && (
+      {user && puedeResponder && (
         <button
           onClick={() => setRespondiendo((prev) => !prev)}
           className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
