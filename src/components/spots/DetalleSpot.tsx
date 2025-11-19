@@ -97,13 +97,6 @@ export default function DetalleSpot() {
             <EstadisticasSpot spotId={id!} />
           </div>
 
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
-              Especies Registradas
-            </h2>
-            <ListaEspecies especies={especies} cargando={loading} />
-          </div>
-
           <SpotTiposPesca 
             tiposPesca={estadisticas?.estadisticas?.tiposPescaMasUsados || []}
             totalCapturas={estadisticas?.estadisticas?.totalCapturas || 0}

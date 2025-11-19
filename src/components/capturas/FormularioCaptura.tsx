@@ -330,7 +330,7 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
                   {loadingTipos ? 'Cargando tipos de pesca...' : 'Seleccionar tipo'}
                 </option>
                 {tiposPesca.map(tipo => (
-                  <option key={tipo.id} value={tipo.id} title={tipo.descripcion}>
+                  <option key={tipo.id} value={tipo.nombre} title={tipo.descripcion}>
                     {tipo.nombre}
                   </option>
                 ))}

@@ -14,9 +14,9 @@ export interface SpotCreacion {
 export const obtenerTodosLosSpots = async (): Promise<Spot[]> => {
   try {
     const response = await apiFishSpot.get('/spot')
-    return response.data
+    return Array.isArray(response.data) ? response.data : []
   } catch (error) {
-    throw error
+    return []
   }
 }
 
@@ -25,9 +25,9 @@ export const obtenerSpotsPorTipoPesca = async (tiposPesca: string[]): Promise<Sp
     const response = await apiFishSpot.get('/spot/filtrar', {
       params: { tipoPesca: tiposPesca.join(',') }
     })
-    return response.data
+    return Array.isArray(response.data) ? response.data : []
   } catch (error) {
-    throw error
+    return []
   }
 }
 
@@ -36,59 +36,57 @@ export const obtenerSpotsPorEspecies = async (especies: string[]): Promise<Spot[
     const response = await apiFishSpot.get('/spot/filtrar-especies', {
       params: { especies: especies.join(',') }
     })
-    return response.data
+    return Array.isArray(response.data) ? response.data : []
   } catch (error) {
-    throw error
+    return []
   }
 }
 
 export const obtenerSpotsConFiltros = async (tiposPesca: string[], especies: string[]): Promise<Spot[]> => {
   try {
-    const params: any = {}
-    if (tiposPesca.length > 0) {
-      params.tipoPesca = tiposPesca.join(',')
+    const params: Record<string, string> = {}
+    
+
+    const tiposPescaValidos = tiposPesca.filter(t => t && t !== 'undefined')
+    const especiesValidas = especies.filter(e => e && e !== 'undefined')
+    
+    if (tiposPescaValidos.length > 0) {
+      params.tipoPesca = tiposPescaValidos.join(',')
     }
-    if (especies.length > 0) {
-      params.especies = especies.join(',')
+    
+    if (especiesValidas.length > 0) {
+      params.especies = especiesValidas.join(',')
     }
 
     const response = await apiFishSpot.get('/spot/filtrar-completo', { params })
-    return response.data
+    return Array.isArray(response.data) ? response.data : []
   } catch (error) {
-    throw error
+    return []
   }
 }
 
 export const obtenerSpotPorId = async (id: string): Promise<Spot> => {
-  try {
-    const response = await apiFishSpot.get(`/spot/${id}`)
-    return response.data
-  } catch (error) {
-    throw error
-  }
+  const response = await apiFishSpot.get(`/spot/${id}`)
+  return response.data
 }
 
 export const crearSpot = async (spot: SpotCreacion, imagen?: File): Promise<Spot> => {
-  try {
-    const formData = new FormData()
-    formData.append('nombre', spot.nombre)
-    formData.append('descripcion', spot.descripcion)
-    formData.append('ubicacion', JSON.stringify(spot.ubicacion))
-    formData.append('estado', spot.estado)
-    
-    if (imagen) {
-      formData.append('imagenPortada', imagen)
-    }
-
-    const response = await apiFishSpot.post('/spot', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-    return response.data
-  } catch (error) {
-    throw error
+  const formData = new FormData()
+  formData.append('nombre', spot.nombre)
+  formData.append('descripcion', spot.descripcion)
+  formData.append('ubicacion', JSON.stringify(spot.ubicacion))
+  formData.append('estado', spot.estado)
+  
+  if (imagen) {
+    formData.append('imagenPortada', imagen)
   }
+
+  const response = await apiFishSpot.post('/spot', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+  return response.data
 }
 
 export default {

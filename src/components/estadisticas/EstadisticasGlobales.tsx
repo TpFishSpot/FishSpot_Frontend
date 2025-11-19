@@ -201,13 +201,21 @@ export const EstadisticasGlobales = () => {
             </div>
             
             <div className={`grid grid-cols-1 md:grid-cols-3 ${isMobile ? 'gap-3' : 'gap-4'}`}>
-              {estadisticas?.usuariosDestacados?.map((usuario: any, idx: number) => (
+              {estadisticas?.usuariosDestacados?.map((usuario: any, idx: number) => {
+                const fotoUsuario = usuario.foto;
+                const foto = fotoUsuario
+                  ? fotoUsuario.startsWith("http")
+                    ? fotoUsuario
+                    : `${import.meta.env.VITE_API_URL}/${fotoUsuario}`
+                  : null;
+                
+                return (
                 <div key={usuario.id} className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg ${isMobile ? 'p-4' : 'p-6'}`}>
                   <div className={`flex items-center gap-4 ${isMobile ? 'mb-3' : 'mb-4'}`}>
                     <div className="relative">
-                      {usuario.foto ? (
+                      {foto ? (
                         <img 
-                          src={usuario.foto}
+                          src={foto}
                           alt={usuario.nombre}
                           className={`rounded-full object-cover ${isMobile ? 'w-12 h-12' : 'w-16 h-16'}`}
                         />
@@ -262,7 +270,8 @@ export const EstadisticasGlobales = () => {
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

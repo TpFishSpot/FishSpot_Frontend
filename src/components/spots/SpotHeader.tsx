@@ -7,6 +7,7 @@ import { BotonBorrar } from "../botones/Botones";
 import apiFishSpot from "../../api/apiFishSpot";
 import { useAuth } from "../../contexts/AuthContext";
 import ReporteModal from "../ui/ReporteModal";
+import { ImagenResponsive } from "../common/imgenResponsive";
 
 const formatNumber = (num: number | undefined | null, decimals = 1): string => {
   return (num || 0).toFixed(decimals);
@@ -48,10 +49,12 @@ export default function SpotHeader({
       </div>
 
       <div className="relative h-96 md:h-[500px]">
-        <img
-          src={obtenerUrlImagen(spot.imagenPortada)}
+        <ImagenResponsive
+          src={spot.imagenPortada}
           alt={`Imagen de ${spot.nombre}`}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          aspectRatio="auto"
+          objectFit="cover"
+          className="w-full h-full transition-transform duration-700 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
       </div>

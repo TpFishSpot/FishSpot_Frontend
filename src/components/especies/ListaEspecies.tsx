@@ -2,6 +2,7 @@ import { Link } from "react-router-dom"
 import type { EspecieConNombreComun } from "../../modelo/EspecieConNombreComun"
 import { Fish } from "lucide-react"
 import { baseApi } from "../../api/apiFishSpot"
+import { ImagenResponsive } from "../common/imgenResponsive"
 
 interface Props {
   especies: EspecieConNombreComun[]
@@ -38,14 +39,12 @@ export default function ListaEspecies({ especies, cargando }: Props) {
                           hover:bg-white/30 dark:hover:bg-gray-700/30 transition-all duration-300 hover:scale-105 hover:shadow-lg">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
-                <img
-                  src={especie.imagen ? `${baseApi}/${especie.imagen}` : "/colorful-fish-shoal.png"}
+                <ImagenResponsive
+                  src={especie.imagen || "/colorful-fish-shoal.png"}
                   alt={especie.nombre_cientifico}
-                  className="w-16 h-16 rounded-lg object-cover border-2 border-white/50 dark:border-gray-600 shadow-md"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.src = "/colorful-fish-shoal.png"
-                  }}
+                  aspectRatio="square"
+                  objectFit="contain"
+                  className="w-16 h-16 rounded-lg border-2 border-white/50 dark:border-gray-600 shadow-md"
                 />
               </div>
 
@@ -63,13 +62,13 @@ export default function ListaEspecies({ especies, cargando }: Props) {
                     Nombres comunes:
                   </p>
                   <div className="flex flex-wrap gap-1">
-                    {Array.isArray(especie.nombre_comun) && especie.nombre_comun.length > 0 ? (
-                      especie.nombre_comun.map((nombre, index) => (
+                    {Array.isArray(especie.nombresComunes) && especie.nombresComunes.length > 0 ? (
+                      especie.nombresComunes.map((nombreObj, index) => (
                         <span
                           key={index}
                           className="inline-block bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded-full font-medium"
                         >
-                          {nombre}
+                          {nombreObj.nombre}
                         </span>
                       ))
                     ) : (

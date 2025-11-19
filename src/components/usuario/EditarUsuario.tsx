@@ -17,7 +17,15 @@ export const EditarUsuario: React.FC = () => {
   useEffect(() => {
     if (!usuario) return;
     setNombre(usuario.nombre || user?.displayName || "");
-    setImagePreview(usuario.foto || user?.photoURL || undefined);
+    const fotoUsuario = usuario.foto || user?.photoURL;
+    if (fotoUsuario) {
+      const fotoUrl = fotoUsuario.startsWith("http")
+        ? fotoUsuario
+        : `${import.meta.env.VITE_API_URL}/${fotoUsuario}`;
+      setImagePreview(fotoUrl);
+    } else {
+      setImagePreview(undefined);
+    }
   }, [usuario, user]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -2,6 +2,8 @@ import { memo, useCallback } from 'react';
 import { LazyImage } from './LazyImage';
 import { LoadingSkeleton } from './LoadingSkeleton';
 import type { Spot } from '../modelo/Spot';
+import { obtenerUrlImagen } from '../utils/spotUtils';
+import { ImagenResponsive } from './common/imgenResponsive';
 
 interface SpotCardProps {
   spot: Spot;
@@ -14,20 +16,17 @@ export const SpotCard = memo(({ spot, onClick, className = '' }: SpotCardProps) 
     onClick?.(spot);
   }, [onClick, spot]);
 
-  const imageUrl = spot.imagenPortada 
-    ? `${import.meta.env.VITE_API_URL}/uploads/${spot.imagenPortada}`
-    : '/images/placeholder-spot.jpg';
-
   return (
     <div 
       className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer ${className}`}
       onClick={handleClick}
     >
-      <LazyImage
-        src={imageUrl}
+      <ImagenResponsive
+        src={spot.imagenPortada}
         alt={spot.nombre}
-        className="w-full h-48 object-cover"
-        placeholder=""
+        aspectRatio="landscape"
+        objectFit="cover"
+        className="w-full h-48"
       />
       
       <div className="p-4">

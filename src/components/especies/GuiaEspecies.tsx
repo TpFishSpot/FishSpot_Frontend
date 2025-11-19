@@ -5,11 +5,13 @@ import NavigationBar from "../common/NavigationBar"
 import { useEspecies } from "../../hooks/especies/useEspecies"
 import MobileNavigationBar from "../common/MobileNavigationBar"
 import { useIsMobile } from "../../hooks/useIsMobile"
+import { baseApi } from "../../api/apiFishSpot"
+import { ImagenResponsive } from "../common/imgenResponsive"
 
 const obtenerUrlImagenEspecie = (imagen?: string) => {
   if (!imagen) return "/placeholder-fish.png"
   if (imagen.startsWith("http")) return imagen
-  return `${import.meta.env.VITE_API_URL}/${imagen}`
+  return `${baseApi}/${imagen.startsWith("/") ? imagen.slice(1) : imagen}`
 }
 
 const GuiaEspecies: React.FC = () => {
@@ -52,10 +54,9 @@ const GuiaEspecies: React.FC = () => {
   const filteredEspecies = especies.filter((especie) => {
     const matchesSearch =
       searchQuery === "" ||
-      (especie.nombre_comun &&
-        especie.nombresComunes.some((nombreObj: { nombre: string }) =>
-          nombreObj.nombre.toLowerCase().includes(searchQuery.toLowerCase()),
-        )) ||
+      especie.nombresComunes.some((nombreObj: { nombre: string }) =>
+        nombreObj.nombre.toLowerCase().includes(searchQuery.toLowerCase()),
+      ) ||
       especie.nombreCientifico.toLowerCase().includes(searchQuery.toLowerCase()) ||
       especie.descripcion.toLowerCase().includes(searchQuery.toLowerCase())
 
@@ -205,13 +206,12 @@ const GuiaEspecies: React.FC = () => {
             >
               {/* Image */}
               <div className={`relative bg-muted ${isMobile ? 'h-36' : 'h-40 sm:h-48'}`}>
-                <img
-                  src={obtenerUrlImagenEspecie(especie.imagen) || "/placeholder.svg"}
+                <ImagenResponsive
+                  src={especie.imagen || "/placeholder-fish.png"}
                   alt={extractMainName(especie.descripcion)}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    ;(e.target as HTMLImageElement).src = "/placeholder-fish.png"
-                  }}
+                  aspectRatio="auto"
+                  objectFit="contain"
+                  className="w-full h-full"
                 />
 
                 {/* Favorite button */}

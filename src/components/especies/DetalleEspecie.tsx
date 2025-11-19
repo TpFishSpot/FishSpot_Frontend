@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useDetalleEspecie } from "../../hooks/especies/useDetalleEspecie"
-import { baseApi } from "../../api/apiFishSpot"
 import { obtenerNombreMostrar } from "../../utils/especiesUtils"
 import { useIsMobile } from "../../hooks/useIsMobile"
 import NavigationBar from "../common/NavigationBar"
 import MobileNavigationBar from "../common/MobileNavigationBar"
+import { ImagenResponsive } from "../common/imgenResponsive"
 
 export default function DetalleEspecie() {
   const { especie, carnadas, tiposPesca, cargando, error } = useDetalleEspecie()
@@ -18,7 +18,7 @@ export default function DetalleEspecie() {
   
   const irAlMapaConFiltro = () => {
     if (!especie) return
-    const nombreFiltro = obtenerNombreMostrar(especie)
+    const nombreFiltro = obtenerNombreMostrar(especie as any)
     navigate(`/mapa?especie=${encodeURIComponent(nombreFiltro)}`)
   }
 
@@ -78,8 +78,8 @@ export default function DetalleEspecie() {
             </button>
           )}
           <h1 className={`font-bold italic text-gray-900 dark:text-gray-100 ${isMobile ? 'text-lg' : 'text-3xl'}`}>
-            {isMobile && especie.nombre_comun?.length 
-              ? especie.nombre_comun[0] 
+            {isMobile && especie.nombresComunes?.length 
+              ? especie.nombresComunes[0].nombre 
               : especie.nombre_cientifico}
           </h1>
           <div className={`flex gap-2 ${isMobile ? '' : 'gap-3'}`}>
@@ -116,10 +116,12 @@ export default function DetalleEspecie() {
         <div className={`lg:col-span-2 ${isMobile ? 'space-y-4' : 'space-y-8'}`}>
 
           <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex justify-center transition-colors ${isMobile ? 'p-4' : 'p-6'}`}>
-            <img
-              src={especie.imagen ? `${baseApi}/${especie.imagen}` : "/colorful-fish-shoal.png"}
+            <ImagenResponsive
+              src={especie.imagen || "/colorful-fish-shoal.png"}
               alt={especie.nombre_cientifico}
-              className={`object-contain rounded-lg ${isMobile ? 'w-48 h-48' : 'w-64 h-64'}`}
+              aspectRatio="square"
+              objectFit="contain"
+              className={`rounded-lg ${isMobile ? 'w-48 h-48' : 'w-64 h-64'}`}
             />
           </div>
 
@@ -137,14 +139,14 @@ export default function DetalleEspecie() {
             <h2 className={`font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2 ${isMobile ? 'text-lg' : 'text-2xl mb-4'}`}>
               <span className="text-blue-600">📝</span> Nombres comunes
             </h2>
-            {especie.nombre_comun?.length ? (
+            {especie.nombresComunes?.length ? (
               <div className="flex flex-wrap gap-2">
-                {especie.nombre_comun.map((nombre, i) => (
+                {especie.nombresComunes.map((nombreObj, i) => (
                   <span
                     key={i}
                     className={`bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-200 rounded-full font-medium ${isMobile ? 'px-2 py-1 text-xs' : 'px-3 py-1 text-sm'}`}
                   >
-                    {nombre}
+                    {nombreObj.nombre}
                   </span>
                 ))}
               </div>

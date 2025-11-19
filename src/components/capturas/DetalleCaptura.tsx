@@ -13,6 +13,7 @@ import apiFishSpot from '../../api/apiFishSpot'
 import L from 'leaflet'
 import type { Usuario } from '../../modelo/Usuario'
 import type { TipoPesca } from '../../modelo/TipoPesca'
+import { ImagenResponsive } from '../common/imgenResponsive'
 
 const DetalleCaptura = () => {
   const { id } = useParams<{ id: string }>()
@@ -109,13 +110,15 @@ const DetalleCaptura = () => {
       <div className="flex-1 overflow-y-auto" style={isMobile ? { paddingBottom: '120px' } : {}}>
         <div className={`max-w-4xl mx-auto p-4 md:p-8 ${isMobile ? 'mt-16' : ''}`}>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden relative">
-            {captura.foto && (
-              <img
-                src={buildImageUrl(captura.foto)}
+            <div className="relative w-full" style={{ height: '400px' }}>
+              <ImagenResponsive 
+                src={captura.foto}
                 alt="Captura"
-                className="w-full h-64 md:h-96 object-cover"
+                aspectRatio="auto"
+                objectFit="contain"
+                className="w-full h-full"
               />
-            )}
+            </div>
             <button
               onClick={() => navigate(-1)}
               className="absolute top-4 left-4 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 bg-white dark:bg-gray-800 rounded-lg px-2 py-1 shadow z-50"
