@@ -185,13 +185,14 @@ export const Mapa = () => {
     }
   }, [isMobile])
 
-  const spotsParaMostrar =
+  const spotsParaMostrar = Array.isArray(
     tiposPescaSeleccionados.length > 0 || especiesSeleccionadas.length > 0 ? spotsFiltrados : allSpots
+  ) ? (tiposPescaSeleccionados.length > 0 || especiesSeleccionadas.length > 0 ? spotsFiltrados : allSpots) : []
 
   const cargando = cargandoSpots || cargandoFiltros || cargandoPosicion
 
   const filteredSpots = useMemo(() => {
-    if (!spotsParaMostrar) return []
+    if (!spotsParaMostrar || !Array.isArray(spotsParaMostrar)) return []
     const query = searchQuery.trim().toLowerCase()
 
     return spotsParaMostrar.filter((spot: any) => {

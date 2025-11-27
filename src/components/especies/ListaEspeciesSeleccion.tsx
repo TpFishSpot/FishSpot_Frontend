@@ -14,8 +14,8 @@ export default function ListaEspeciesSeleccion({ todasEspecies, especiesSeleccio
   const [busqueda, setBusqueda] = useState("");
 
   const obtenerNombrePrincipal = (esp: EspecieConNombreComun) => {
-    if (esp.nombre_comun && esp.nombre_comun.length > 0) {
-      return esp.nombre_comun[0];
+    if (esp.nombresComunes && esp.nombresComunes.length > 0) {
+      return esp.nombresComunes[0].nombre;
     }
     return esp.nombre_cientifico;
   };
@@ -26,9 +26,9 @@ export default function ListaEspeciesSeleccion({ todasEspecies, especiesSeleccio
     const terminoBusqueda = busqueda.toLowerCase().trim();
 
     return todasEspecies.filter(esp => {
-      const coincideEnNombreComun = esp.nombre_comun.some(nombre =>
-        nombre.toLowerCase().includes(terminoBusqueda)
-      );
+      const coincideEnNombreComun = esp.nombresComunes && esp.nombresComunes.length > 0
+        ? esp.nombresComunes.some(nombreObj => nombreObj.nombre.toLowerCase().includes(terminoBusqueda))
+        : false;
 
       const coincideEnNombreCientifico = esp.nombre_cientifico.toLowerCase().includes(terminoBusqueda);
 
@@ -103,7 +103,9 @@ export default function ListaEspeciesSeleccion({ todasEspecies, especiesSeleccio
             {especiesFiltradas.map((esp) => {
               const seleccionado = especiesSeleccionadas.some(e => e.id === esp.id);
               const nombrePrincipal = obtenerNombrePrincipal(esp);
-              const nombresSecundarios = esp.nombre_comun.slice(1);
+              const nombresSecundarios = esp.nombresComunes && esp.nombresComunes.length > 1 
+                ? esp.nombresComunes.slice(1).map(n => n.nombre) 
+                : [];
 
               return (
                 <button

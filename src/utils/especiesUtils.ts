@@ -1,9 +1,11 @@
-import type { Especie } from '../api/especiesApi'
+import type { Especie } from '../modelo/Especie'
 
-export const obtenerNombreMostrar = (especie: Especie): string => {
-  return especie.nombre_comun && especie.nombre_comun[0] 
-    ? especie.nombre_comun[0] 
-    : especie.nombre_cientifico
+export const obtenerNombreMostrar = (especie: Especie | any): string => {
+  if (especie.nombresComunes && especie.nombresComunes.length > 0) {
+    return especie.nombresComunes[0].nombre
+  }
+  
+  return especie.nombreCientifico || especie.nombre_cientifico || 'Especie sin nombre'
 }
 
 export const obtenerImagenEspecie = (especie: Especie): string => {
@@ -13,9 +15,11 @@ export const obtenerImagenEspecie = (especie: Especie): string => {
     return especie.imagen
   }
   
+  const apiUrl = import.meta.env.VITE_API_URL || 'https://localhost:3000'
+  
   if (especie.imagen.startsWith('uploads/')) {
-    return `${import.meta.env.BASE_URL}/${especie.imagen}`
+    return `${apiUrl}/${especie.imagen}`
   }
   
-  return `${import.meta.env.BASE_URL}/uploads/${especie.imagen}`
+  return `${apiUrl}/uploads/${especie.imagen}`
 }

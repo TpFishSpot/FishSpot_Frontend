@@ -1,6 +1,8 @@
 import { Calendar, Weight, Ruler, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import type { Captura } from '../../modelo/Captura'
+import { baseApi } from '../../api/apiFishSpot'
+import { ImagenResponsive } from '../common/imgenResponsive'
 
 interface CapturaDestacadaCardProps {
   captura: Captura
@@ -9,8 +11,7 @@ interface CapturaDestacadaCardProps {
 
 const buildImageUrl = (path: string | undefined): string => {
   if (!path) return ''
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-  return path.startsWith('http') ? path : `${baseUrl}/${path}`
+  return path.startsWith('http') ? path : `${baseApi}/${path.startsWith("/") ? path.slice(1) : path}`
 }
 
 const getMedalla = (ranking: number) => {
@@ -44,19 +45,13 @@ export const CapturaDestacadaCard = ({ captura, ranking }: CapturaDestacadaCardP
           <span className="text-xs font-bold">{medalla.text}</span>
         </div>
         
-        <div className="relative h-40 bg-muted">
-          {captura.foto ? (
-            <img
-              src={buildImageUrl(captura.foto)}
-              alt={obtenerNombreEspecie(captura)}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Weight className="w-12 h-12 text-muted-foreground" />
-            </div>
-          )}
-        </div>
+        <ImagenResponsive 
+          src={captura.foto}
+          alt={obtenerNombreEspecie(captura)}
+          aspectRatio="landscape"
+          objectFit="contain"
+          className="h-40"
+        />
       </div>
 
       <div className="p-3">

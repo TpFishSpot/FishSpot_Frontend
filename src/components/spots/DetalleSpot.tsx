@@ -15,6 +15,7 @@ import { SpotDescripcion } from "./SpotDescripcion"
 import { SpotCapturasDestacadas } from "./SpotCapturasDestacadas"
 import { SpotTiposPesca } from "./SpotTiposPesca"
 import { SpotSidebar } from "./SpotSidebar"
+import { useIsMobile } from "../../hooks/useIsMobile"
 
 export default function DetalleSpot() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +24,7 @@ export default function DetalleSpot() {
   const { capturas: capturasDestacadas, loading: loadingCapturas } = useCapturasDestacadas(id);
   const [esFavorito, setEsFavorito] = useState(false)
   const [formularioAbierto, setFormularioAbierto] = useState(false)
+  const isMobile = useIsMobile()
 
   const manejarFavorito = () => setEsFavorito(!esFavorito)
 
@@ -62,7 +64,14 @@ export default function DetalleSpot() {
   const coordenadas = obtenerCoordenadas(spot)
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div 
+      className="min-h-screen bg-background text-foreground"
+      style={
+        isMobile
+          ? { paddingBottom: "max(96px, calc(96px + env(safe-area-inset-bottom)))", }
+          : {}
+      }
+    >
       <SpotHeader
         spot={spot}
         esFavorito={esFavorito}
@@ -71,7 +80,10 @@ export default function DetalleSpot() {
         manejarVolver={manejarVolver}
       />
 
-      <div className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div 
+        className="max-w-6xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8"
+        style={isMobile ? { paddingTop: "max(76px, calc(76px + env(safe-area-inset-top)))" } : {}}
+      >
         <div className="lg:col-span-2 space-y-8">
           <SpotDescripcion descripcion={spot.descripcion} />
 
@@ -83,13 +95,6 @@ export default function DetalleSpot() {
               Estadísticas del Spot
             </h2>
             <EstadisticasSpot spotId={id!} />
-          </div>
-
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <h2 className="text-2xl font-bold text-card-foreground mb-6 flex items-center gap-2">
-              Especies Registradas
-            </h2>
-            <ListaEspecies especies={especies} cargando={loading} />
           </div>
 
           <SpotTiposPesca 

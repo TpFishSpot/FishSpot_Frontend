@@ -1,6 +1,8 @@
 import { Fish, TrendingUp, Sunrise, Sun, Sunset, Moon, Wind, CloudRain, CloudSun, Weight, Ruler } from 'lucide-react'
 import { useEstadisticasSpot } from '../../hooks/capturas/useEstadisticasSpot'
 import type { EspecieDetalle } from '../../hooks/capturas/useEstadisticasSpot'
+import { baseApi } from '../../api/apiFishSpot'
+import { ImagenResponsive } from '../common/imgenResponsive'
 
 interface EstadisticasSpotProps {
   spotId: string
@@ -8,8 +10,7 @@ interface EstadisticasSpotProps {
 
 const buildImageUrl = (path: string | undefined | null): string => {
   if (!path) return ''
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-  return path.startsWith('http') ? path : `${baseUrl}/${path}`
+  return path.startsWith('http') ? path : `${baseApi}/${path.startsWith("/") ? path.slice(1) : path}`
 }
 
 const getHorarioIcon = (franja: string) => {
@@ -36,17 +37,13 @@ const EspecieCard = ({ especie }: { especie: EspecieDetalle }) => {
   return (
     <div className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="flex gap-3">
-        {especie.imagen ? (
-          <img
-            src={buildImageUrl(especie.imagen)}
-            alt={nombreEspecie}
-            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-          />
-        ) : (
-          <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-            <Fish className="w-8 h-8 text-muted-foreground" />
-          </div>
-        )}
+        <ImagenResponsive
+          src={especie.imagen}
+          alt={nombreEspecie}
+          aspectRatio="square"
+          objectFit="contain"
+          className="w-16 h-16 rounded-lg flex-shrink-0"
+        />
 
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-foreground truncate">{nombreEspecie}</h4>

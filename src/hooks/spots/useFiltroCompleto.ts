@@ -44,8 +44,21 @@ export const useFiltroCompleto = () => {
   useEffect(() => {
     const especieParam = searchParams.get('especie')
     if (especieParam && especiesDisponibles.length > 0) {
-      if (!especiesSeleccionadas.includes(especieParam)) {
-        setEspeciesSeleccionadas([especieParam])
+     
+      const especieEncontrada = especiesDisponibles.find(esp => 
+        esp.nombreCientifico.toLowerCase() === especieParam.toLowerCase() ||
+        esp.nombresComunes?.some(nc => nc.nombre.toLowerCase() === especieParam.toLowerCase())
+      )
+      
+      if (especieEncontrada) {
+       
+        const nombreMostrar = especieEncontrada.nombresComunes && especieEncontrada.nombresComunes.length > 0
+          ? especieEncontrada.nombresComunes[0].nombre
+          : especieEncontrada.nombreCientifico
+        
+        if (!especiesSeleccionadas.includes(nombreMostrar)) {
+          setEspeciesSeleccionadas([nombreMostrar])
+        }
       }
     }
   }, [searchParams, especiesDisponibles])
@@ -63,9 +76,10 @@ export const useFiltroCompleto = () => {
           spotsData = await obtenerTodosLosSpots()
         }
         
-        setSpots(spotsData)
+        setSpots(Array.isArray(spotsData) ? spotsData : [])
       } catch (err) {
         setError('Error al cargar spots')
+        setSpots([])
       } finally {
         setCargando(false)
       }

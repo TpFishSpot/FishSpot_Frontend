@@ -56,6 +56,14 @@ export const MobileHamburgerMenu = () => {
   const email = user.email || usuario?.email || '';
   const id = user.uid || usuario?.id;
 
+  const fotoUsuario = usuario?.foto;
+  const foto = fotoUsuario 
+    ? fotoUsuario?.startsWith('http') 
+        ? fotoUsuario
+        :`${import.meta.env.VITE_API_URL}${fotoUsuario}`
+    : null;
+
+
   return (
     <>
       <button
@@ -81,8 +89,16 @@ export const MobileHamburgerMenu = () => {
               <Link to={`/profile/${id}`} className="group">
                 <div className="px-5 pb-4 border-b border-border rounded-t-3xl">
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-primary-foreground" />
+                    <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-primary/10">
+                      {foto ? (
+                        <img
+                          src={user.photoURL || usuario?.foto}
+                          alt={nombre}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-5 h-5 text-primary" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-base font-semibold text-foreground truncate">{nombre}</p>
@@ -106,11 +122,11 @@ export const MobileHamburgerMenu = () => {
                       <span className="text-sm font-medium">Usuarios</span>
                     </button>
                     <button
-                      onClick={() => handleNavigation('/spots/pendientes')}
+                      onClick={() => handleNavigation('/spots')}
                       className="w-full flex items-center space-x-3 px-5 py-3 text-foreground hover:bg-muted transition-colors active:bg-muted/70 rounded-xl mb-2"
                     >
                       <MapPin className="w-5 h-5" />
-                      <span className="text-sm font-medium">Spots Pendientes</span>
+                      <span className="text-sm font-medium">Spots</span>
                     </button>
                     <div className="h-px bg-border mx-5 my-3" />
                   </>
