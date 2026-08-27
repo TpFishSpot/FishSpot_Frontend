@@ -282,7 +282,8 @@ export const ChatbotModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 onChange={(e) => setInputTexto(e.target.value)}
                 placeholder="Escribí tu consulta de pesca..."
                 disabled={cargando}
-                className="w-full h-10 px-4 rounded-2xl bg-muted/40 border border-border/40 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs sm:text-sm font-medium"
+                style={{ fontSize: '16px' }}
+                className="w-full h-10 px-4 rounded-2xl bg-muted/40 border border-border/40 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium"
               />
 
               <button
