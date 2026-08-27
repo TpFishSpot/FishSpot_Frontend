@@ -175,7 +175,7 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       devOptions: {
-        enabled: true
+        enabled: false
       }
     })
   ],
@@ -187,20 +187,14 @@ export default defineConfig(({ mode }) => ({
       key: readFileSync(resolve(__dirname, 'src/cert/key.pem')),
       cert: readFileSync(resolve(__dirname, 'src/cert/cert.pem'))
     },
-    hmr: {
-      host: '192.168.1.34',
-      protocol: 'wss',
-      port: 5173,
-      clientPort: 5173,
-    },
     cors: {
       origin: [
         'http://localhost:3000',
         'http://localhost:5173',
         'https://localhost:3000',
         'https://localhost:5173',
-        'https://192.168.1.42:3000',
-        'https://192.168.1.42:5173'
+        'https://192.168.1.40:3000',
+        'https://192.168.1.40:5173'
       ],
       credentials: true
     }

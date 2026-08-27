@@ -1,5 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { X, Camera, Upload, Calendar, MapPin, Ruler, Weight, Fish, Target, Navigation, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  X,
+  Camera,
+  Upload,
+  Calendar,
+  Clock,
+  MapPin,
+  Ruler,
+  Weight,
+  Fish,
+  Target,
+  Navigation,
+  Loader2,
+  Check,
+  Search,
+  Sparkles,
+  Info,
+  Layers,
+} from 'lucide-react';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import { useEspecies } from '../../hooks/especies/useEspecies';
 import { useCarnadas } from '../../hooks/carnadas/useCarnadas';
 import { useTiposPesca } from '../../hooks/carnadas/useTiposPesca';
@@ -8,188 +28,289 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { obtenerNombreMostrar } from '../../utils/especiesUtils';
 import { compressImage } from '../../utils/imageCompression';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import 'leaflet/dist/leaflet.css';
 
 interface NuevaCapturaData {
-  especieId: string
-  especieNombre: string
-  fecha: string
-  ubicacion: string
-  spotId?: string
-  latitud?: number
-  longitud?: number
-  peso?: number
-  tamanio?: number
-  carnada: string
-  tipoPesca: string
-  foto?: File
-  notas?: string
-  clima?: string
-  horaCaptura?: string
+  especieId: string;
+  especieNombre: string;
+  fecha: string;
+  ubicacion: string;
+  spotId?: string;
+  latitud?: number;
+  longitud?: number;
+  peso?: number;
+  tamanio?: number;
+  carnada: string;
+  tipoPesca: string;
+  foto?: File;
+  notas?: string;
+  clima?: string;
+  horaCaptura?: string;
 }
 
 interface Props {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (captura: NuevaCapturaData) => void
-  coordenadasSpot?: { latitud: number; longitud: number }
-  nombreSpot?: string
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (captura: NuevaCapturaData) => void;
+  coordenadasSpot?: { latitud: number; longitud: number };
+  nombreSpot?: string;
 }
 
-const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenadasSpot, nombreSpot }) => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { position, cargandoPosicion, esUbicacionUsuario } = useGeolocalizacion()
-  const isMobile = useIsMobile()
-  
-  const [formData, setFormData] = useState<NuevaCapturaData>({
-    especieId: '',
-    especieNombre: '',
-    fecha: new Date().toISOString().split('T')[0],
-    ubicacion: '',
-    carnada: '',
-    tipoPesca: '',
-    horaCaptura: new Date().toTimeString().slice(0, 5)
-  })
-  const [fotoPreview, setFotoPreview] = useState<string>('')
-  const [gpsConfirmado, setGpsConfirmado] = useState(false)
-  const [gpsRechazado, setGpsRechazado] = useState(false)
+const STORAGE_KEY = 'fishspot_captura_draft';
 
-  const esDesdeSpot = !!coordenadasSpot
+// Componente para capturar clics en el mini mapa embebido
+function MiniMapClickHandler({ onSelect }: { onSelect: (lat: number, lng: number) => void }) {
+  useMapEvents({
+    click(e) {
+      onSelect(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+}
 
-  const { especies, loading: loadingEspecies, error: errorEspecies } = useEspecies()
-  const { carnadas, loading: loadingCarnadas, error: errorCarnadas } = useCarnadas()
-  const { tiposPesca, loading: loadingTipos, error: errorTipos } = useTiposPesca()
+const markerIcon = L.divIcon({
+  className: 'custom-capture-pin',
+  html: '<div style="background: linear-gradient(135deg, #10b981, #059669); width: 22px; height: 22px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center;"><div style="width: 6px; height: 6px; background: white; border-radius: 50%;"></div></div>',
+  iconSize: [22, 22],
+  iconAnchor: [11, 11],
+});
 
-  const isLoadingData = loadingEspecies || loadingCarnadas || loadingTipos
-  const hasErrors = errorEspecies || errorCarnadas || errorTipos
+const climas = [
+  { id: 'Soleado', label: 'Soleado', icon: '☀️' },
+  { id: 'Nublado', label: 'Nublado', icon: '⛅' },
+  { id: 'Lluvioso', label: 'Lluvia', icon: '🌧️' },
+  { id: 'Ventoso', label: 'Viento', icon: '💨' },
+  { id: 'Mar picado', label: 'Mar picado', icon: '🌊' },
+  { id: 'Tormentoso', label: 'Tormenta', icon: '⚡' },
+];
 
-  const carnadasPorTipo = carnadas.reduce<Record<string, typeof carnadas[0][]>>((grupos, carnada) => {
-    const tipo = carnada.tipo
-    if (!grupos[tipo]) {
-      grupos[tipo] = []
+const FormularioCaptura: React.FC<Props> = ({
+  isOpen,
+  onClose,
+  onSave,
+  coordenadasSpot,
+  nombreSpot,
+}) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { position, cargandoPosicion, esUbicacionUsuario } = useGeolocalizacion();
+  const isMobile = useIsMobile();
+
+  // 1. Cargar borrador persistido para evitar pérdida de datos al cambiar de ubicación
+  const [formData, setFormData] = useState<NuevaCapturaData>(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {
+      // ignore
     }
-    grupos[tipo].push(carnada)
-    return grupos
-  }, {})
+    return {
+      especieId: '',
+      especieNombre: '',
+      fecha: new Date().toISOString().split('T')[0],
+      ubicacion: '',
+      carnada: '',
+      tipoPesca: '',
+      horaCaptura: new Date().toTimeString().slice(0, 5),
+    };
+  });
 
-  const climas = [
-    'Soleado',
-    'Nublado',
-    'Lluvioso',
-    'Ventoso',
-    'Tormentoso',
-    'Neblina'
-  ]
+  const [fotoPreview, setFotoPreview] = useState<string>(() => {
+    return sessionStorage.getItem(`${STORAGE_KEY}_preview`) || '';
+  });
+  const [gpsConfirmado, setGpsConfirmado] = useState(false);
+  const [gpsRechazado, setGpsRechazado] = useState(false);
+  const [mostrarMiniMapa, setMostrarMiniMapa] = useState(false);
+  const [busquedaEspecie, setBusquedaEspecie] = useState('');
+  const [guardandoForm, setGuardandoForm] = useState(false);
 
+  const esDesdeSpot = !!coordenadasSpot;
+
+  const { especies, loading: loadingEspecies, error: errorEspecies } = useEspecies();
+  const { carnadas, loading: loadingCarnadas, error: errorCarnadas } = useCarnadas();
+  const { tiposPesca, loading: loadingTipos, error: errorTipos } = useTiposPesca();
+
+  const isLoadingData = loadingEspecies || loadingCarnadas || loadingTipos;
+  const hasErrors = errorEspecies || errorCarnadas || errorTipos;
+
+  // Guardar automáticamente borrador en sessionStorage ante cualquier cambio
   useEffect(() => {
-    if (isOpen && position && esUbicacionUsuario && Array.isArray(position) && !gpsConfirmado && !gpsRechazado && !esDesdeSpot) {
-      const [lat, lng] = position
-      setFormData(prev => ({
-        ...prev,
-        latitud: lat,
-        longitud: lng
-      }))
+    try {
+      const { foto, ...rest } = formData;
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
+      if (fotoPreview) {
+        sessionStorage.setItem(`${STORAGE_KEY}_preview`, fotoPreview);
+      }
+    } catch {
+      // ignore
     }
-  }, [isOpen, position, esUbicacionUsuario, gpsConfirmado, gpsRechazado, esDesdeSpot])
+  }, [formData, fotoPreview]);
 
+  // Si se proveen coordenadas por Spot
   useEffect(() => {
     if (coordenadasSpot) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         latitud: coordenadasSpot.latitud,
         longitud: coordenadasSpot.longitud,
-        ubicacion: nombreSpot || prev.ubicacion
-      }))
-      setGpsConfirmado(true)
+        ubicacion: nombreSpot || prev.ubicacion,
+      }));
+      setGpsConfirmado(true);
     }
-  }, [coordenadasSpot, nombreSpot])
+  }, [coordenadasSpot, nombreSpot]);
 
+  // Si se regresa de la pantalla de mapa completo con coordenadas seleccionadas
   useEffect(() => {
-    if (location.state?.coordenadas && !esDesdeSpot) {
-      const { lat, lng } = location.state.coordenadas
-      setFormData(prev => ({
+    const coords = location.state?.coordenadas || (location.state?.lat && location.state?.lng ? { lat: location.state.lat, lng: location.state.lng } : null);
+    if (coords && !esDesdeSpot) {
+      setFormData((prev) => ({
+        ...prev,
+        latitud: coords.lat,
+        longitud: coords.lng,
+      }));
+      setGpsConfirmado(true);
+    }
+  }, [location.state, esDesdeSpot]);
+
+  // Si GPS detecta posición inicial
+  useEffect(() => {
+    if (
+      isOpen &&
+      position &&
+      esUbicacionUsuario &&
+      Array.isArray(position) &&
+      !formData.latitud &&
+      !gpsConfirmado &&
+      !gpsRechazado &&
+      !esDesdeSpot
+    ) {
+      const [lat, lng] = position;
+      setFormData((prev) => ({
         ...prev,
         latitud: lat,
-        longitud: lng
-      }))
-      setGpsConfirmado(true)
+        longitud: lng,
+      }));
     }
-  }, [location.state, esDesdeSpot])
+  }, [isOpen, position, esUbicacionUsuario, formData.latitud, gpsConfirmado, gpsRechazado, esDesdeSpot]);
+
+  // Filtrado de especies para selector visual
+  const especiesFiltradas = useMemo(() => {
+    if (!busquedaEspecie.trim()) return especies;
+    const term = busquedaEspecie.toLowerCase();
+    return especies.filter((e) => {
+      const nombreMostrar = obtenerNombreMostrar(e).toLowerCase();
+      const cientifico = (e.nombre_cientifico || '').toLowerCase();
+      return nombreMostrar.includes(term) || cientifico.includes(term);
+    });
+  }, [especies, busquedaEspecie]);
+
+  const especieSeleccionadaObj = useMemo(() => {
+    return especies.find((e) => e.id === formData.especieId);
+  }, [especies, formData.especieId]);
 
   const handleAceptarGPS = () => {
-    setGpsConfirmado(true)
-    setGpsRechazado(false)
-  }
-
-  const handleRechazarGPS = () => {
-    setGpsRechazado(true)
-    setGpsConfirmado(false)
-    setFormData(prev => ({
-      ...prev,
-      latitud: undefined,
-      longitud: undefined
-    }))
-  }
-
-  const handleInputChange = (field: keyof NuevaCapturaData, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-
-    if (field === 'especieId') {
-      const especie = especies.find(e => e.id === value)
-      if (especie) {
-        setFormData(prev => ({
-          ...prev,
-          especieNombre: obtenerNombreMostrar(especie)
-        }))
-      }
+    if (position && Array.isArray(position)) {
+      setFormData((prev) => ({
+        ...prev,
+        latitud: position[0],
+        longitud: position[1],
+      }));
     }
-  }
+    setGpsConfirmado(true);
+    setGpsRechazado(false);
+  };
+
+  const handleSeleccionarEnMiniMapa = (lat: number, lng: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      latitud: lat,
+      longitud: lng,
+    }));
+    setGpsConfirmado(true);
+    setGpsRechazado(false);
+  };
+
+  const handleSeleccionarEnMapaCompleto = () => {
+    navigate('/mapa', {
+      state: {
+        modoSeleccion: true,
+        volverModal: true,
+        returnPath: '/nueva-captura',
+      },
+    });
+  };
+
+  const handleInputChange = (field: keyof NuevaCapturaData, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSeleccionarEspecie = (espId: string) => {
+    const esp = especies.find((e) => e.id === espId);
+    setFormData((prev) => ({
+      ...prev,
+      especieId: espId,
+      especieNombre: esp ? obtenerNombreMostrar(esp) : '',
+    }));
+  };
 
   const handleFotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
       try {
-        const compressedFile = await compressImage(file, 1920, 1920, 0.8)
-        
-        setFormData(prev => ({ ...prev, foto: compressedFile }))
+        const compressedFile = await compressImage(file, 1920, 1920, 0.8);
+        setFormData((prev) => ({ ...prev, foto: compressedFile }));
 
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.onloadend = () => {
-          setFotoPreview(reader.result as string)
-        }
-        reader.readAsDataURL(compressedFile)
+          setFotoPreview(reader.result as string);
+        };
+        reader.readAsDataURL(compressedFile);
       } catch (error) {
-        console.error('Error al comprimir la imagen:', error)
-        alert('Error al procesar la imagen. Por favor intenta con otra foto.')
+        console.error('Error al procesar foto:', error);
+        alert('Error al comprimir la imagen. Intenta con otra foto.');
       }
     }
-  }
+  };
 
-  const handleSeleccionarEnMapa = () => {
-    navigate('/mapa', { state: { modoSeleccion: true, volverModal: true } })
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    if (!formData.especieId) {
+      alert('Por favor selecciona una especie');
+      return;
+    }
 
-    if (!formData.especieId || !formData.carnada || !formData.tipoPesca) {
-      alert('Por favor completa los campos obligatorios')
-      return
+    if (!formData.carnada || !formData.tipoPesca) {
+      alert('Por favor completa la carnada y la modalidad de pesca');
+      return;
     }
 
     if (!formData.latitud || !formData.longitud) {
-      alert('Por favor selecciona una ubicación en el mapa o activa el GPS')
-      return
+      alert('Por favor indica la ubicación de la captura en el mapa o mediante GPS');
+      return;
     }
 
-    onSave(formData)
-    handleClose()
-  }
+    try {
+      setGuardandoForm(true);
+      await onSave(formData);
+      limpiarBorrador();
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      alert('Error al guardar la captura.');
+    } finally {
+      setGuardandoForm(false);
+    }
+  };
 
-  const handleClose = () => {
+  const limpiarBorrador = () => {
+    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(`${STORAGE_KEY}_preview`);
     setFormData({
       especieId: '',
       especieNombre: '',
@@ -197,359 +318,401 @@ const FormularioCaptura: React.FC<Props> = ({ isOpen, onClose, onSave, coordenad
       ubicacion: '',
       carnada: '',
       tipoPesca: '',
-      horaCaptura: new Date().toTimeString().slice(0, 5)
-    })
-    setFotoPreview('')
-    setGpsConfirmado(false)
-    setGpsRechazado(false)
-    onClose()
-  }
+      horaCaptura: new Date().toTimeString().slice(0, 5),
+    });
+    setFotoPreview('');
+    setGpsConfirmado(false);
+    setGpsRechazado(false);
+  };
 
-  if (!isOpen) return null
+  const handleClose = () => {
+    limpiarBorrador();
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  // Centro del mapa por defecto (Argentina / ubicación actual)
+  const mapCenter: [number, number] =
+    formData.latitud && formData.longitud
+      ? [formData.latitud, formData.longitud]
+      : position && Array.isArray(position)
+      ? [position[0], position[1]]
+      : [-35.75, -58.5];
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className={`bg-card border border-border rounded-xl shadow-xl w-full max-h-[90vh] overflow-y-auto ${isMobile ? 'max-w-full' : 'max-w-2xl'}`}>
-        <div className={`flex items-center justify-between border-b border-border ${isMobile ? 'p-4' : 'p-6'}`}>
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Fish className={isMobile ? 'w-5 h-5 text-primary' : 'w-6 h-6 text-primary'} />
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
+      <div
+        className={`bg-card w-full rounded-3xl border border-border/60 shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col ${
+          isMobile ? 'max-w-full' : 'max-w-2xl'
+        }`}
+      >
+        {/* Cabecera Modal */}
+        <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between bg-muted/20 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-sm">
+              <Fish className="w-5 h-5" />
             </div>
-            <h2 className={`font-bold text-foreground ${isMobile ? 'text-lg' : 'text-xl'}`}>Nueva Captura</h2>
+            <div>
+              <h2 className="font-extrabold text-foreground text-base sm:text-lg tracking-tight">
+                Registrar Captura
+              </h2>
+              <p className="text-[11px] text-muted-foreground font-medium">
+                {esDesdeSpot && nombreSpot ? `Spot: ${nombreSpot}` : 'Bitácora deportiva de pesca'}
+              </p>
+            </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
+            type="button"
+            className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors"
           >
-            <X className="w-5 h-5 text-muted-foreground" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={`space-y-4 sm:space-y-6 ${isMobile ? 'p-4' : 'p-6'}`}>
-          {isLoadingData && (
-            <div className="flex items-center justify-center py-8">
-              <div className="flex items-center space-x-2 text-muted-foreground">
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                <span>Cargando datos...</span>
-              </div>
+        {/* Cuerpo del Formulario */}
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1">
+          {hasErrors && (
+            <div className="p-3.5 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-center gap-2">
+              <Info className="w-4 h-4 shrink-0" />
+              <span>Error cargando opciones: {errorEspecies || errorCarnadas || errorTipos}</span>
             </div>
           )}
 
-          {hasErrors && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-              <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
-                <X className="w-4 h-4" />
-                <span className="text-sm font-medium">Error cargando datos</span>
-              </div>
-              <p className="text-sm text-red-500 dark:text-red-300 mt-1">
-                {errorEspecies || errorCarnadas || errorTipos}
-              </p>
+          {/* 1. SELECCIÓN VISUAL DE ESPECIE */}
+          <div className="space-y-2.5 bg-muted/20 p-4 rounded-2xl border border-border/40">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Fish className="w-4 h-4 text-primary" />
+                <span>Especie Capturada *</span>
+              </label>
+              {formData.especieId && (
+                <span className="text-[10px] text-primary font-bold flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                  <Check className="w-3 h-3" /> {formData.especieNombre}
+                </span>
+              )}
             </div>
-          )}
+
+            {/* Buscador de Especie */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                value={busquedaEspecie}
+                onChange={(e) => setBusquedaEspecie(e.target.value)}
+                placeholder="Buscar especie por nombre (ej: Pejerrey, Dorado, Bacota)..."
+                className="w-full pl-9 pr-8 py-2 rounded-xl bg-background border border-border/60 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              {busquedaEspecie && (
+                <button
+                  type="button"
+                  onClick={() => setBusquedaEspecie('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Cuadrícula / Selector de Especies */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-36 overflow-y-auto p-1 pr-1.5 custom-scrollbar">
+              {especiesFiltradas.slice(0, 12).map((esp) => {
+                const isSelected = formData.especieId === esp.id;
+                const nombre = obtenerNombreMostrar(esp);
+                return (
+                  <button
+                    key={esp.id}
+                    type="button"
+                    onClick={() => handleSeleccionarEspecie(esp.id)}
+                    className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all ${
+                      isSelected
+                        ? 'bg-primary/10 border-primary text-primary font-bold shadow-sm ring-1 ring-primary/30'
+                        : 'bg-background hover:bg-muted border-border/40 text-foreground text-xs'
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 overflow-hidden border border-border/30">
+                      {esp.imagen ? (
+                        <img src={esp.imagen} alt={nombre} className="w-full h-full object-contain p-0.5" />
+                      ) : (
+                        <Fish className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </div>
+                    <span className="text-[11px] truncate leading-tight">{nombre}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 2. FOTO DE LA CAPTURA */}
           <div className="space-y-2">
-            <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              <Camera className="w-4 h-4" />
-              <span>Foto de la captura</span>
+            <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <Camera className="w-4 h-4 text-primary" />
+              <span>Foto de la Captura (Opcional)</span>
             </label>
 
             {fotoPreview ? (
-              <div className="relative">
-                <img
-                  src={fotoPreview}
-                  alt="Preview"
-                  className={`w-full object-cover rounded-lg border border-border ${isMobile ? 'h-40' : 'h-48'}`}
-                />
+              <div className="relative rounded-2xl overflow-hidden border border-border/60 bg-muted/20 max-h-52 flex justify-center items-center group">
+                <img src={fotoPreview} alt="Foto Captura" className="max-h-52 w-full object-cover" />
                 <button
                   type="button"
                   onClick={() => {
-                    setFotoPreview('')
-                    setFormData(prev => ({ ...prev, foto: undefined }))
+                    setFotoPreview('');
+                    setFormData((prev) => ({ ...prev, foto: undefined }));
                   }}
-                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  className="absolute top-3 right-3 p-2 bg-destructive/90 hover:bg-destructive text-white rounded-full shadow-lg transition-transform active:scale-95"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <label className="block">
-                <div className={`w-full border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors ${isMobile ? 'h-40' : 'h-48'}`}>
-                  <div className="text-center">
-                    <Upload className={`text-muted-foreground mx-auto mb-2 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
-                    <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                      Haz clic para subir una foto
-                    </p>
-                  </div>
+              <label className="border-2 border-dashed border-border/60 hover:border-primary/60 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer bg-muted/10 hover:bg-primary/5 transition-all group">
+                <div className="p-3 rounded-full bg-primary/10 text-primary mb-2 group-hover:scale-110 transition-transform">
+                  <Upload className="w-5 h-5" />
                 </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFotoChange}
-                  className="hidden"
-                />
+                <span className="text-xs font-bold text-foreground">Hacé clic para subir tu foto</span>
+                <span className="text-[10px] text-muted-foreground mt-0.5">JPG, PNG o WebP (se optimiza automáticamente)</span>
+                <input type="file" accept="image/*" onChange={handleFotoChange} className="hidden" />
               </label>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                <Fish className="w-4 h-4" />
-                <span>Especie *</span>
-              </label>
-              <select
-                value={formData.especieId}
-                onChange={(e) => handleInputChange('especieId', e.target.value)}
-                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
-                required
-                disabled={loadingEspecies}
-              >
-                <option value="">
-                  {loadingEspecies ? 'Cargando especies...' : 'Seleccionar especie'}
-                </option>
-                {especies.map(especie => (
-                  <option key={especie.id} value={especie.id}>
-                    {obtenerNombreMostrar(especie)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                <Target className="w-4 h-4" />
-                <span>Tipo de Pesca *</span>
+          {/* 3. MODALIDAD Y CARNADA */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Target className="w-3.5 h-3.5 text-primary" />
+                <span>Modalidad de Pesca *</span>
               </label>
               <select
                 value={formData.tipoPesca}
                 onChange={(e) => handleInputChange('tipoPesca', e.target.value)}
-                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
                 required
-                disabled={loadingTipos}
+                className="w-full px-3 py-2.5 rounded-xl bg-muted/40 border border-border/60 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
-                <option value="">
-                  {loadingTipos ? 'Cargando tipos de pesca...' : 'Seleccionar tipo'}
-                </option>
-                {tiposPesca.map(tipo => (
-                  <option key={tipo.id} value={tipo.nombre} title={tipo.descripcion}>
-                    {tipo.nombre}
+                <option value="">Seleccionar modalidad...</option>
+                {tiposPesca.map((t) => (
+                  <option key={t.id} value={t.nombre}>
+                    {t.nombre}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="space-y-2">
-              <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                <Calendar className="w-4 h-4" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-rose-500" />
+                <span>Carnada / Señuelo *</span>
+              </label>
+              <select
+                value={formData.carnada}
+                onChange={(e) => handleInputChange('carnada', e.target.value)}
+                required
+                className="w-full px-3 py-2.5 rounded-xl bg-muted/40 border border-border/60 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                <option value="">Seleccionar carnada...</option>
+                {carnadas.map((c) => (
+                  <option key={c.idCarnada} value={c.nombre}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* 4. MEDIDAS Y FECHA */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1">
+                <Weight className="w-3.5 h-3.5 text-amber-500" />
+                <span>Peso (kg)</span>
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                value={formData.peso || ''}
+                onChange={(e) => handleInputChange('peso', parseFloat(e.target.value) || undefined)}
+                placeholder="Ej: 3.5"
+                className="w-full px-3 py-2 rounded-xl bg-muted/40 border border-border/60 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-semibold"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1">
+                <Ruler className="w-3.5 h-3.5 text-blue-500" />
+                <span>Largo (cm)</span>
+              </label>
+              <input
+                type="number"
+                step="1"
+                min="0"
+                value={formData.tamanio || ''}
+                onChange={(e) => handleInputChange('tamanio', parseInt(e.target.value, 10) || undefined)}
+                placeholder="Ej: 48"
+                className="w-full px-3 py-2 rounded-xl bg-muted/40 border border-border/60 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-semibold"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Fecha</span>
               </label>
               <input
                 type="date"
                 value={formData.fecha}
                 onChange={(e) => handleInputChange('fecha', e.target.value)}
-                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
+                className="w-full px-2.5 py-2 rounded-xl bg-muted/40 border border-border/60 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className={`font-medium text-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                Hora de captura
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-purple-500" />
+                <span>Hora</span>
               </label>
               <input
                 type="time"
                 value={formData.horaCaptura || ''}
                 onChange={(e) => handleInputChange('horaCaptura', e.target.value)}
-                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                <Weight className="w-4 h-4" />
-                <span>Peso (kg)</span>
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.peso || ''}
-                onChange={(e) => handleInputChange('peso', parseFloat(e.target.value) || 0)}
-                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
-                placeholder="Ej: 2.5"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                <Ruler className="w-4 h-4" />
-                <span>Tamaño (cm)</span>
-              </label>
-              <input
-                type="number"
-                value={formData.tamanio || ''}
-                onChange={(e) => handleInputChange('tamanio', parseInt(e.target.value) || 0)}
-                className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
-                placeholder="Ej: 45"
+                className="w-full px-2.5 py-2 rounded-xl bg-muted/40 border border-border/60 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              <MapPin className="w-4 h-4" />
-              <span>Ubicación *</span>
-            </label>
+          {/* 5. UBICACIÓN INTERACTIVA */}
+          <div className="space-y-2.5 bg-muted/20 p-4 rounded-2xl border border-border/40">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-emerald-500" />
+                <span>Lugar y Coordenadas *</span>
+              </label>
 
-            {!cargandoPosicion && formData.latitud && formData.longitud && !gpsConfirmado && !gpsRechazado && !esDesdeSpot && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                <p className="text-sm text-blue-800 dark:text-blue-200 mb-2 font-medium">
-                  📍 Ubicación GPS detectada
-                </p>
-                <p className="text-xs text-blue-600 dark:text-blue-300 mb-3">
-                  Coordenadas: {formData.latitud.toFixed(6)}, {formData.longitud.toFixed(6)}
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={handleAceptarGPS}
-                    className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Usar esta ubicación
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleRechazarGPS}
-                    className="flex-1 px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Elegir otra
-                  </button>
-                </div>
-              </div>
-            )}
+              {formData.latitud && formData.longitud && (
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                  <Check className="w-3 h-3" /> {formData.latitud.toFixed(4)}, {formData.longitud.toFixed(4)}
+                </span>
+              )}
+            </div>
 
-            {gpsConfirmado && formData.latitud && formData.longitud && (
-              <div className={`${esDesdeSpot ? 'bg-primary/10 border-primary' : 'bg-green-50 dark:bg-green-900/20'} border ${esDesdeSpot ? 'border-primary' : 'border-green-200 dark:border-green-800'} rounded-lg p-3`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-sm ${esDesdeSpot ? 'text-primary' : 'text-green-800 dark:text-green-200'} font-medium flex items-center gap-2`}>
-                    <Navigation className="w-4 h-4" />
-                    {esDesdeSpot ? 'Ubicación del Spot' : 'Ubicación confirmada'}
-                  </span>
-                  {!esDesdeSpot && (
-                    <button
-                      type="button"
-                      onClick={handleRechazarGPS}
-                      className="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-200 transition-colors"
-                    >
-                      Cambiar
-                    </button>
-                  )}
-                </div>
-                <p className={`text-xs ${esDesdeSpot ? 'text-primary/80' : 'text-green-600 dark:text-green-300'}`}>
-                  {esDesdeSpot ? '📍 ' : 'GPS: '}{formData.latitud.toFixed(6)}, {formData.longitud.toFixed(6)}
-                </p>
-                {esDesdeSpot && nombreSpot && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Tu captura se registrará en: <span className="font-semibold">{nombreSpot}</span>
-                  </p>
-                )}
-              </div>
-            )}
-
-            {(gpsRechazado || (!formData.latitud && !cargandoPosicion)) && !esDesdeSpot && (
+            {/* Acciones de Ubicación */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={handleSeleccionarEnMapa}
-                className="w-full px-4 py-3 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-colors flex items-center justify-center space-x-2"
+                onClick={handleAceptarGPS}
+                className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all active:scale-95"
               >
-                <MapPin className="w-5 h-5" />
-                <span>Seleccionar ubicación en el mapa</span>
+                <Navigation className="w-3.5 h-3.5" />
+                <span>Usar mi GPS actual</span>
               </button>
-            )}
 
-            {cargandoPosicion && (
-              <div className="flex items-center justify-center py-4 text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                <span className="text-sm">Obteniendo ubicación GPS...</span>
+              <button
+                type="button"
+                onClick={() => setMostrarMiniMapa(!mostrarMiniMapa)}
+                className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-muted/60 hover:bg-muted text-foreground border border-border/60 text-xs font-bold transition-all active:scale-95"
+              >
+                <Layers className="w-3.5 h-3.5 text-primary" />
+                <span>{mostrarMiniMapa ? 'Ocultar Mapa' : 'Marcar en Mapa'}</span>
+              </button>
+            </div>
+
+            {/* Mini Mapa embebido */}
+            {mostrarMiniMapa && (
+              <div className="space-y-2 pt-2 animate-in fade-in duration-200">
+                <div className="h-44 rounded-2xl overflow-hidden border border-border/60 relative shadow-inner">
+                  <MapContainer center={mapCenter} zoom={13} style={{ height: '100%', width: '100%' }}>
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <MiniMapClickHandler onSelect={handleSeleccionarEnMiniMapa} />
+                    {formData.latitud && formData.longitud && (
+                      <Marker position={[formData.latitud, formData.longitud]} icon={markerIcon} />
+                    )}
+                  </MapContainer>
+                  <div className="absolute top-2 left-2 z-[400] bg-background/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-[10px] font-bold text-foreground border border-border/40 shadow-sm pointer-events-none">
+                    Tocá cualquier punto para clavar el pin 📍
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSeleccionarEnMapaCompleto}
+                  className="w-full text-[11px] text-primary hover:underline font-semibold text-center block pt-1"
+                >
+                  ¿Querés ver el mapa en pantalla completa? Hacé clic acá →
+                </button>
               </div>
             )}
-          </div>
 
-          <div className="space-y-2">
-            <label className={`font-medium text-foreground flex items-center space-x-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              <Fish className="w-4 h-4" />
-              <span>Carnada *</span>
-            </label>
-            <select
-              value={formData.carnada}
-              onChange={(e) => handleInputChange('carnada', e.target.value)}
-              className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
-              required
-              disabled={loadingCarnadas}
-            >
-              <option value="">
-                {loadingCarnadas ? 'Cargando carnadas...' : 'Seleccionar carnada'}
-              </option>
-              {Object.entries(carnadasPorTipo).map(([tipo, carnadasDelTipo]) => (
-                <optgroup key={tipo} label={tipo}>
-                  {carnadasDelTipo.map(carnada => (
-                    <option key={carnada.idCarnada} value={carnada.idCarnada} title={carnada.descripcion}>
-                      {carnada.nombre}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label className={`font-medium text-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              Clima
-            </label>
-            <select
-              value={formData.clima || ''}
-              onChange={(e) => handleInputChange('clima', e.target.value)}
-              className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
-            >
-              <option value="">Seleccionar clima</option>
-              {climas.map(clima => (
-                <option key={clima} value={clima}>
-                  {clima}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label className={`font-medium text-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
-              Notas adicionales
-            </label>
-            <textarea
-              value={formData.notas || ''}
-              onChange={(e) => handleInputChange('notas', e.target.value)}
-              rows={isMobile ? 2 : 3}
-              className={`w-full bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground resize-none ${isMobile ? 'px-2 py-2 text-sm' : 'px-3 py-2'}`}
-              placeholder="Describe tu experiencia, condiciones del agua, técnica utilizada, etc."
+            <input
+              type="text"
+              value={formData.ubicacion}
+              onChange={(e) => handleInputChange('ubicacion', e.target.value)}
+              placeholder="Referencia escrita (ej: Río Salado, Muelle Claromecó, Faro Querandí)..."
+              className="w-full px-3 py-2 rounded-xl bg-background border border-border/60 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
 
-          <div className={`flex justify-end space-x-3 pt-4 border-t border-border ${isMobile ? 'flex-col space-x-0 space-y-2' : ''}`}>
+          {/* 6. CLIMA (CHIPS) */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-foreground block">Clima del Día</label>
+            <div className="flex flex-wrap gap-2">
+              {climas.map((c) => {
+                const isSelected = formData.clima === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => handleInputChange('clima', isSelected ? '' : c.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+                      isSelected
+                        ? 'bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/30'
+                        : 'bg-muted/40 hover:bg-muted border-border/40 text-muted-foreground'
+                    }`}
+                  >
+                    <span>{c.icon}</span>
+                    <span>{c.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 7. NOTAS */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-foreground block">Notas / Experiencia del pique</label>
+            <textarea
+              rows={2}
+              value={formData.notas || ''}
+              onChange={(e) => handleInputChange('notas', e.target.value)}
+              placeholder="Detalles de la pelea, estado del agua, boyas usadas, profundidad..."
+              className="w-full px-3.5 py-2 rounded-xl bg-muted/40 border border-border/60 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none leading-relaxed"
+            />
+          </div>
+
+          {/* BOTONES */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/40 shrink-0">
             <button
               type="button"
+              disabled={guardandoForm}
               onClick={handleClose}
-              className={`text-muted-foreground hover:text-foreground transition-colors ${isMobile ? 'w-full px-4 py-2.5 border border-border rounded-lg' : 'px-6 py-2'}`}
+              className="px-4 py-2.5 rounded-xl font-bold text-xs text-muted-foreground hover:bg-muted transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              disabled={isLoadingData}
-              className={`bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed ${isMobile ? 'w-full px-4 py-2.5 text-sm' : 'px-6 py-2'}`}
+              disabled={guardandoForm || isLoadingData}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
             >
+              {guardandoForm ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               Guardar Captura
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default FormularioCaptura
+export default FormularioCaptura;

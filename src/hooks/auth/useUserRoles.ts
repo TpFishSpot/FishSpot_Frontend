@@ -3,6 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import apiFishSpot from "../../api/apiFishSpot";
 
 export interface UserRoles {
+  isAdmin: boolean;
   isModerator: boolean;
   isUser: boolean;
   roles: string[];
@@ -39,7 +40,8 @@ export const useUserRoles = (): UserRoles & { loading: boolean } => {
 
   return {
     roles,
-    isModerator: roles.includes('moderador'),
+    isAdmin: roles.includes('administrador'),
+    isModerator: roles.includes('moderador') || roles.includes('administrador'),
     isUser: roles.includes('usuario'),
     loading,
   };

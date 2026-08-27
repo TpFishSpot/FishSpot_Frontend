@@ -11,6 +11,7 @@ import { PullToRefresh } from "../ui/PullToRefresh"
 import { LoadingSkeleton } from "../LoadingSkeleton"
 import { SpotCard } from "./Spotcard"
 import { useIsMobile } from "../../hooks/useIsMobile"
+import { AdminSugerenciasTab } from "./AdminSugerenciasTab"
 
 const filtros = [
   { id: "Esperando", name: "Pendientes" },
@@ -29,6 +30,7 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [activeTab, setActiveTab] = useState<"spots" | "sugerencias">("spots")
 
   const { user } = useAuth()
   const { loading: rolesLoading } = useUserRoles()
@@ -174,10 +176,12 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
             </button>
           )}
           <h1 className={`font-bold italic ${isMobile ? 'text-xl' : 'text-3xl'}`}>
-            Spots {selectedFilter === "Esperando" ? "Pendientes" : "Aprobados"}
+            {activeTab === "spots" 
+              ? `Spots ${selectedFilter === "Esperando" ? "Pendientes" : "Aprobados"}` 
+              : "Sugerencias de IA"}
           </h1>
           <button
-            onClick={() => cargarSpots(true)}
+            onClick={() => activeTab === "spots" ? cargarSpots(true) : window.location.reload()}
             className={`rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold text-gray-700 dark:text-gray-200 transition-all active:scale-95 ${
               isMobile ? 'px-3 py-2 text-sm' : 'px-4 py-2'
             }`}
@@ -187,47 +191,80 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
         </div>
       </div>
 
-      <PullToRefresh onRefresh={() => cargarSpots(true)}>
+      <PullToRefresh onRefresh={() => activeTab === "spots" ? cargarSpots(true) : Promise.resolve()}>
         <div className={`max-w-6xl mx-auto space-y-4 sm:space-y-6 ${isMobile ? 'px-3 py-4' : 'px-4 py-8'}`}>
-          <SpotsFilter
-            filtros={filtros}
-            selectedFilter={selectedFilter}
-            onSelect={setSelectedFilter}
-          />
-
-          {spots.map((spot) => (
-            <SpotCard
-              key={spot.id}
-              spot={spot}
-              idUsuarioActivo={user.uid}
-              onApprove={aprobar}
-              onReject={rechazar}
-              onDelete={borrar}
-              onClick={() => navigate(`/ver/${spot.id}`)}
-            />
-          ))}
-
-          {hasMore ? (
-            <div className="text-center pt-6">
+          
+          {/* Tab Selector */}
+          {!idUsuario && (
+            <div className="flex border-b border-border/40 pb-px mb-4">
               <button
-                onClick={() => {
-                  setIsLoadingMore(true);
-                  setPage((p) => p + 1);
-                }}
-                disabled={isLoadingMore}
-                className={`rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition active:scale-95 ${
-                  isMobile ? 'w-full px-4 py-3 text-sm' : 'px-4 py-2'
+                onClick={() => setActiveTab("spots")}
+                className={`pb-3 px-5 text-sm font-extrabold uppercase tracking-wider border-b-2 transition-all active:scale-95 ${
+                  activeTab === "spots"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {isLoadingMore ? "Cargando..." : "Cargar más"}
+                Spots de Pesca
+              </button>
+              <button
+                onClick={() => setActiveTab("sugerencias")}
+                className={`pb-3 px-5 text-sm font-extrabold uppercase tracking-wider border-b-2 transition-all active:scale-95 ${
+                  activeTab === "sugerencias"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sugerencias de IA
               </button>
             </div>
+          )}
+
+          {activeTab === "spots" ? (
+            <>
+              <SpotsFilter
+                filtros={filtros}
+                selectedFilter={selectedFilter}
+                onSelect={setSelectedFilter}
+              />
+
+              {spots.map((spot) => (
+                <SpotCard
+                  key={spot.id}
+                  spot={spot}
+                  idUsuarioActivo={user.uid}
+                  onApprove={aprobar}
+                  onReject={rechazar}
+                  onDelete={borrar}
+                  onClick={() => navigate(`/ver/${spot.id}`)}
+                />
+              ))}
+
+              {hasMore ? (
+                <div className="text-center pt-6">
+                  <button
+                    onClick={() => {
+                      setIsLoadingMore(true);
+                      setPage((p) => p + 1);
+                    }}
+                    disabled={isLoadingMore}
+                    className={`rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition active:scale-95 ${
+                      isMobile ? 'w-full px-4 py-3 text-sm' : 'px-4 py-2'
+                    }`}
+                  >
+                    {isLoadingMore ? "Cargando..." : "Cargar más"}
+                  </button>
+                </div>
+              ) : (
+                spots.length > 0 && (
+                  <p className={`text-center text-gray-500 pt-6 ${isMobile ? 'text-sm' : 'text-base'}`}>
+                    No hay más spots para mostrar.
+                  </p>
+                )
+              )}
+            </>
           ) : (
-            spots.length > 0 && (
-              <p className={`text-center text-gray-500 pt-6 ${isMobile ? 'text-sm' : 'text-base'}`}>
-                No hay más spots para mostrar.
-              </p>
-            )
+            <AdminSugerenciasTab />
           )}
         </div>
       </PullToRefresh>

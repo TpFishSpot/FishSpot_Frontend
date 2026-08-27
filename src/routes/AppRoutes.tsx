@@ -22,6 +22,7 @@ const ListaCarnadas = lazy(() => import("../components/carnadas/ListaCarnadas"))
 const EditarUsuario = lazy(() => import("../components/usuario/EditarUsuario").then(module => ({ default: module.EditarUsuario })));
 const EstadisticasGlobales = lazy(() => import("../components/estadisticas/EstadisticasGlobales").then(module => ({ default: module.EstadisticasGlobales })));
 const DetalleCaptura = lazy(() => import("../components/capturas/DetalleCaptura"));
+const ChatbotPage = lazy(() => import("../components/chatbot/ChatbotPage").then(module => ({ default: module.ChatbotPage })));
 
 export const AppRoutes: React.FC = () => {
   const { user } = useAuth();
@@ -33,6 +34,14 @@ export const AppRoutes: React.FC = () => {
         <Route path="/mapa" element={<Mapa />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
+        <Route 
+          path="/chatbot" 
+          element={
+            <Suspense fallback={<LoadingSkeleton />}>
+              <ChatbotPage />
+            </Suspense>
+          } 
+        />
 
         <Route 
           path="/ver/:id" 

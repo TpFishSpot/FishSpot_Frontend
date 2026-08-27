@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Search, Heart, Fish, MapPin, Zap } from "lucide-react"
+import { Search, Heart, Fish, MapPin, Zap, Compass, Sparkles } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import NavigationBar from "../common/NavigationBar"
 import { useEspecies } from "../../hooks/especies/useEspecies"
@@ -7,6 +7,7 @@ import MobileNavigationBar from "../common/MobileNavigationBar"
 import { useIsMobile } from "../../hooks/useIsMobile"
 import { baseApi } from "../../api/apiFishSpot"
 import { ImagenResponsive } from "../common/imgenResponsive"
+import { SugerirModal } from "./SugerirModal"
 
 const obtenerUrlImagenEspecie = (imagen?: string) => {
   if (!imagen) return "/placeholder-fish.png"
@@ -20,10 +21,12 @@ const GuiaEspecies: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedFilter, setSelectedFilter] = useState<string>("all")
   const [favorites, setFavorites] = useState<string[]>([])
+  const [isSugerirOpen, setIsSugerirOpen] = useState(false)
   const isMobile = useIsMobile()
 
   const filters = [
     { id: "all", name: "Todas", icon: Fish },
+    { id: "sea", name: "Mar", icon: Compass },
     { id: "river", name: "Río", icon: MapPin },
     { id: "lake", name: "Laguna", icon: MapPin },
     { id: "predator", name: "Depredadores", icon: Zap },
@@ -67,6 +70,29 @@ const GuiaEspecies: React.FC = () => {
         break
       case "predator":
         matchesFilter = especie.descripcion.toLowerCase().includes("depredador")
+        break
+      case "sea":
+        const palabras = especie.descripcion.toLowerCase().split(/[\s,.:;()""'/\-]+/)
+        const terminosMarinos = [
+          "mar",
+          "marino",
+          "marina",
+          "marinos",
+          "marinas",
+          "océano",
+          "océanos",
+          "oceánico",
+          "oceánica",
+          "marítimo",
+          "marítima",
+          "marítimos",
+          "marítimas",
+          "costera",
+          "costeras",
+          "costero",
+          "costeros"
+        ]
+        matchesFilter = palabras.some(palabra => terminosMarinos.includes(palabra))
         break
       case "river":
         matchesFilter = especie.descripcion.toLowerCase().includes("río")
@@ -144,11 +170,18 @@ const GuiaEspecies: React.FC = () => {
         )}
 
         {/* Header */}
-        <div className="text-center mb-4 sm:mb-6">
-          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">Guía de Especies</h1>
+        <div className="text-center mb-5 sm:mb-8 flex flex-col items-center gap-2">
+          <h1 className="text-2xl sm:text-4xl font-bold text-foreground">Guía de Especies</h1>
           <p className="text-muted-foreground text-sm sm:text-lg">
-            Descubre todo sobre los peces de nuestros ríos y lagunas
+            Descubre todo sobre los peces de nuestros ríos, lagunas y mares
           </p>
+          <button
+            onClick={() => setIsSugerirOpen(true)}
+            className="mt-2 inline-flex items-center gap-1.5 px-4.5 py-2 rounded-full bg-primary/10 hover:bg-primary/15 text-primary border border-primary/20 text-xs font-bold uppercase tracking-wider shadow-sm transition-all active:scale-95 cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            ¿Falta algo? Sugerir especie o modalidad
+          </button>
         </div>
 
         <div className="mb-4 sm:mb-8 space-y-3 sm:space-y-4">
@@ -305,6 +338,8 @@ const GuiaEspecies: React.FC = () => {
           </div>
         )}
       </div>
+      
+      <SugerirModal isOpen={isSugerirOpen} onClose={() => setIsSugerirOpen(false)} />
     </div>
   )
 }
