@@ -1,42 +1,47 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import { readFileSync } from 'fs'
+import { readFileSync, existsSync } from 'fs'
 import { resolve } from 'path'
 
-export default defineConfig(({ mode }) => ({
-  plugins: [
-    react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      workbox: {
-        globPatterns: mode === 'development' 
-          ? ['**/*.{js,css,html}'] 
-          : ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        skipWaiting: false,
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/192\.168\.1\.42:3000\/api\/(especie|carnada|tipopesca)/i,
-            handler: 'CacheFirst', 
-            options: {
-              cacheName: 'static-api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 8
+export default defineConfig(({ mode }) => {
+  const keyPath = resolve(__dirname, 'src/cert/key.pem')
+  const certPath = resolve(__dirname, 'src/cert/cert.pem')
+  const hasHttpsCert = existsSync(keyPath) && existsSync(certPath)
+
+  return {
+    plugins: [
+      react(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        workbox: {
+          globPatterns: mode === 'development' 
+            ? ['**/*.{js,css,html}'] 
+            : ['**/*.{js,css,html,ico,png,svg,woff2}'],
+          skipWaiting: false,
+          runtimeCaching: [
+            {
+              urlPattern: /^(https:\/\/api\.fish-spot\.app|https:\/\/192\.168\.1\.\d+:3000)\/(especie|carnada|tipopesca)/i,
+              handler: 'CacheFirst', 
+              options: {
+                cacheName: 'static-api-cache',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24
+                }
               }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/192\.168\.1\.42:3000\/api\/spot/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'spots-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 15
+            },
+            {
+              urlPattern: /^(https:\/\/api\.fish-spot\.app|https:\/\/192\.168\.1\.\d+:3000)\/spot/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'spots-cache',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 15
+                }
               }
-            }
-          },
+            },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
             handler: 'CacheFirst',
@@ -179,24 +184,28 @@ export default defineConfig(({ mode }) => ({
       }
     })
   ],
-  server: {
-    port: 5173,
-    host: '0.0.0.0',
-    strictPort: true,
-    https: {
-      key: readFileSync(resolve(__dirname, 'src/cert/key.pem')),
-      cert: readFileSync(resolve(__dirname, 'src/cert/cert.pem'))
+    server: {
+      port: 5173,
+      host: '0.0.0.0',
+      strictPort: true,
+      https: hasHttpsCert
+        ? {
+            key: readFileSync(keyPath),
+            cert: readFileSync(certPath),
+          }
+        : undefined,
+      cors: {
+        origin: [
+          'http://localhost:3000',
+          'http://localhost:5173',
+          'https://localhost:3000',
+          'https://localhost:5173',
+          'https://api.fish-spot.app',
+          'https://fish-spot.app',
+          'https://www.fish-spot.app',
+        ],
+        credentials: true,
+      },
     },
-    cors: {
-      origin: [
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'https://localhost:3000',
-        'https://localhost:5173',
-        'https://192.168.1.40:3000',
-        'https://192.168.1.40:5173'
-      ],
-      credentials: true
-    }
-  }
-}))
+  };
+});
