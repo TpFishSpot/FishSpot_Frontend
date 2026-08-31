@@ -9,7 +9,7 @@ import NavigationBar from "../common/NavigationBar";
 import MobileNavigationBar from "../common/MobileNavigationBar";
 import { ImagenResponsive } from "../common/imgenResponsive";
 import apiFishSpot from "../../api/apiFishSpot";
-import { Edit3, Check, X, Loader2, Upload, Sparkles, MapPin, Star } from "lucide-react";
+import { Edit3, Trash2, AlertTriangle, Check, X, Loader2, Upload, Sparkles, MapPin, Star } from "lucide-react";
 
 export default function DetalleEspecie() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +19,11 @@ export default function DetalleEspecie() {
   const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [errorEdicion, setErrorEdicion] = useState("");
+
+  // Modal y estado de eliminación
+  const [modalEliminarAbierto, setModalEliminarAbierto] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
+  const [errorEliminar, setErrorEliminar] = useState("");
 
   // Formulario de edición
   const [formData, setFormData] = useState({
@@ -46,9 +51,10 @@ export default function DetalleEspecie() {
   const abrirModalEditar = () => {
     if (!especie) return;
     const primerNombreComun =
-      Array.isArray(especie.nombre_comun) && especie.nombre_comun.length > 0
-        ? especie.nombre_comun[0]
-        : (especie as any).nombresComunes?.[0]?.nombre || "";
+      especie.nombresComunes?.[0]?.nombre ||
+      (Array.isArray((especie as any).nombre_comun)
+        ? (especie as any).nombre_comun[0]
+        : (especie as any).nombre_comun || "");
 
     setFormData({
       nombreComun: primerNombreComun,
@@ -97,6 +103,23 @@ export default function DetalleEspecie() {
     }
   };
 
+  const handleEliminarEspecie = async () => {
+    if (!especie) return;
+    try {
+      setEliminando(true);
+      setErrorEliminar("");
+      await apiFishSpot.delete(`/especie/${especie.id}`);
+      await queryClient.invalidateQueries({ queryKey: ["especies"] });
+      setModalEliminarAbierto(false);
+      navigate("/especies-guide");
+    } catch (err: any) {
+      console.error(err);
+      setErrorEliminar(err.response?.data?.message || "Error al eliminar la especie.");
+    } finally {
+      setEliminando(false);
+    }
+  };
+
   if (cargando)
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -123,9 +146,13 @@ export default function DetalleEspecie() {
     );
 
   // Normalizar nombres comunes para renderizado
-  const nombresComunesList: string[] = Array.isArray(especie.nombre_comun)
-    ? especie.nombre_comun
-    : (especie as any).nombresComunes?.map((n: any) => (typeof n === "string" ? n : n.nombre)) || [];
+  const nombresComunesList: string[] =
+    especie.nombresComunes?.map((n: any) => (typeof n === "string" ? n : n.nombre)) ||
+    (Array.isArray((especie as any).nombre_comun)
+      ? (especie as any).nombre_comun
+      : (especie as any).nombre_comun
+      ? [(especie as any).nombre_comun]
+      : []);
 
   const nombrePrincipal = nombresComunesList.length > 0 ? nombresComunesList[0] : especie.nombre_cientifico;
 
@@ -183,15 +210,29 @@ export default function DetalleEspecie() {
 
           <div className={`flex items-center gap-2 ${isMobile ? "" : "gap-3"}`}>
             {(isAdmin || isModerator) && (
-              <button
-                onClick={abrirModalEditar}
-                className={`rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 ${
-                  isMobile ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm"
-                }`}
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                {!isMobile && "Editar Especie"}
-              </button>
+              <>
+                <button
+                  onClick={abrirModalEditar}
+                  className={`rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 ${
+                    isMobile ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm"
+                  }`}
+                  title="Editar Especie"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  {!isMobile && "Editar Especie"}
+                </button>
+
+                <button
+                  onClick={() => setModalEliminarAbierto(true)}
+                  className={`rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/20 font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 ${
+                    isMobile ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm"
+                  }`}
+                  title="Eliminar Especie"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {!isMobile && "Eliminar"}
+                </button>
+              </>
             )}
 
             <button
@@ -542,6 +583,56 @@ export default function DetalleEspecie() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmar Eliminación */}
+      {modalEliminarAbierto && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card w-full max-w-md rounded-3xl border border-border shadow-2xl overflow-hidden p-6 space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 text-destructive">
+              <div className="p-3 bg-destructive/10 rounded-2xl">
+                <AlertTriangle className="w-6 h-6 text-destructive" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">¿Eliminar especie?</h3>
+                <p className="text-xs text-muted-foreground">Esta acción no se puede deshacer</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              ¿Estás seguro de que deseas eliminar permanentemente a{" "}
+              <strong className="text-foreground">{nombrePrincipal}</strong> (
+              <span className="italic">{especie.nombre_cientifico}</span>)? Se eliminarán sus
+              asociaciones de carnadas, tipos de pesca y spots vinculados.
+            </p>
+
+            {errorEliminar && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl text-xs text-destructive font-medium">
+                {errorEliminar}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/40">
+              <button
+                type="button"
+                disabled={eliminando}
+                onClick={() => setModalEliminarAbierto(false)}
+                className="px-4 py-2.5 rounded-xl font-bold text-xs text-muted-foreground hover:bg-muted transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={eliminando}
+                onClick={handleEliminarEspecie}
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-md shadow-destructive/20 transition-all active:scale-95 disabled:opacity-50"
+              >
+                {eliminando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                {eliminando ? "Eliminando..." : "Eliminar Especie"}
+              </button>
+            </div>
           </div>
         </div>
       )}

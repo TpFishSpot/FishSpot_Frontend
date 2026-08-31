@@ -4,6 +4,7 @@ import { auth } from '../../auth/AuthFirebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useUsuario } from '../../hooks/usuario/useUsuario';
+import { triggerOpenOnboarding } from '../../hooks/ui/useOnboarding';
 
 interface UserMenuProps {
   className?: string;
@@ -89,6 +90,15 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
             className="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted transition"
           >
             Editar perfil
+          </button>
+          <button
+            onClick={() => {
+              setOpen(false);
+              triggerOpenOnboarding();
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-primary hover:bg-muted transition font-medium"
+          >
+            ¿Cómo funciona?
           </button>
           <button
             onClick={handleLogout}

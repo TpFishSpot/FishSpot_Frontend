@@ -1,6 +1,6 @@
 import type React from "react";
 import { useState, useEffect } from "react";
-import { MapPin, Menu, X, Search, User, HelpCircle, Fish, Sun, Moon, Monitor, Camera, FishIcon, MapPinPlus, TrendingUp } from "lucide-react";
+import { MapPin, Menu, X, Search, User, Fish, Sun, Moon, Monitor, Camera, FishIcon, MapPinPlus, TrendingUp, Compass } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserMenu from "../usuario/UserMenu";
 import { useAuth } from "../../contexts/AuthContext";
@@ -10,6 +10,7 @@ import { useDebounce } from "../../hooks/usePerformance";
 import { DEBOUNCE_DELAYS } from "../../constants/cache";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useUsuario } from "../../hooks/usuario/useUsuario";
+import { triggerOpenOnboarding } from "../../hooks/ui/useOnboarding";
 
 interface NavigationBarProps {
   onCreateSpotClick?: () => void
@@ -288,13 +289,13 @@ useEffect(() => {
 
                 <button
                   onClick={() => {
-                    navigate("/help")
                     toggleMenu()
+                    triggerOpenOnboarding()
                   }}
                   className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
                 >
-                  <HelpCircle className="w-5 h-5 text-foreground" />
-                  <span className="text-foreground">Ayuda</span>
+                  <Compass className="w-5 h-5 text-primary" />
+                  <span className="text-foreground font-medium">¿Cómo funciona FishSpot?</span>
                 </button>
               </nav>
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Menu, X, User, LogOut, Users, MapPin, Settings, Sun, Moon, Monitor, TrendingUp } from 'lucide-react';
+import { Menu, X, User, LogOut, Users, MapPin, Settings, Sun, Moon, Monitor, TrendingUp, Compass } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../auth/AuthFirebase';
@@ -9,6 +9,7 @@ import { useUserRoles } from '../../hooks/auth/useUserRoles';
 import { useHapticFeedback } from '../../hooks/ui/useHapticFeedback';
 import { useUsuario } from '../../hooks/usuario/useUsuario';
 import { useTheme } from '../../contexts/ThemeContext'; 
+import { triggerOpenOnboarding } from '../../hooks/ui/useOnboarding'; 
 
 export const MobileHamburgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -146,6 +147,18 @@ export const MobileHamburgerMenu = () => {
                 >
                   <TrendingUp className="w-5 h-5" />
                   <span className="text-sm font-medium">Destacados</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    triggerSelectionHaptic();
+                    setIsOpen(false);
+                    triggerOpenOnboarding();
+                  }}
+                  className="w-full flex items-center space-x-3 px-5 py-3 text-primary hover:bg-primary/10 transition-colors active:bg-primary/20 rounded-xl mb-2"
+                >
+                  <Compass className="w-5 h-5" />
+                  <span className="text-sm font-medium">¿Cómo funciona?</span>
                 </button>
 
                 <div className="px-4 py-2 mb-1">

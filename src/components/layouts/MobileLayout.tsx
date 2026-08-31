@@ -3,6 +3,7 @@ import { BottomNavigation } from "../ui/BottomNavigation";
 import { useLocation } from "react-router-dom";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { ChatbotFloatingButton } from "../chatbot/ChatbotFloatingButton";
+import { OnboardingModal } from "../ui/OnboardingModal";
 
 interface Props {
   children: ReactNode;
@@ -26,6 +27,7 @@ export const MobileLayout = ({ children }: Props) => {
       </main>
       {showChatbot && <ChatbotFloatingButton />}
       {showBottomNav && <BottomNavigation />}
+      <OnboardingModal />
     </div>
   );
 };
