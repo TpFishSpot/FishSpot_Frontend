@@ -1,4 +1,5 @@
 import type { Especie } from '../modelo/Especie'
+export type { Especie }
 import apiFishSpot from './apiFishSpot'
 
 

@@ -1,47 +1,31 @@
-import { useState, useEffect } from 'react'
-import { obtenerEspecies, buscarEspecies } from '../../api/especiesApi'
-import type { Especie } from '../../api/especiesApi'
+import { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { obtenerEspecies, buscarEspecies } from '../../api/especiesApi';
+import type { Especie } from '../../modelo/Especie';
 
 export const useEspecies = () => {
-  const [especies, setEspecies] = useState<Especie[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string>('')
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const loadEspecies = async () => {
-    try {
-      setLoading(true)
-      setError('')
-      const data = await obtenerEspecies()
-      setEspecies(data)
-    } catch (err) {
-      setError('Error cargando especies')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const {
+    data: especies = [],
+    isLoading: loading,
+    error: queryError,
+    refetch: loadEspecies,
+  } = useQuery<Especie[]>({
+    queryKey: searchQuery ? ['especies', searchQuery] : ['especies'],
+    queryFn: () => (searchQuery ? buscarEspecies(searchQuery) : obtenerEspecies()),
+    staleTime: 1000 * 30, // 30 segundos
+  });
 
-  const searchEspecies = async (query: string) => {
-    try {
-      setLoading(true)
-      setError('')
-      const data = await buscarEspecies(query)
-      setEspecies(data)
-    } catch (err) {
-      setError('Error buscando especies')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadEspecies()
-  }, [])
+  const searchEspecies = useCallback(async (query: string) => {
+    setSearchQuery(query);
+  }, []);
 
   return {
     especies,
     loading,
-    error,
+    error: queryError ? 'Error cargando especies' : '',
     loadEspecies,
-    searchEspecies
-  }
-}
+    searchEspecies,
+  };
+};
