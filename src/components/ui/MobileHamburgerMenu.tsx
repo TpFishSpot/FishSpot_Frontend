@@ -127,7 +127,7 @@ export const MobileHamburgerMenu = () => {
                       className="w-full flex items-center space-x-3 px-5 py-3 text-foreground hover:bg-muted transition-colors active:bg-muted/70 rounded-xl mb-2"
                     >
                       <MapPin className="w-5 h-5" />
-                      <span className="text-sm font-medium">Spots</span>
+                      <span className="text-sm font-medium">Sugerencias y Spots</span>
                     </button>
                     <div className="h-px bg-border mx-5 my-3" />
                   </>

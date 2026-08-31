@@ -145,7 +145,7 @@ useEffect(() => {
                   onClick={() => navigate("/spots")}
                   className="flex items-center space-x-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-2 rounded-lg transition font-medium"
                 >
-                  <span className="hidden sm:inline">Spots</span>
+                  <span className="hidden sm:inline">Sugerencias</span>
                   <span className="sm:hidden">P</span>
                 </button>
               )}
