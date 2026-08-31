@@ -110,6 +110,7 @@ export default function DetalleEspecie() {
       setErrorEliminar("");
       await apiFishSpot.delete(`/especie/${especie.id}`);
       await queryClient.invalidateQueries({ queryKey: ["especies"] });
+      await queryClient.invalidateQueries({ queryKey: ["especie-complete"] });
       setModalEliminarAbierto(false);
       navigate("/especies-guide");
     } catch (err: any) {

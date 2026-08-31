@@ -18,13 +18,15 @@ export default defineConfig(({ mode }) => {
           globPatterns: mode === 'development' 
             ? ['**/*.{js,css,html}'] 
             : ['**/*.{js,css,html,ico,png,svg,woff2}'],
-          skipWaiting: false,
+          skipWaiting: true,
+          clientsClaim: true,
           runtimeCaching: [
             {
-              urlPattern: /^(https:\/\/api\.fish-spot\.app|https:\/\/192\.168\.1\.\d+:3000)\/(especie|carnada|tipopesca)/i,
-              handler: 'CacheFirst', 
+              urlPattern: /^(https:\/\/api\.fish-spot\.app|https:\/\/192\.168\.1\.\d+:3000|http:\/\/localhost:3000)\/(especie|carnada|tipopesca)/i,
+              handler: 'NetworkFirst', 
               options: {
                 cacheName: 'static-api-cache',
+                networkTimeoutSeconds: 3,
                 expiration: {
                   maxEntries: 100,
                   maxAgeSeconds: 60 * 60 * 24

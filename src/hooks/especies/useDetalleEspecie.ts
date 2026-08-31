@@ -36,11 +36,11 @@ export function useDetalleEspecie(): DetalleEspecieResult {
     queryKey: ['especie-complete', id],
     queryFn: () => fetchEspecieComplete(id!),
     enabled: !!id,
-    ...CACHE_TIMES.STATIC_DATA,
+    staleTime: 1000 * 15, // 15 segundos
     retry: 2,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const especie = data?.especie || null;
