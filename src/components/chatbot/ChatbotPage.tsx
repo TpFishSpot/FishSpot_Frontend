@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useChatbot } from '../../hooks/agente/useChatbot';
 import { RecomendacionCard } from './RecomendacionCard';
 import {
