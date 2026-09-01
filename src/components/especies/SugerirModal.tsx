@@ -5,14 +5,30 @@ import apiFishSpot from "../../api/apiFishSpot";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  initialNombre?: string;
+  initialTipo?: "Especie" | "TipoPesca" | "Carnada";
 }
 
-export const SugerirModal: React.FC<Props> = ({ isOpen, onClose }) => {
-  const [tipo, setTipo] = useState<"Especie" | "TipoPesca" | "Carnada">("Especie");
-  const [nombre, setNombre] = useState("");
+export const SugerirModal: React.FC<Props> = ({
+  isOpen,
+  onClose,
+  initialNombre = "",
+  initialTipo = "Especie",
+}) => {
+  const [tipo, setTipo] = useState<"Especie" | "TipoPesca" | "Carnada">(initialTipo);
+  const [nombre, setNombre] = useState(initialNombre);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [exito, setExito] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialNombre) setNombre(initialNombre);
+      if (initialTipo) setTipo(initialTipo);
+      setError("");
+      setExito(false);
+    }
+  }, [isOpen, initialNombre, initialTipo]);
 
   if (!isOpen) return null;
 

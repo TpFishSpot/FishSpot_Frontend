@@ -6,12 +6,14 @@ import type { Spot } from "../../modelo/Spot"
 import { useAuth } from "../../contexts/AuthContext"
 import { useUserRoles } from "../../hooks/auth/useUserRoles"
 import apiFishSpot from "../../api/apiFishSpot"
+import { MapPin, Sparkles, Plus } from "lucide-react"
 import { SpotsFilter } from "./SpotsFilter"
 import { PullToRefresh } from "../ui/PullToRefresh"
 import { LoadingSkeleton } from "../LoadingSkeleton"
 import { SpotCard } from "./Spotcard"
 import { useIsMobile } from "../../hooks/useIsMobile"
 import { AdminSugerenciasTab } from "./AdminSugerenciasTab"
+import { SugerirModal } from "../especies/SugerirModal"
 
 const filtros = [
   { id: "Esperando", name: "Pendientes" },
@@ -31,6 +33,7 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
   const [hasMore, setHasMore] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [activeTab, setActiveTab] = useState<"spots" | "sugerencias">("spots")
+  const [isSugerirOpen, setIsSugerirOpen] = useState(false)
 
   const { user } = useAuth()
   const { loading: rolesLoading } = useUserRoles()
@@ -220,6 +223,38 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
             </div>
           )}
 
+          {/* Banner para proponer nuevo Spot o Sugerencia */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-primary/15 via-card to-emerald-500/10 border border-primary/20 shadow-sm">
+            <div className="space-y-0.5">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold uppercase tracking-wider">
+                <Sparkles className="w-3 h-3 animate-pulse" />
+                Aportes Comunitarios
+              </div>
+              <h3 className="text-sm sm:text-base font-bold text-foreground">
+                ¿Conocés un pesquero, laguna o especie que falte?
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Sumá tus pesqueros favoritos al mapa o proponé nuevas especies con Inteligencia Artificial.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              <button
+                onClick={() => setIsSugerirOpen(true)}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Sugerir IA</span>
+              </button>
+              <button
+                onClick={() => navigate("/crear-spot")}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-md shadow-primary/20 transition-all active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Crear Spot</span>
+              </button>
+            </div>
+          </div>
+
           {activeTab === "spots" ? (
             <>
               <SpotsFilter
@@ -268,6 +303,11 @@ export const ListaSpots: React.FC<ListaSpotsProps> = ({ idUsuario }) => {
           )}
         </div>
       </PullToRefresh>
+
+      <SugerirModal
+        isOpen={isSugerirOpen}
+        onClose={() => setIsSugerirOpen(false)}
+      />
     </div>
   );
 };

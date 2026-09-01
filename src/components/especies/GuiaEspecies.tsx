@@ -22,6 +22,7 @@ const GuiaEspecies: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState<string>("all")
   const [favorites, setFavorites] = useState<string[]>([])
   const [isSugerirOpen, setIsSugerirOpen] = useState(false)
+  const [sugerirInitialNombre, setSugerirInitialNombre] = useState("")
   const isMobile = useIsMobile()
 
   const filters = [
@@ -170,18 +171,39 @@ const GuiaEspecies: React.FC = () => {
         )}
 
         {/* Header */}
-        <div className="text-center mb-5 sm:mb-8 flex flex-col items-center gap-2">
-          <h1 className="text-2xl sm:text-4xl font-bold text-foreground">Guía de Especies</h1>
-          <p className="text-muted-foreground text-sm sm:text-lg">
-            Descubre todo sobre los peces de nuestros ríos, lagunas y mares
+        <div className="text-center mb-6">
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">Guía de Especies</h1>
+          <p className="text-muted-foreground text-sm sm:text-base mt-1">
+            Descubrí las especies, artes de pesca y carnadas de nuestros ríos, lagunas y mares
           </p>
-          <button
-            onClick={() => setIsSugerirOpen(true)}
-            className="mt-2 inline-flex items-center gap-1.5 px-4.5 py-2 rounded-full bg-primary/10 hover:bg-primary/15 text-primary border border-primary/20 text-xs font-bold uppercase tracking-wider shadow-sm transition-all active:scale-95 cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            ¿Falta algo? Sugerir especie o modalidad
-          </button>
+        </div>
+
+        {/* Banner destacado para sugerencias y aportes */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-card to-emerald-500/10 border border-primary/25 p-4 sm:p-5 mb-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/20 text-primary text-[11px] font-bold uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                Comunidad Pescadora
+              </div>
+              <h2 className="text-sm sm:text-base font-bold text-foreground">
+                ¿Conocés un pez, carnada o modalidad que falta en la guía?
+              </h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Aportá tu conocimiento. Nuestra Inteligencia Artificial buscará y armará la ficha técnica completa al instante.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setSugerirInitialNombre("");
+                setIsSugerirOpen(true);
+              }}
+              className="shrink-0 inline-flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-extrabold uppercase tracking-wider shadow-md shadow-primary/20 transition-all active:scale-95 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4" />
+              + Sugerir Especie / Carnada
+            </button>
+          </div>
         </div>
 
         <div className="mb-4 sm:mb-8 space-y-3 sm:space-y-4">
@@ -327,21 +349,59 @@ const GuiaEspecies: React.FC = () => {
           ))}
         </div>
 
-        {/* Empty state */}
+        {/* Empty state con invitación a sugerir */}
         {filteredEspecies.length === 0 && (
-          <div className="text-center py-12">
-            <Fish className={`text-muted-foreground mx-auto mb-4 ${isMobile ? 'w-12 h-12' : 'w-12 sm:w-16 h-12 sm:h-16'}`} />
-            <h3 className={`font-medium text-foreground mb-2 ${isMobile ? 'text-sm' : 'text-base sm:text-lg'}`}>No se encontraron especies</h3>
-            <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm sm:text-base'}`}>
-              Prueba con otros términos de búsqueda o filtros
-            </p>
+          <div className="text-center py-10 px-4 max-w-md mx-auto bg-card rounded-3xl border border-border/80 p-6 shadow-sm space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-inner">
+              <Fish className="w-7 h-7" />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="font-bold text-foreground text-base sm:text-lg">
+                {searchQuery ? `No encontramos "${searchQuery}"` : "No se encontraron especies"}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {searchQuery
+                  ? "¿Es un pez que debería estar en la app? ¡Sugerilo con un toque y la IA generará la ficha técnica completa!"
+                  : "Probá cambiando los filtros de búsqueda o proponé una especie que falte."}
+              </p>
+            </div>
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSugerirInitialNombre(searchQuery);
+                  setIsSugerirOpen(true);
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider shadow-md hover:bg-primary/90 transition-all active:scale-95 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                Sugerir "{searchQuery}" ahora
+              </button>
+            )}
           </div>
         )}
       </div>
-      
-      <SugerirModal isOpen={isSugerirOpen} onClose={() => setIsSugerirOpen(false)} />
-    </div>
-  )
-}
 
-export default GuiaEspecies
+      {/* Floating Action Button (FAB) para sugerir desde cualquier parte del scroll */}
+      <button
+        onClick={() => {
+          setSugerirInitialNombre("");
+          setIsSugerirOpen(true);
+        }}
+        className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40 flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-full shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all font-bold text-xs sm:text-sm backdrop-blur-md border border-white/20 cursor-pointer"
+        title="Sugerir nueva especie, modalidad o carnada con IA"
+      >
+        <Sparkles className="w-4 h-4 animate-bounce" />
+        <span className="hidden sm:inline">Sugerir con IA</span>
+        <span className="sm:hidden">Sugerir</span>
+      </button>
+
+      <SugerirModal
+        isOpen={isSugerirOpen}
+        initialNombre={sugerirInitialNombre}
+        onClose={() => setIsSugerirOpen(false)}
+      />
+    </div>
+  );
+};
+
+export default GuiaEspecies;
