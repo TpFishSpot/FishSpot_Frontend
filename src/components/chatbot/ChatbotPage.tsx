@@ -34,6 +34,15 @@ export const ChatbotPage: React.FC = () => {
   const preguntaParam = searchParams.get('pregunta') || undefined;
   const hasAutoSent = useRef(false);
 
+  const initialSpot = useMemo(
+    () => ({
+      lugar: lugarParam,
+      latitud: latParam,
+      longitud: lngParam,
+    }),
+    [lugarParam, latParam, lngParam],
+  );
+
   const {
     mensajes,
     cargando,
@@ -44,7 +53,7 @@ export const ChatbotPage: React.FC = () => {
     requiereRegistro,
     esUsuarioAutenticado,
     cupo,
-  } = useChatbot();
+  } = useChatbot(initialSpot);
 
   const [inputTexto, setInputTexto] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);

@@ -6,18 +6,33 @@ import { useAuth } from '../../contexts/AuthContext';
 const STORAGE_KEY = 'fishspot_chatbot_history';
 const MAX_GUEST_INTERACTIONS = 2;
 
-export const useChatbot = () => {
+export interface InitialSpotOptions {
+  lugar?: string;
+  latitud?: number;
+  longitud?: number;
+}
+
+export const useChatbot = (initialSpot?: InitialSpotOptions) => {
   const { user } = useAuth();
+
+  const getMensajeBienvenida = useCallback((lugar?: string) => {
+    if (lugar) {
+      return `¡Buenas! 🤠 Soy el Baqueano de ${lugar}. Ya tengo cargado este pesquero y sus condiciones satelitales en tiempo real. ¿Qué te gustaría saber? Preguntame sobre distancias de tiro, colores de señuelos, mareas, aparejos o qué especies están activas hoy.`;
+    }
+    return '¡Buenas! 🎣 Soy tu compañero de pesca de FishSpot. Decime a qué lugar querés ir a pescar o compartime tu ubicación GPS, y te armo el pronóstico ideal con clima satelital, especies activas y aparejos recomendados.';
+  }, []);
 
   const [mensajes, setMensajes] = useState<MensajeChat[]>(() => {
     try {
       const guardados = sessionStorage.getItem(STORAGE_KEY);
       if (guardados) {
         const parsed = JSON.parse(guardados);
-        return parsed.map((m: any) => ({
-          ...m,
-          fecha: new Date(m.fecha),
-        }));
+        if (parsed.length > 1 || (parsed.length === 1 && !initialSpot?.lugar)) {
+          return parsed.map((m: any) => ({
+            ...m,
+            fecha: new Date(m.fecha),
+          }));
+        }
       }
     } catch {
       // Ignorar error de parsing
@@ -27,8 +42,9 @@ export const useChatbot = () => {
       {
         id: 'msg-bienvenida',
         rol: 'asistente',
-        contenido:
-          '¡Buenas! 🎣 Soy tu compañero de pesca de FishSpot. Decime a qué lugar querés ir a pescar o compartime tu ubicación GPS, y te armo el pronóstico ideal con clima satelital, especies activas y aparejos recomendados.',
+        contenido: initialSpot?.lugar
+          ? `¡Buenas! 🤠 Soy el Baqueano de ${initialSpot.lugar}. Ya tengo cargado este pesquero y sus condiciones satelitales en tiempo real. ¿Qué te gustaría saber? Preguntame sobre distancias de tiro, colores de señuelos, mareas, aparejos o qué especies están activas hoy.`
+          : '¡Buenas! 🎣 Soy tu compañero de pesca de FishSpot. Decime a qué lugar querés ir a pescar o compartime tu ubicación GPS, y te armo el pronóstico ideal con clima satelital, especies activas y aparejos recomendados.',
         fecha: new Date(),
       },
     ];
@@ -39,6 +55,7 @@ export const useChatbot = () => {
   const [cupo, setCupo] = useState<CupoInfo | null>(null);
 
   const [lastLat, setLastLat] = useState<number | undefined>(() => {
+    if (initialSpot?.latitud !== undefined) return initialSpot.latitud;
     try {
       const guardados = sessionStorage.getItem(STORAGE_KEY);
       if (guardados) {
@@ -51,6 +68,7 @@ export const useChatbot = () => {
   });
 
   const [lastLng, setLastLng] = useState<number | undefined>(() => {
+    if (initialSpot?.longitud !== undefined) return initialSpot.longitud;
     try {
       const guardados = sessionStorage.getItem(STORAGE_KEY);
       if (guardados) {
@@ -63,6 +81,7 @@ export const useChatbot = () => {
   });
 
   const [lastLugar, setLastLugar] = useState<string | undefined>(() => {
+    if (initialSpot?.lugar !== undefined) return initialSpot.lugar;
     try {
       const guardados = sessionStorage.getItem(STORAGE_KEY);
       if (guardados) {
@@ -73,6 +92,27 @@ export const useChatbot = () => {
     } catch {}
     return undefined;
   });
+
+  // Si se abre el chat para un spot específico y solo está el mensaje de bienvenida, actualizar el saludo
+  useEffect(() => {
+    if (initialSpot?.lugar) {
+      setLastLugar(initialSpot.lugar);
+      if (initialSpot.latitud !== undefined) setLastLat(initialSpot.latitud);
+      if (initialSpot.longitud !== undefined) setLastLng(initialSpot.longitud);
+
+      setMensajes((prev) => {
+        if (prev.length === 1 && prev[0].id === 'msg-bienvenida') {
+          return [
+            {
+              ...prev[0],
+              contenido: `¡Buenas! 🤠 Soy el Baqueano de ${initialSpot.lugar}. Ya tengo cargado este pesquero y sus condiciones satelitales en tiempo real. ¿Qué te gustaría saber? Preguntame sobre distancias de tiro, colores de señuelos, mareas, aparejos o qué especies están activas hoy.`,
+            },
+          ];
+        }
+        return prev;
+      });
+    }
+  }, [initialSpot?.lugar, initialSpot?.latitud, initialSpot?.longitud]);
 
   // Contador de interacciones para usuarios invitados (no logueados)
   const interaccionesInvitado = useMemo(() => {
