@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Fish, MapPin, Heart, Share2, ArrowLeft, Camera } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Fish, MapPin, Heart, Share2, ArrowLeft, Camera, Sparkles } from "lucide-react";
 import type { Spot } from "../../modelo/Spot";
 import { obtenerCoordenadas, obtenerColorEstado } from "../../utils/spotUtils";
 import UserMenu from "../usuario/UserMenu";
@@ -30,6 +31,7 @@ export default function SpotHeader({
   manejarCompartir,
   manejarVolver,
 }: Props) {
+  const navigate = useNavigate();
   const coordenadas = obtenerCoordenadas(spot);
   const { user } = useAuth();
   const { isAdmin } = useUserRoles();
@@ -130,6 +132,24 @@ export default function SpotHeader({
                 }}
               />
             )}
+
+            <button
+              type="button"
+              onClick={() => {
+                const params = new URLSearchParams();
+                params.set("lugar", spot.nombre);
+                if (coordenadas) {
+                  params.set("lat", String(coordenadas.latitud));
+                  params.set("lng", String(coordenadas.longitud));
+                }
+                navigate(`/chatbot?${params.toString()}`);
+              }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold text-xs transition-all duration-300 backdrop-blur-sm shadow-lg shadow-emerald-600/30 active:scale-95 cursor-pointer"
+              title="Preguntarle al Baqueano IA sobre líneas, carnadas, señuelos y distancias en este spot"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+              <span>Baqueano IA</span>
+            </button>
 
             {isAdmin && (
               <button

@@ -14,17 +14,26 @@ import {
   Lock,
   UserPlus,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const SUGERENCIAS_INICIALES = [
   { icon: '📍', texto: '¿Cómo está el pique en mi ubicación ahora?' },
-  { icon: '🌊', texto: '¿Cómo está el pique en Mar Chiquita?' },
-  { icon: '🦈', texto: '¿Qué equipo y carnada usar para Tiburón Bacota?' },
-  { icon: '🐟', texto: '¿Qué especies se pescan bien en Río Salado?' },
+  { icon: '🎨', texto: '¿Qué color de señuelo usar según el agua y la luz?' },
+  { icon: '🌊', texto: '¿Qué marea y distancia conviene pescar de costa?' },
+  { icon: '🎣', texto: '¿Qué línea y carnada rinde mejor para pejerrey de flote?' },
+  { icon: '🪵', texto: '¿Cómo pescar dorados o tarariras al golpe en palos?' },
+  { icon: '🪱', texto: '¿Qué aparejo armar para variada de río o mar?' },
 ];
 
 export const ChatbotPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const lugarParam = searchParams.get('lugar') || undefined;
+  const latParam = searchParams.get('lat') ? Number(searchParams.get('lat')) : undefined;
+  const lngParam = searchParams.get('lng') ? Number(searchParams.get('lng')) : undefined;
+  const preguntaParam = searchParams.get('pregunta') || undefined;
+  const hasAutoSent = useRef(false);
+
   const {
     mensajes,
     cargando,
@@ -45,6 +54,17 @@ export const ChatbotPage: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [mensajes, cargando, requiereRegistro]);
 
+  useEffect(() => {
+    if (preguntaParam && !hasAutoSent.current) {
+      hasAutoSent.current = true;
+      enviarMensaje(preguntaParam, {
+        lugar: lugarParam,
+        latitud: latParam,
+        longitud: lngParam,
+      });
+    }
+  }, [preguntaParam, lugarParam, latParam, lngParam, enviarMensaje]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (requiereRegistro) {
@@ -52,7 +72,11 @@ export const ChatbotPage: React.FC = () => {
       return;
     }
     if (!inputTexto.trim() || cargando) return;
-    enviarMensaje(inputTexto);
+    enviarMensaje(inputTexto, {
+      lugar: lugarParam,
+      latitud: latParam,
+      longitud: lngParam,
+    });
     setInputTexto('');
   };
 
@@ -65,7 +89,11 @@ export const ChatbotPage: React.FC = () => {
     if (prompt.includes('mi ubicación')) {
       consultarConUbicacionActual();
     } else {
-      enviarMensaje(prompt);
+      enviarMensaje(prompt, {
+        lugar: lugarParam,
+        latitud: latParam,
+        longitud: lngParam,
+      });
     }
   };
 
@@ -94,13 +122,18 @@ export const ChatbotPage: React.FC = () => {
 
             <div className="min-w-0 flex-1">
               <h1 className="font-extrabold text-xs sm:text-sm text-foreground tracking-tight flex items-center gap-1.5 truncate">
-                <span>Compañero IA</span>
+                <span>{lugarParam ? 'Baqueano IA' : 'Compañero IA'}</span>
                 <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-primary/10 text-primary border border-primary/20 shrink-0">
                   <Sparkles className="w-2.5 h-2.5" /> En vivo
                 </span>
+                {lugarParam && (
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 truncate max-w-[180px]">
+                    📍 {lugarParam}
+                  </span>
+                )}
               </h1>
               <p className="text-[10px] text-muted-foreground font-medium truncate">
-                Pique satelital, clima y aparejos
+                {lugarParam ? `Consultando sobre ${lugarParam}` : 'Pique satelital, clima y aparejos'}
               </p>
             </div>
           </div>
