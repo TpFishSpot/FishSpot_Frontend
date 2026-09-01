@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Fish, MapPin, Heart, Share2, ArrowLeft } from "lucide-react";
+import { Fish, MapPin, Heart, Share2, ArrowLeft, Camera } from "lucide-react";
 import type { Spot } from "../../modelo/Spot";
-import { obtenerCoordenadas, obtenerUrlImagen, obtenerColorEstado } from "../../utils/spotUtils";
+import { obtenerCoordenadas, obtenerColorEstado } from "../../utils/spotUtils";
 import UserMenu from "../usuario/UserMenu";
 import { BotonBorrar } from "../botones/Botones";
 import apiFishSpot from "../../api/apiFishSpot";
 import { useAuth } from "../../contexts/AuthContext";
+import { useUserRoles } from "../../hooks/auth/useUserRoles";
 import ReporteModal from "../ui/ReporteModal";
 import { ImagenResponsive } from "../common/imgenResponsive";
+import { SelectorFotoSpotModal } from "./SelectorFotoSpotModal";
 
 const formatNumber = (num: number | undefined | null, decimals = 1): string => {
   return (num || 0).toFixed(decimals);
@@ -30,8 +32,11 @@ export default function SpotHeader({
 }: Props) {
   const coordenadas = obtenerCoordenadas(spot);
   const { user } = useAuth();
+  const { isAdmin } = useUserRoles();
   const puedeBorrar = spot.estado === "Esperando" && spot.idUsuario === user?.uid;
   const [modalReporteOpen, setModalReporteOpen] = useState(false);
+  const [modalFotoOpen, setModalFotoOpen] = useState(false);
+  const [imagenPortada, setImagenPortada] = useState(spot.imagenPortada);
 
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-2xl mb-8 group">
@@ -50,7 +55,7 @@ export default function SpotHeader({
 
       <div className="relative h-96 md:h-[500px]">
         <ImagenResponsive
-          src={spot.imagenPortada}
+          src={imagenPortada}
           alt={`Imagen de ${spot.nombre}`}
           aspectRatio="auto"
           objectFit="cover"
@@ -126,6 +131,18 @@ export default function SpotHeader({
               />
             )}
 
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setModalFotoOpen(true)}
+                className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600/90 text-white rounded-xl font-bold text-xs hover:bg-emerald-600 transition-all duration-300 backdrop-blur-sm shadow-lg shadow-emerald-600/25 active:scale-95"
+                title="Buscar y cambiar foto real del spot en la web (Solo Administradores)"
+              >
+                <Camera className="w-4 h-4" />
+                <span>Foto Web (Admin)</span>
+              </button>
+            )}
+
             <button
               onClick={manejarCompartir}
               className="flex items-center gap-2 px-4 py-2 bg-white/20 text-white rounded-xl font-medium hover:bg-white/30 transition-all duration-300 backdrop-blur-sm"
@@ -141,6 +158,19 @@ export default function SpotHeader({
         <ReporteModal
           spotId={spot.id}
           onClose={() => setModalReporteOpen(false)}
+        />
+      )}
+
+      {modalFotoOpen && (
+        <SelectorFotoSpotModal
+          spotId={spot.id}
+          spotNombre={spot.nombre}
+          imagenActual={imagenPortada}
+          onClose={() => setModalFotoOpen(false)}
+          onFotoActualizada={(nuevaUrl) => {
+            setImagenPortada(nuevaUrl);
+            spot.imagenPortada = nuevaUrl;
+          }}
         />
       )}
     </div>
