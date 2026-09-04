@@ -4,6 +4,7 @@ import { AppRoutes } from "./routes/AppRoutes"
 import { ThemeProvider } from "./contexts/ThemeContext"
 import PWAInstallPrompt from "./components/ui/PWAInstallPrompt"
 import { useIOSSwipeBack } from "./hooks/useIOSSwipeBack"
+import { Analytics } from "@vercel/analytics/react"
 
 function App() {
   useIOSSwipeBack();
@@ -13,6 +14,7 @@ function App() {
       <div className="min-h-screen safe-area-inset-top">
         <AppRoutes />
         <PWAInstallPrompt />
+        <Analytics />
       </div>
     </ThemeProvider>
   )
